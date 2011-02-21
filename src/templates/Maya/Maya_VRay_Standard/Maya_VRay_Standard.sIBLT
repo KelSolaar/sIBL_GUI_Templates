@@ -55,11 +55,11 @@ DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
 [Script]
 // @OutputScript - @Release For @Software @Version
-// Author : @Author
-// EMail : @Email
-// Homepage : @Url
-// Template Path : @Path
-// Template Last Modified : @Date
+// Author: @Author
+// EMail: @Email
+// Homepage: @Url
+// Template Path: @Path
+// Template Last Modified: @Date
 // sIBL_GUI
 string $backgroundFilePath = "@BGfile";
 int $backgroundWidth = @BGheight*2;
@@ -153,17 +153,17 @@ global proc sIBL_Maya_VRay_setup(string $backgroundFilePath,
 {
 	if( `exists sIBL_Maya_preProcessCallback` )
 	{
-		print("sIBL_GUI | Executing Overall Preprocess Callback !\n");
+		print("sIBL_GUI | Executing Overall Preprocess Callback!\n");
 		sIBL_Maya_preProcessCallback();
 	}
 
 	if( `exists sIBL_Maya_VRay_preProcessCallback` )
 	{
-		print("sIBL_GUI | Executing Template Specific Preprocess Callback !\n");
+		print("sIBL_GUI | Executing Template Specific Preprocess Callback!\n");
 		sIBL_Maya_VRay_preProcessCallback();
 	}
 
-	print("sIBL_GUI | Starting sIBL File Import !\n");
+	print("sIBL_GUI | Starting sIBL File Import!\n");
 
 	string $sessionPreservedAttributes[] = sIBL_Maya_VRay_getSessionPreservedAttributes();
 	string $sessionStoredAttributes[] = {};
@@ -187,7 +187,7 @@ global proc sIBL_Maya_VRay_setup(string $backgroundFilePath,
 	{
 		if($backgroundWidth > 8192)
 		{
-			confirmDialog -title "sIBL_GUI | Information" -message ( "The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width : " +  $backgroundWidth + " Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead." )  -button "Ok" -defaultButton "Ok";
+			confirmDialog -title "sIBL_GUI | Information" -message ( "The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: " +  $backgroundWidth + " Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead." )  -button "Ok" -defaultButton "Ok";
 			sIBL_Maya_VRay_getFeedback($reflectionFilePath, $feedbackRadius);
 		}
 		else
@@ -196,7 +196,7 @@ global proc sIBL_Maya_VRay_setup(string $backgroundFilePath,
 		}
 	}
 
-	if (sIBL_Maya_VRay_objectExists( "sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting !\n"))
+	if (sIBL_Maya_VRay_objectExists( "sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
 	{
 		if ($sunU != -1 && $sunV != -1)
 		{
@@ -229,17 +229,17 @@ global proc sIBL_Maya_VRay_setup(string $backgroundFilePath,
 		if( $preserveSessionSettings )
 			sIBL_Maya_VRay_restoreSessionAttributes($sessionStoredAttributes);
 
-		print("sIBL_GUI | sIBL File Import Finished !\n");
+		print("sIBL_GUI | sIBL File Import Finished!\n");
 
 		if( `exists sIBL_Maya_postProcessCallback` )
 		{
-			print("sIBL_GUI | Executing Overall Postprocess Callback !\n");
+			print("sIBL_GUI | Executing Overall Postprocess Callback!\n");
 			sIBL_Maya_postProcessCallback();
 		}
 
 		if( `exists sIBL_Maya_VRay_postProcessCallback` )
 		{
-			print("sIBL_GUI | Executing Template Specific Postprocess Callback !\n");
+			print("sIBL_GUI | Executing Template Specific Postprocess Callback!\n");
 			sIBL_Maya_VRay_postProcessCallback();
 		}
 	}

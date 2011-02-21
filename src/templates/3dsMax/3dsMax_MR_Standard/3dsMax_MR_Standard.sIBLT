@@ -46,11 +46,11 @@ ExecutionCommand = @ExecutionCommand | fileIn ("$loaderScriptPath") | String
 [Script]
 /*
 @OutputScript - @Release For @Software @Version
-Author : @Author
-EMail : @Email
-Homepage : @Url
-Template Path : @Path
-Template Last Modified : @Date
+Author: @Author
+EMail: @Email
+Homepage: @Url
+Template Path: @Path
+Template Last Modified: @Date
 sIBL_GUI
 */
 
@@ -383,7 +383,7 @@ fn sIBL_3dsmax_MR_setup  =
 		)
 		catch
 		(
-			messageBox "sIBL_GUI | Mental Ray Productions Shaders Are Not Available !" title:"sIBL_GUI Error"
+			messageBox "sIBL_GUI | Mental Ray Productions Shaders Are Not Available!" title:"sIBL_GUI Error"
 			return ()
 		)
 
@@ -391,17 +391,17 @@ fn sIBL_3dsmax_MR_setup  =
 	(
 		if( sIBL_3dsmax_preProcessCallback != undefined ) then
 		(
-			print "sIBL_GUI | Executing Overall Preprocess Callback !"
+			print "sIBL_GUI | Executing Overall Preprocess Callback!"
 			sIBL_3dsmax_preProcessCallback()
 		)
 
 		if( sIBL_3dsmax_MR_preProcessCallback != undefined ) then
 		(
-			print "sIBL_GUI | Executing Template Specific Preprocess Callback !"
+			print "sIBL_GUI | Executing Template Specific Preprocess Callback!"
 			sIBL_3dsmax_MR_preProcessCallback()
 		)
 
-		print "sIBL_GUI | Starting sIBL File Import !"
+		print "sIBL_GUI | Starting sIBL File Import!"
 
 		sIBL_3dsmax_MR_environmentDeletion()
 		
@@ -439,22 +439,22 @@ fn sIBL_3dsmax_MR_setup  =
 		if( sIBL_OPTIONS.activateLinearWorkflow == 1 ) then
 			sIBL_3dsmax_MR_activateLinearWorkflow sIBL_OPTIONS.createBackground
 		
-		print "sIBL_GUI | sIBL File Import Finished !"
+		print "sIBL_GUI | sIBL File Import Finished!"
 		
 		if( sIBL_3dsmax_postProcessCallback != undefined ) then
 		(
-			print "sIBL_GUI | Executing Overall Postprocess Callback !"
+			print "sIBL_GUI | Executing Overall Postprocess Callback!"
 			sIBL_3dsmax_postProcessCallback()
 		)
 
 		if( sIBL_3dsmax_MR_postProcessCallback != undefined ) then
 		(
-			print "sIBL_GUI | Executing Template Specific Postprocess Callback !"
+			print "sIBL_GUI | Executing Template Specific Postprocess Callback!"
 			sIBL_3dsmax_MR_postProcessCallback()
 		)
 	)
 	else
-		messageBox "sIBL_GUI | Mental Ray Renderer Is Not Available !" title:"sIBL_GUI Error"
+		messageBox "sIBL_GUI | Mental Ray Renderer Is Not Available!" title:"sIBL_GUI Error"
 )
 
 sIBL_3dsmax_MR_setup()

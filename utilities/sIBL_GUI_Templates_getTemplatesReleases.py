@@ -95,7 +95,7 @@ def getTemplatesReleases():
 		parser = Parser(templates[template])
 		parser.read() and parser.parse()
 
-		LOGGER.info("{0} | '{1}' : '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parser.getAttributeCompound("Release", parser.getValue("Release", "Template", encode=True)).value))
+		LOGGER.info("{0} | '{1}': '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parser.getAttributeCompound("Release", parser.getValue("Release", "Template", encode=True)).value))
 
 if __name__ == "__main__":
 	getTemplatesReleases()

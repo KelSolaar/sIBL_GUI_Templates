@@ -56,11 +56,11 @@ DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 
 [Script]
 // @OutputScript - @Release For @Software @Version
-// Author : @Author
-// EMail : @Email
-// Homepage : @Url
-// Template Path : @Path
-// Template Last Modified : @Date
+// Author: @Author
+// EMail: @Email
+// Homepage: @Url
+// Template Path: @Path
+// Template Last Modified: @Date
 // sIBL_GUI
 var backgroundFilePath = "@BGfile";
 var lightingFilePath = "@EVfile";
@@ -101,13 +101,13 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 	{
 		if (sIBL_XSI_MR_commandExists("sIBL_XSI_preProcessCommand"))
 		{
-			LogMessage("sIBL_GUI | Executing Overall Preprocess Command !");
+			LogMessage("sIBL_GUI | Executing Overall Preprocess Command!");
 			sIBL_XSI_preProcessCommand();
 		}
 
 		if (sIBL_XSI_MR_commandExists("sIBL_XSI_MR_preProcessCommand"))
 		{
-			print("sIBL_GUI | Executing Template Specific Preprocess Command !");
+			print("sIBL_GUI | Executing Template Specific Preprocess Command!");
 			sIBL_XSI_MR_preProcessCommand();
 		}
 
@@ -143,8 +143,8 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 				
 				if (updateScene) 
 				{
-					Application.LogMessage("sIBL_GUI | Starting sIBL Related Nodes Update !");
-					progressBar.Caption = "sIBL_GUI | Updating Scene !";
+					Application.LogMessage("sIBL_GUI | Starting sIBL Related Nodes Update!");
+					progressBar.Caption = "sIBL_GUI | Updating Scene!";
 					
 					var sIBL_Group = sIBL_XSI_MR_getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL", true);
 					sIBL_Group = sIBL_Group(0);
@@ -203,14 +203,14 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 					}
 					else 
 					{
-						Application.LogMessage("sIBL_GUI | No sIBL Group Found, Aborting Scene Update !", siWarning);
+						Application.LogMessage("sIBL_GUI | No sIBL Group Found, Aborting Scene Update!", siWarning);
 					}
 					
 				}
 				else 
 				{
-					Application.LogMessage("sIBL_GUI | Starting sIBL File Import !");
-					progressBar.Caption = "sIBL_GUI | Setting Up sIBL File !";
+					Application.LogMessage("sIBL_GUI | Starting sIBL File Import!");
+					progressBar.Caption = "sIBL_GUI | Setting Up sIBL File!";
 					
 					sIBL_XSI_MR_scriptEditorVerbose(false);
 					sIBL_XSI_MR_autoInspectState(false);
@@ -295,19 +295,19 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 				sIBL_XSI_MR_autoInspectState(true);
 				
 				if (updateScene) 
-					Application.LogMessage("sIBL_GUI | sIBL File Update Finished !");
+					Application.LogMessage("sIBL_GUI | sIBL File Update Finished!");
 				else 
-					Application.LogMessage("sIBL_GUI | sIBL File Import Finished !");
+					Application.LogMessage("sIBL_GUI | sIBL File Import Finished!");
 				
 				if (sIBL_XSI_MR_commandExists("sIBL_XSI_postProcessCommand"))
 				{
-					LogMessage("sIBL_GUI | Executing Overall Postprocess Command !");
+					LogMessage("sIBL_GUI | Executing Overall Postprocess Command!");
 					sIBL_XSI_postProcessCommand();
 				}
 
 				if (sIBL_XSI_MR_commandExists("sIBL_XSI_MR_postProcessCommand"))
 				{
-					print("sIBL_GUI | Executing Template Specific Postprocess Command !");
+					print("sIBL_GUI | Executing Template Specific Postprocess Command!");
 					sIBL_XSI_MR_postProcessCommand();
 				}
 			}
@@ -319,7 +319,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 				sIBL_XSI_MR_scriptEditorVerbose(true);
 				sIBL_XSI_MR_autoInspectState(true);
 				
-				Application.LogMessage("sIBL_GUI | No Pass Selected, Import Canceled !");
+				Application.LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
 			}
 		}
 	} 
@@ -328,7 +328,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 		sIBL_XSI_MR_scriptEditorVerbose(true);
 		sIBL_XSI_MR_autoInspectState(true);
 		
-		Application.LogMessage("sIBL_GUI | sIBL File Import Failed !", siError);
+		Application.LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
 		throw (error)
 	}
 }
@@ -659,7 +659,7 @@ function sIBL_XSI_MR_update_environmentShaders(createBackground, createLighting,
 	}
 	else 
 	{
-		Application.LogMessage("sIBL_GUI | No sIBL_Raytype Found, Skipping Environment Related Shaders Updates !", siWarning);
+		Application.LogMessage("sIBL_GUI | No sIBL_Raytype Found, Skipping Environment Related Shaders Updates!", siWarning);
 	}
 }
 
@@ -857,7 +857,7 @@ function sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, createFee
 		}
 		else 
 		{
-			Application.LogMessage("sIBL_GUI | No Feedback Found, Skipping Feedback Related Updates !", siWarning);
+			Application.LogMessage("sIBL_GUI | No Feedback Found, Skipping Feedback Related Updates!", siWarning);
 		}
 	}
 }
@@ -928,7 +928,7 @@ function sIBL_XSI_MR_update_sun(sunU, sunV, sunColor, sunMultiplier, feedbackRad
 		}
 		else 
 		{
-			Application.LogMessage("sIBL_GUI | No Sun Found, Skipping Sun Related Updates !", siWarning);
+			Application.LogMessage("sIBL_GUI | No Sun Found, Skipping Sun Related Updates!", siWarning);
 		}
 	}
 }
