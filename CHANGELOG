@@ -1,6 +1,10 @@
-h1=. sIBL_GUI_Templates - 1.0.1 - Stable
+h1=. sIBL_GUI_Templates - 1.0.2 - Stable
 
 h2=. Change Log
+
+h3. 1.0.2 - Stable
+
+* Add new "sIBL_GUI_Templates_gatherFiles.sh" and "sIBL_GUI_Templates_recursiveRemove.py" utilities.
 
 h3. 1.0.1 - Stable
 
