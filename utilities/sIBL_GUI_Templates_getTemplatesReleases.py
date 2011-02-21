@@ -77,7 +77,7 @@ LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
 
 core.setVerbosityLevel(3)
 
-TEMPLATES_PATH = "/Users/KelSolaar/Documents/Developement/sIBL_GUI/src/templates"
+TEMPLATES_PATH = "../src/templates"
 TEMPLATES_EXTENSION = "sIBLT"
 
 #***********************************************************************************************
