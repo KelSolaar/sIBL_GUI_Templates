@@ -1,6 +1,10 @@
-h1=. sIBL_GUI_Templates - 1.0.0 - Stable
+h1=. sIBL_GUI_Templates - 1.0.1 - Stable
 
 h2=. Change Log
+
+h3. 1.0.1 - Stable
+
+* Update release utilities.
 
 h3. 1.0.0 - Stable
 
