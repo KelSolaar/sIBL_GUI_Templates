@@ -7,3 +7,5 @@
 *.log
 *.pyc
 *.pyo
+
+releases/repository/

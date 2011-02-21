@@ -27,13 +27,13 @@
 
 '''
 ************************************************************************************************
-***	sIBL_GUI_Templates_getTemplatesReleases.py
+***	sIBL_GUI_Templates_recursiveRemove.py
 ***
 ***	Platform:
 ***		Windows
 ***
 ***	Description:
-***		Get Templates Releases.
+***		Recursion Delete.
 ***
 ***	Others:
 ***
@@ -43,62 +43,45 @@
 #***********************************************************************************************
 #***	Python Begin
 #***********************************************************************************************
+
 #***********************************************************************************************
 #***	External Imports
 #***********************************************************************************************
-import logging
 import os
 import sys
 
 #***********************************************************************************************
-#***	Path Settings
-#***********************************************************************************************
-sys.path.append("../../Foundations/src")
-
-#***********************************************************************************************
-#***	Internal Imports
-#***********************************************************************************************
-import foundations.core as core
-import foundations.namespace as namespace
-import foundations.parser
-from foundations.io import File
-from foundations.walker import Walker
-from foundations.parser import Parser
-from globals.constants import Constants
-
-#***********************************************************************************************
-#***	Global Variables
-#***********************************************************************************************
-LOGGER = logging.getLogger(Constants.logger)
-
-LOGGING_CONSOLE_HANDLER = logging.StreamHandler(sys.stdout)
-LOGGING_CONSOLE_HANDLER.setFormatter(core.LOGGING_FORMATTER)
-LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
-
-core.setVerbosityLevel(3)
-
-TEMPLATES_PATH = "../src/templates"
-TEMPLATES_EXTENSION = "sIBLT"
-
-#***********************************************************************************************
 #***	Main Python Code
 #***********************************************************************************************
-def getTemplatesReleases():
+def recursiveRemove(rootDirectory, pattern):
 	'''
-	This Definition Gets Templates Releases.
+	This Definition Recursively Deletes The Matching Items.
+		
+	@param rootDirectory: Directory To Recurse. ( String )
+	@param pattern: Pattern To Match. ( String )
 	'''
 
-	walker = Walker()
-	walker.root = TEMPLATES_PATH
-	templates = walker.walk((TEMPLATES_EXTENSION,), ("\._",))
-	for template in sorted(templates.keys()):
-		parser = Parser(templates[template])
-		parser.read() and parser.parse()
+	if os.path.exists(rootDirectory):
+		for root, dirs, files in os.walk(rootDirectory):
+			for item in files:
+				itemPath = os.path.join(root, item).replace("\\", "/")
+				if pattern in str(item) :
+					remove(itemPath)
 
-		LOGGER.info("{0} | '{1}' : '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parser.getAttributeCompound("Release", parser.getValue("Release", "Template", encode=True)).value))
+def remove(item):
+	'''
+	This Definition Deletes Provided Item.
+	@param item: Item To Delete. ( String )
+	'''
+
+	print("remove | Removing : '%s'" % item)
+	try:
+		os.remove(item)
+	except:
+		print("remove | '%s' Remove Failed !" % item)
 
 if __name__ == "__main__":
-	getTemplatesReleases()
+	recursiveRemove(sys.argv[1], sys.argv[2])
 
 #***********************************************************************************************
 #***	Python End

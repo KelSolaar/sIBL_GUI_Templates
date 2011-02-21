@@ -27,7 +27,7 @@
 
 '''
 ************************************************************************************************
-***	sIBL_GUI_textileToHtml.py
+***	sIBL_GUI_Templates_textileToHtml.py
 ***
 ***	Platform:
 ***		Windows
