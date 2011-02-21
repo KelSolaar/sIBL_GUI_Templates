@@ -33,6 +33,8 @@ h3. Additional Attributes
 * *Create Ground*: A Grid is added to the Scene.
 * *Ground Shadow Catcher*: A mip_Matte_Shadow Shader is assigned to the Ground ( Unlike Maya, in Softimage, the Background is made Transparent so it's possible to see behind the Ground Plane, object crossing through will be visible ).
 * *Hide Lights*: Hides all current Scene lights.
+* *Sun Light Type*: Create the Sun as one of these lights type: "Infinite", "Light Box", "Spot", "Point".
+* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Infinite", "Light Box", "Spot", "Point".
 * *Physical Sun*: The Sun is created with a mia_Physical_Sun shader instead of the default soft_light one.
 * *Activate Final Gather*: Ambiant Lighting ( Ambience ) of the scene is desactivated and Final Gathering is set for the current / selected Pass(es).
 * *Activate Color Management*: Activates Softimage 7.0 Color Management ( Preferences > Display > Color Management ).
