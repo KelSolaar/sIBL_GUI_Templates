@@ -33,7 +33,6 @@ h3. Additional Attributes
 * *Hide Lights*: Hides all current Scene lights.
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 * *Activate Indirect Illumination*: Indirect Illumination is activated in the current Scene.
-* *Sun As VRaySun Light*: The Sun will use a VRaySun light.
 
 h3. Scene Components
 

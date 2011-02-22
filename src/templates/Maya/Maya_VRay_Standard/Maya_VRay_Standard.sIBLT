@@ -45,7 +45,6 @@ shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 sunLightType = @sunLightType | VRaySun;Directional;Area;Spot;Point;VRaySphere;VRayRect;VRayIES | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point;VRaySun;VRaySphere;VRayRect;VRayIES; | Enum | Dynamic Lights Type
-sunAsVraySun = @sunAsVraySun | 1 | Boolean | Sun As VRaySun Light
 activateIndirectIllumination = @activateIndirectIllumination | 1 | Boolean | Activate Indirect Illumination
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
