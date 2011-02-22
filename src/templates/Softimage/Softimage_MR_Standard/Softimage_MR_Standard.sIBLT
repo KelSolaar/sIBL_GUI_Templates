@@ -962,11 +962,11 @@ function sIBL_XSI_MR_getLight(parent, constraintParent, lightType, lightName, sc
 		case "Infinite":
 			var primitiveType = "Infinite";
 			break;
-		case "Point":
-			var primitiveType = "Point";
-			break;
 		case "Light Box":
 			var primitiveType = "Light_Box";
+			break;
+		case "Point":
+			var primitiveType = "Point";
 			break;
 		case "Spot":
 			var primitiveType = "Spot";

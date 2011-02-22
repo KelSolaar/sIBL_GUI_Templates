@@ -30,6 +30,8 @@ h3. Additional Attributes
 * *Create FeedBack*: Makes the Feedback visible and attach to it the current IBL LDR Background image so there is a visual feedback in the Viewport.
 * *Create Ground*: A Plane is added to the Scene.
 * *Hide Lights*: Hides all current Scene lights.
+* *Sun Light Type*: Create the Sun as one of these lights type: "Directional", "Area", "Spot", "Point".
+* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point".
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 * *Activate Raytracing*: Raytracing is activated in the current Scene.
 * *Activate Color Bleeding*: Color Bleeding is activated in the Diffuse Environment Ligth and the associated Radiosity Bake Pass is created and connected to the related Environment Light.
