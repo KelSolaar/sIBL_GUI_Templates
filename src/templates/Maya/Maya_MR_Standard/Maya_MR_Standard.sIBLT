@@ -39,7 +39,7 @@ createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
 preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
-createFeedBack = @createFeedBack | 1 | Boolean | Create Feedback
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 hideLights = @hideLights | 1 | Boolean | Hide Lights
@@ -87,7 +87,7 @@ int $createReflection = @createReflection;
 int $createSun = @createSun;
 int $createLights = @createLights;
 int $preserveSessionSettings = @preserveSessionSettings;
-int $createFeedBack = @createFeedBack;
+int $displayFeedback = @displayFeedback;
 float $feedbackRadius = 100;
 int $createGround = @createGround;
 int $shadowCatcher = @shadowCatcher;
@@ -122,7 +122,7 @@ sIBL_Maya_MR_setup($backgroundFilePath,
 		$createSun,
 		$createLights,
 		$preserveSessionSettings,
-		$createFeedBack,
+		$displayFeedback,
 		$createGround,
 		$shadowCatcher,
 		$feedbackRadius,
@@ -157,7 +157,7 @@ global proc sIBL_Maya_MR_setup(string $backgroundFilePath,
 			int $createSun,
 			int $createLights,
 			int $preserveSessionSettings,
-			int $createFeedBack,
+			int $displayFeedback,
 			int $createGround,
 			int $shadowCatcher,
 			float $feedbackRadius,
@@ -238,11 +238,11 @@ global proc sIBL_Maya_MR_setup(string $backgroundFilePath,
 		if($backgroundWidth > 8192)
 		{
 			confirmDialog -title "sIBL_GUI | Information" -message ("The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: " +  $backgroundWidth + " Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead.")  -button "Ok" -defaultButton "Ok";
-			sIBL_Maya_MR_getFeedback($reflectionFilePath, $feedbackRadius, $createFeedBack);
+			sIBL_Maya_MR_getFeedback($reflectionFilePath, $feedbackRadius, $displayFeedback);
 		}
 		else
 		{
-			sIBL_Maya_MR_getFeedback($backgroundFilePath, $feedbackRadius, $createFeedBack);
+			sIBL_Maya_MR_getFeedback($backgroundFilePath, $feedbackRadius, $displayFeedback);
 		}
 
 		if (sIBL_Maya_MR_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
@@ -264,7 +264,7 @@ global proc sIBL_Maya_MR_setup(string $backgroundFilePath,
 			}
 
 			string $feedback = sIBL_Maya_MR_getObject("sIBL_Feedback");
-			sIBL_Maya_MR_connectFeedBackToSIBLShaders($feedback, $createBackground, $createLighting, $createReflection);
+			sIBL_Maya_MR_connectFeedbackToSIBLShaders($feedback, $createBackground, $createLighting, $createReflection);
 
 			if($createGround)
 				sIBL_Maya_MR_getGround($feedbackRadius, $shadowCatcher);
@@ -659,7 +659,7 @@ global proc string sIBL_Maya_MR_getFeedbackGeometry(float $feedbackRadius, int $
 	for($stat in $renderStats)
 		setAttr ($feedBackShapes[0] + "." + $stat) false;
 	
-	sIBL_Maya_MR_addToDisplayLayer("sIBL_FeedBack_Layer", $feedback[0]);
+	sIBL_Maya_MR_addToDisplayLayer("sIBL_Feedback_Layer", $feedback[0]);
 
 	return $feedback[0];
 }
@@ -834,7 +834,7 @@ global proc sIBL_Maya_MR_bridgeFeedbackControlsAndShaders(string $componentsList
 	}
 }
 
-global proc sIBL_Maya_MR_connectFeedBackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
+global proc sIBL_Maya_MR_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
 {
 	string $componentsList[] = {"Gamma", "Gain"};
 

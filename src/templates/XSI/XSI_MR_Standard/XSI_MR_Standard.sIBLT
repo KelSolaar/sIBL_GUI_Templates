@@ -37,7 +37,7 @@ createSun = @createSun | 1 | Boolean | Create / Update Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
-createFeedBack = @createFeedBack | 1 | Boolean | Create Feedback
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 hideLights = @hideLights | 1 | Boolean | Hide Lights
@@ -83,7 +83,7 @@ var createLighting = @createLighting;
 var createReflection = @createReflection;
 var createSun = @createSun;
 var createLights = @createLights;
-var createFeedBack = @createFeedBack;
+var displayFeedback = @displayFeedback;
 var feedbackRadius = 100;
 var createGround = @createGround;
 var shadowCatcher = @shadowCatcher;
@@ -97,9 +97,9 @@ var showPassesDialog = @showPassesDialog;
 var updateScene = @updateScene;
 var overrideTweaks = @overrideTweaks;
 
-sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultiplier, lightingGamma, reflectionFilePath, reflectionMultiplier, reflectionGamma, sunU, sunV, sunColor, sunMultiplier, height, north, dynamicLights, createBackground, createLighting, createReflection, createSun, createLights, createFeedBack, createGround, shadowCatcher, feedbackRadius, hideLights, sunLightType, dynamicLightsType, physicalSun, activateFinalGather, activateColorManagement, showPassesDialog, updateScene, overrideTweaks);
+sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultiplier, lightingGamma, reflectionFilePath, reflectionMultiplier, reflectionGamma, sunU, sunV, sunColor, sunMultiplier, height, north, dynamicLights, createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, createGround, shadowCatcher, feedbackRadius, hideLights, sunLightType, dynamicLightsType, physicalSun, activateFinalGather, activateColorManagement, showPassesDialog, updateScene, overrideTweaks);
 
-function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultiplier, lightingGamma, reflectionFilePath, reflectionMultiplier, reflectionGamma, sunU, sunV, sunColor, sunMultiplier, height, north, dynamicLights, createBackground, createLighting, createReflection, createSun, createLights, createFeedBack, createGround, shadowCatcher, feedbackRadius, hideLights, sunLightType, dynamicLightsType, physicalSun, activateFinalGather, activateColorManagement, showPassesDialog, updateScene, overrideTweaks)
+function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultiplier, lightingGamma, reflectionFilePath, reflectionMultiplier, reflectionGamma, sunU, sunV, sunColor, sunMultiplier, height, north, dynamicLights, createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, createGround, shadowCatcher, feedbackRadius, hideLights, sunLightType, dynamicLightsType, physicalSun, activateFinalGather, activateColorManagement, showPassesDialog, updateScene, overrideTweaks)
 {
 	try 
 	{
@@ -174,7 +174,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 						
 						// Feedback Update.
 						if (overrideTweaks) 
-							sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, createFeedBack);
+							sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, displayFeedback);
 						progressBar.Increment();
 						
 						// Sun Update.
@@ -243,7 +243,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 					progressBar.Increment();
 					
 					// Feedback Creation.
-					sIBL_XSI_MR_getFeedback(feedbackRadius, createBackground, createFeedBack);
+					sIBL_XSI_MR_getFeedback(feedbackRadius, createBackground, displayFeedback);
 					progressBar.Increment();
 					
 					// Sun Creation.
@@ -272,7 +272,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 					// Shaders / Feedback Connection.
 					var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
 					if (feedback != null) 
-						sIBL_XSI_MR_connectFeedBackToShaders(feedback, createBackground, createLighting, createReflection, selectedPassesList);
+						sIBL_XSI_MR_connectFeedbackToShaders(feedback, createBackground, createLighting, createReflection, selectedPassesList);
 					progressBar.Increment();
 					
 					// Ground Creation.
@@ -796,12 +796,12 @@ function sIBL_XSI_MR_getSIBLGroup()
 	return sceneSIBLGroup
 }
 
-function sIBL_XSI_MR_getFeedbackGeometry(feedbackRadius, createFeedBack)
+function sIBL_XSI_MR_getFeedbackGeometry(feedbackRadius, displayFeedback)
 {
 	var feedback = ActiveSceneRoot.AddGeometry("Sphere", "NurbsSurface", "sIBL_Feedback");
 	feedback.properties("visibility").Parameters("rendvis").value = 0;
 	
-	if (!createFeedBack) 
+	if (!displayFeedback) 
 		feedback.properties("visibility").Parameters("viewvis").value = 0;
 	
 	CreateProjection(feedback, siTxtUV, siTxtDefaultPlanarXY, null, "sIBL_Texture_Projection");
@@ -828,18 +828,18 @@ function sIBL_XSI_MR_getFeedbackGeometry(feedbackRadius, createFeedBack)
 		localKinematics(locksList[i]).SetLock(siLockLevelManipulation);
 	}
 	
-	sIBL_XSI_MR_addToDisplayLayer("sIBL_FeedBack_Layer", feedback);
+	sIBL_XSI_MR_addToDisplayLayer("sIBL_Feedback_Layer", feedback);
 	
 	return feedback;
 }
 
-function sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, createFeedBack)
+function sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, displayFeedback)
 {
 	var feedback = sIBL_XSI_MR_getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_Feedback", true);
 	
 	if (feedback == 0 && overrideTweaks) 
 	{
-		sIBL_XSI_MR_getFeedback(feedbackRadius, createBackground, createFeedBack);
+		sIBL_XSI_MR_getFeedback(feedbackRadius, createBackground, displayFeedback);
 	}
 	else 
 	{
@@ -854,7 +854,7 @@ function sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, createFee
 			//globalKinematics("scly").value = feedbackRadius;
 			//globalKinematics("sclz").value = feedbackRadius;
 			
-			if (!createFeedBack) 
+			if (!displayFeedback) 
 				feedback.properties("visibility").Parameters("viewvis").value = 0;
 			else 
 				feedback.properties("visibility").Parameters("viewvis").value = 1;
@@ -866,10 +866,10 @@ function sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, createFee
 	}
 }
 
-function sIBL_XSI_MR_getFeedback(feedbackRadius, createBackground, createFeedBack)
+function sIBL_XSI_MR_getFeedback(feedbackRadius, createBackground, displayFeedback)
 {
 	var sIBLGroup = sIBL_XSI_MR_getSIBLGroup();
-	var feedback = sIBL_XSI_MR_getFeedbackGeometry(feedbackRadius, createFeedBack);
+	var feedback = sIBL_XSI_MR_getFeedbackGeometry(feedbackRadius, displayFeedback);
 	
 	sIBLGroup.AddChild(feedback);
 	
@@ -1078,7 +1078,7 @@ function sIBL_XSI_MR_bridgeControlsAndShaders(pass, slot)
 	}
 }
 
-function sIBL_XSI_MR_connectFeedBackToShaders(feedback, connectToBackground, connectToLighting, connectToReflection, passesList)
+function sIBL_XSI_MR_connectFeedbackToShaders(feedback, connectToBackground, connectToLighting, connectToReflection, passesList)
 {
 	var pass = passesList[0];
 	

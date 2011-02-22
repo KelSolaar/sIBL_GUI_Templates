@@ -31,7 +31,7 @@ createSun = @createSun | 1 | Boolean | Create Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
-createFeedBack = @createFeedBack | 1 | Boolean | Create Feedback
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 hideLights = @hideLights | 1 | Boolean | Hide Lights
@@ -55,11 +55,11 @@ sIBL_GUI
 */
 
 struct sIBL_datas ( backgroundFilePath, lightingFilePath, reflectionFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights )
-struct sIBL_options ( createBackground, createLighting, createReflection,  createSun, createLights, createFeedBack, feedbackRadius, sunAsVraySun, hideLights, createGround, shadowCatcher, activateLinearWorkflow )
+struct sIBL_options ( createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, sunAsVraySun, hideLights, createGround, shadowCatcher, activateLinearWorkflow )
 struct sIBL_sceneNodes ( datasGroup,  lightsGroup, feedback )
 	
 global sIBL_DATAS =  sIBL_datas backgroundFilePath:"@BGfile" lightingFilePath:"@EVfile" reflectionFilePath:"@REFfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
-global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createLighting:@createLighting createReflection:@createReflection createSun:@createSun createLights:@createLights createFeedBack:@createFeedBack feedbackRadius:1000 sunAsVraySun:@sunAsVraySun hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
+global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createLighting:@createLighting createReflection:@createReflection createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunAsVraySun:@sunAsVraySun hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global sIBL_SCENE_NODES = sIBL_sceneNodes()
 
 fn sIBL_3dsmax_VRay_getSceneExtent =
@@ -134,7 +134,7 @@ fn sIBL_3dsmax_VRay_getSIBLGroup =
 	sIBL_SCENE_NODES.datasGroup = group sIBL_Point name:"sIBL_Datas"
 )
 
-fn sIBL_3dsmax_VRay_getFeedBack feedbackRadius createBackground texturePath =
+fn sIBL_3dsmax_VRay_getFeedback feedbackRadius createBackground texturePath =
 (
 	local feedbackSphere = Sphere radius:feedbackRadius segs:32 mapcoords:on backfacecull:on renderable:off
 	
@@ -150,7 +150,7 @@ fn sIBL_3dsmax_VRay_getFeedBack feedbackRadius createBackground texturePath =
 	
 	if( createBackground == 1 ) then
 	(
-		local feedbackShader = StandardMaterial name:"sIBL_FeedBackShader"
+		local feedbackShader = StandardMaterial name:"sIBL_FeedbackShader"
 		feedbackShader.selfIllumAmount = 100
 		feedbackShader.diffuse = color 255 255 255
 		feedbackShader.ambient = feedbackShader.diffuse
@@ -167,7 +167,7 @@ fn sIBL_3dsmax_VRay_getFeedBack feedbackRadius createBackground texturePath =
 	feedbackSphere.parent = sIBL_SCENE_NODES.datasGroup
 	setTransformLockFlags feedbackSphere #{1,2,3,4,5}
 	
-	feedbackSphere.name = "sIBL_FeedBack"
+	feedbackSphere.name = "sIBL_Feedback"
 	sIBL_SCENE_NODES.feedback = feedbackSphere
 )
 
@@ -299,7 +299,7 @@ fn sIBL_3dsmax_VRay_setEnvironment createBackground createLighting createReflect
 	)
 )
 
-fn sIBL_3dsmax_VRay_connectFeedBackToSIBLShaders createBackground createLighting createReflection =
+fn sIBL_3dsmax_VRay_connectFeedbackToSIBLShaders createBackground createLighting createReflection =
 (
 	if( createBackground == 1 ) then
 	(
@@ -318,7 +318,7 @@ fn sIBL_3dsmax_VRay_connectFeedBackToSIBLShaders createBackground createLighting
 	)
 )
 
-fn sIBL_3dsmax_VRay_connectFeedBackToLights =
+fn sIBL_3dsmax_VRay_connectFeedbackToLights =
 (
 	if( sIBL_SCENE_NODES.lightsGroup != undefined ) then
 	(
@@ -395,13 +395,13 @@ fn sIBL_3dsmax_VRay_setup  =
 
 		sIBL_3dsmax_VRay_getSIBLGroup()
 	
-		if( sIBL_OPTIONS.createFeedBack == 1 ) then
-			sIBL_3dsmax_VRay_getFeedBack sIBL_OPTIONS.feedbackRadius sIBL_OPTIONS.createBackground sIBL_DATAS.backgroundFilePath
+		if( sIBL_OPTIONS.displayFeedback == 1 ) then
+			sIBL_3dsmax_VRay_getFeedback sIBL_OPTIONS.feedbackRadius sIBL_OPTIONS.createBackground sIBL_DATAS.backgroundFilePath
 
 		sIBL_3dsmax_VRay_setEnvironment sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection sIBL_DATAS.backgroundFilePath sIBL_DATAS.lightingFilePath sIBL_DATAS.reflectionFilePath
 		
-		if( sIBL_OPTIONS.createFeedBack == 1 ) then
-			sIBL_3dsmax_VRay_connectFeedBackToSIBLShaders  sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection
+		if( sIBL_OPTIONS.displayFeedback == 1 ) then
+			sIBL_3dsmax_VRay_connectFeedbackToSIBLShaders  sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection
 		
 		if( sIBL_OPTIONS.createSun == 1 and sIBL_DATAS.sunU != -1 and sIBL_DATAS.sunV != -1 ) then
 			sIBL_3dsmax_VRay_createSun sIBL_DATAS.sunColor sIBL_DATAS.sunMultiplier sIBL_OPTIONS.feedbackRadius sIBL_DATAS.sunU sIBL_DATAS.sunV sIBL_OPTIONS.sunAsVraySun
@@ -409,8 +409,8 @@ fn sIBL_3dsmax_VRay_setup  =
 		if( sIBL_OPTIONS.createLights == 1 and sIBL_DATAS.dynamicLights != "-1" ) then
 			sIBL_3dsmax_VRay_createDynamicLights sIBL_DATAS.dynamicLights sIBL_OPTIONS.feedbackRadius
 		
-		if( sIBL_OPTIONS.createFeedBack == 1 ) then
-			sIBL_3dsmax_VRay_connectFeedBackToLights()
+		if( sIBL_OPTIONS.displayFeedback == 1 ) then
+			sIBL_3dsmax_VRay_connectFeedbackToLights()
 
 		if( sIBL_OPTIONS.createGround == 1 ) then
 			sIBL_3dsmax_VRay_createGround sIBL_OPTIONS.feedbackRadius sIBL_OPTIONS.shadowCatcher

@@ -39,7 +39,7 @@ createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
 preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
-createFeedBack = @createFeedBack | 1 | Boolean | Create Feedback
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
 createGround = @createGround | 1 | Boolean | Create Ground
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
@@ -82,7 +82,7 @@ int $createReflection = @createReflection;
 int $createSun = @createSun;
 int $createLights = @createLights;
 int $preserveSessionSettings = @preserveSessionSettings;
-int $createFeedBack = @createFeedBack;
+int $displayFeedback = @displayFeedback;
 float $feedbackRadius = 100;
 int $createGround = @createGround;
 int $hideLights = @hideLights;
@@ -112,7 +112,7 @@ sIBL_Maya_Turtle_setup($backgroundFilePath,
 		$createSun,
 		$createLights,
 		$preserveSessionSettings,
-		$createFeedBack,
+		$displayFeedback,
 		$createGround,
 		$feedbackRadius,
 		$hideLights,
@@ -142,7 +142,7 @@ global proc sIBL_Maya_Turtle_setup(string $backgroundFilePath,
 			int $createSun,
 			int $createLights,
 			int $preserveSessionSettings,
-			int $createFeedBack,
+			int $displayFeedback,
 			int $createGround,
 			float $feedbackRadius,
 			int $hideLights,
@@ -183,16 +183,16 @@ global proc sIBL_Maya_Turtle_setup(string $backgroundFilePath,
 	if ($hideLights)
 		sIBL_Maya_Turtle_hideLights();
 
-	sIBL_Maya_Turtle_getEnvironment($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $feedbackRadius, $createFeedBack);
+	sIBL_Maya_Turtle_getEnvironment($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $feedbackRadius, $displayFeedback);
 
 	if($backgroundWidth > 8192)
 	{
 		confirmDialog -title "sIBL_GUI | Information" -message ("The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: " +  $backgroundWidth + " Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead.")  -button "Ok" -defaultButton "Ok";
-		sIBL_Maya_Turtle_getFeedback($reflectionFilePath, $feedbackRadius, $createFeedBack);
+		sIBL_Maya_Turtle_getFeedback($reflectionFilePath, $feedbackRadius, $displayFeedback);
 	}
 	else
 	{
-		sIBL_Maya_Turtle_getFeedback($backgroundFilePath, $feedbackRadius, $createFeedBack);
+		sIBL_Maya_Turtle_getFeedback($backgroundFilePath, $feedbackRadius, $displayFeedback);
 	}
 
 	if (sIBL_Maya_Turtle_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
@@ -214,7 +214,7 @@ global proc sIBL_Maya_Turtle_setup(string $backgroundFilePath,
 		}
 
 		string $feedback = sIBL_Maya_Turtle_getObject("sIBL_Feedback");
-		sIBL_Maya_Turtle_connectFeedBackToSIBLShaders($feedback, $createBackground, $createLighting, $createReflection);
+		sIBL_Maya_Turtle_connectFeedbackToSIBLShaders($feedback, $createBackground, $createLighting, $createReflection);
 
 		if($createGround)
 			sIBL_Maya_Turtle_getGround($feedbackRadius);
@@ -561,7 +561,7 @@ global proc string sIBL_Maya_Turtle_getFeedbackGeometry(float $feedbackRadius, i
 	for($stat in $renderStats)
 			setAttr ($feedBackShapes[0] + "." + $stat) false;
 	
-	sIBL_Maya_Turtle_addToDisplayLayer("sIBL_FeedBack_Layer", $feedback[0]);
+	sIBL_Maya_Turtle_addToDisplayLayer("sIBL_Feedback_Layer", $feedback[0]);
 
 	return $feedback[0];
 }
@@ -729,7 +729,7 @@ global proc sIBL_Maya_Turtle_bridgeFeedbackControlsAndShaders(string $target)
 	}
 }
 
-global proc sIBL_Maya_Turtle_connectFeedBackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
+global proc sIBL_Maya_Turtle_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
 {
 	if ($connectToBackground)
 	{

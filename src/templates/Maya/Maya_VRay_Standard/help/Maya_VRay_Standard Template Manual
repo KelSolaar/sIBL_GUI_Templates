@@ -27,12 +27,13 @@ h3. Common Attributes
 h3. Additional Attributes
 
 * *Preserve Session Settings*: Preserves sIBL session setup settings: previous sIBL_Feedback and sIBL_Ground transformations are restored.
-* *Create FeedBack*: Makes the Feedback visible and attach to it the current IBL LDR Background image so there is a visual feedback in the Viewport.
+* *Display Feedback*: Makes the Feedback visible and attach to it the current IBL LDR Background image so there is a visual feedback in the Viewport.
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A VRayObjectProperties Node is assigned to the Ground.
 * *Hide Lights*: Hides all current Scene lights.
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 * *Activate Indirect Illumination*: Indirect Illumination is activated in the current Scene.
+* *Sun As VRaySun Light*: The Sun will use a VRaySun light.
 
 h3. Scene Components
 
