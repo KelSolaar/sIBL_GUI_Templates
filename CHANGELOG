@@ -1,6 +1,10 @@
-h1=. sIBL_GUI_Templates - 1.0.2 - Stable
+h1=. sIBL_GUI_Templates - 1.0.3 - Stable
 
 h2=. Change Log
+
+h3. 1.0.3 - Stable
+
+* Implement lights types support in each template, it's now possible to choose between different light types : "Area", "Directional", "Point", "Spot", etc ....
 
 h3. 1.0.2 - Stable
 
