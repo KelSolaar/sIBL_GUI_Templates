@@ -26,9 +26,11 @@ h3. Common Attributes
 
 h3. Additional Attributes
 
-* *Display Feedback*: Creates a viewport Visual Feedback with the current IBL LDR Background image.
+* *Display Feedback*: Displays a viewport Visual Feedback with the current IBL LDR Background image.
 * *Create Ground*: A Plane is added to the Scene.
 * *Hide Lights*: Hides all current Scene lights.
+* *Sun Light Type*: Create the Sun as one of these lights type: "Direct", "Spot", "Omni", "Photometric".
+* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Direct", "Spot", "Omni", "Photometric".
 * *Activate Linear Workflow*: Connect a Logarithmic Exposure Control in Environment And Effects.
 
 h2(#ChangeLog). Change Log

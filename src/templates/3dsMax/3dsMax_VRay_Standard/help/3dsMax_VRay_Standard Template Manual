@@ -26,11 +26,12 @@ h3. Common Attributes
 
 h3. Additional Attributes
 
-* *Display Feedback*: Creates a viewport Visual Feedback with the current IBL LDR Background image.
+* *Display Feedback*: Displays a viewport Visual Feedback with the current IBL LDR Background image.
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A VRayMtlWrapper Shader is assigned to the Ground.
 * *Hide Lights*: Hides all current Scene lights.
-* *Sun As VRaySun Light*: The Sun will use a VRaySun light.
+* *Sun Light Type*: Create the Sun as one of these lights type: "VRaySun", "Direct", "Spot", "Omni", "Photometric", "VRayLight", "VRayIES".
+* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Direct", "Spot", "Omni", "Photometric", "VRaySun", "VRayLight", "VRayIES".
 * *Activate Linear Workflow*: Sets the Color Mapping values for Linear Workflow.
 
 h2(#ChangeLog). Change Log

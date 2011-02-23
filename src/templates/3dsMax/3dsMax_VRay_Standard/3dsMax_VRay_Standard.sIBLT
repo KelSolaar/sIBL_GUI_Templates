@@ -2,9 +2,9 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/3dsMax_VRay_Standard Template Manual.html | String | Help File
-Release = @Release | 1.0.9 | String | Template Release
-Date = @Date | 31 December 2010 | String | Date
-Author = @Author | Dschaga / JHaywood / Kel Solaar | String | Author
+Release = @Release | 1.1.0 | String | Template Release
+Date = @Date | 23 February 2011 | String | Date
+Author = @Author | Kel Solaar /Dschaga / JHaywood | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | 3dsMax  | String | Software
@@ -35,7 +35,8 @@ displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 hideLights = @hideLights | 1 | Boolean | Hide Lights
-sunAsVraySun = @sunAsVraySun | 1 | Boolean | Sun As VRaySun Light
+sunLightType = @sunLightType | VRaySun;Direct;Spot;Omni;Photometric;VRayLight;VRayIES | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Direct;Spot;Omni;Photometric;VRaySun;VRayLight;VRayIES | Enum | Dynamic Lights Type
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
 [Remote Connection]
@@ -54,12 +55,12 @@ Template Last Modified: @Date
 sIBL_GUI
 */
 
-struct sIBL_datas ( backgroundFilePath, lightingFilePath, reflectionFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights )
-struct sIBL_options ( createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, sunAsVraySun, hideLights, createGround, shadowCatcher, activateLinearWorkflow )
-struct sIBL_sceneNodes ( datasGroup,  lightsGroup, feedback )
+struct sIBL_datas (backgroundFilePath, lightingFilePath, reflectionFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
+struct sIBL_options (createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, shadowCatcher, activateLinearWorkflow)
+struct sIBL_sceneNodes (datasGroup,  lightsGroup, feedback)
 	
 global sIBL_DATAS =  sIBL_datas backgroundFilePath:"@BGfile" lightingFilePath:"@EVfile" reflectionFilePath:"@REFfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
-global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createLighting:@createLighting createReflection:@createReflection createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunAsVraySun:@sunAsVraySun hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
+global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createLighting:@createLighting createReflection:@createReflection createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 hideLights:@hideLights sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global sIBL_SCENE_NODES = sIBL_sceneNodes()
 
 fn sIBL_3dsmax_VRay_getSceneExtent =
@@ -117,7 +118,7 @@ fn sIBL_3dsmax_VRay_environmentDeletion =
 
 fn sIBL_3dsmax_VRay_activateVRay =
 (
-	if( IsKindOf renderers.current vray == False  ) then
+	if(IsKindOf renderers.current vray == False ) then
 		renderers.current = vray()
 	
 	renderers.current.gi_on = True
@@ -148,7 +149,7 @@ fn sIBL_3dsmax_VRay_getFeedback feedbackRadius createBackground texturePath =
 	feedbackSphere.backfacecull = on
 	feedbackSphere.renderable = False
 	
-	if( createBackground == 1 ) then
+	if(createBackground == 1) then
 	(
 		local feedbackShader = StandardMaterial name:"sIBL_FeedbackShader"
 		feedbackShader.selfIllumAmount = 100
@@ -181,42 +182,88 @@ fn sIBL_3dsmax_VRay_getLightsGroup =
 	sIBL_SCENE_NODES.lightsGroup.parent = sIBL_SCENE_NODES.datasGroup
 )
 
-fn sIBL_3dsmax_VRay_getLight lightName lightColor intensity lightDistance uCoordinate vCoordinate asVraySun =
+fn sIBL_3dsmax_VRay_getLight lightType lightName lightColor intensity lightDistance uCoordinate vCoordinate =
 (
-	if( sIBL_SCENE_NODES.lightsGroup == undefined ) then
+	if(sIBL_SCENE_NODES.lightsGroup == undefined) then
 		sIBL_3dsmax_VRay_getLightsGroup()
 
 	lightColorTokens = filterstring lightColor ","
 
 	uCoordinate += 0.75
-	projectedRadius = cos( ( 0.5 - vCoordinate ) * 180 )
+	projectedRadius = cos((0.5 - vCoordinate) * 180)
 	
-	local xPos = lightDistance * ( ( cos( uCoordinate * 360 ) ) * projectedRadius )
-	local yPos = lightDistance * ( ( sin( uCoordinate * 360 ) ) * projectedRadius ) * -1
-	local zPos = lightDistance * ( sin( ( 0.5 - vCoordinate ) * 180 ) )
+	local xPos = lightDistance * ((cos(uCoordinate * 360)) * projectedRadius)
+	local yPos = lightDistance * ((sin(uCoordinate * 360)) * projectedRadius) * -1
+	local zPos = lightDistance * (sin((0.5 - vCoordinate) * 180))
 	
-	local lightTarget = TargetObject transform:( matrix3 [1,0,0] [0,1,0] [0,0,1] [0,0,0] )
+	local lightTarget = TargetObject transform:(matrix3 [1,0,0] [0,1,0] [0,0,1] [0,0,0])
 	lightTarget.parent = sIBL_SCENE_NODES.lightsGroup
 	
-	if( asVraySun == 1 ) then
+	local lightColor = color (lightColorTokens[1] as float) (lightColorTokens[2] as float) (lightColorTokens[3] as float)
+	local lightFalloff = lightDistance + 5
+	
+	if(lightType == "Direct") then
 	(
-		local light = VRaySun pos:[ ( xPos as float ),  ( yPos as float ), ( zPos as float ) ] target:lightTarget
+		local light = TargetDirectionalLight castShadows:on hotspot:lightDistance falloff:lightFalloff
+	)
+	else if(lightType == "Spot") then
+	(
+		local light = TargetSpot castShadows:on hotspot:lightDistance falloff:lightFalloff
+	)
+	else if(lightType == "Omni") then
+	(
+		local light = OmniLight castShadows:on
+	)
+	else if(lightType == "Photometric") then
+	(
+		local light = Target_Light rgbFilter:lightColor castShadows:on
+		light.intensity = 1.0 * (intensity as float)  * (lightDistance * lightDistance)
+	)
+	else if(lightType == "VRaySun") then
+	(
+		local light = VRaySun()
 		light.intensity_multiplier = intensity * 0.0215
 	)
-	else
+	else if(lightType == "VRayLight") then
 	(
-		local lightFalloff = lightDistance + 5	
-		local light = TargetDirectionallight rgb:( color ( lightColorTokens[1] as float ) ( lightColorTokens[2] as float ) ( lightColorTokens[3] as float ) ) multiplier:( intensity as float) castShadows:on hotspot:lightDistance falloff:lightFalloff pos:[ ( xPos as float ),  ( yPos as float ), ( zPos as float ) ] target:lightTarget
+		local light = VRayLight()
+		light.color = lightColor
+		light.normalizeColor = 1
+		light.multiplier = 2.85 * (intensity as float) * (lightDistance * lightDistance)
+		light.size0 = 1 *  (lightDistance / 100)
+		light.size1 = 1 *  (lightDistance / 100)
+		light.subdivs = 24
+	)
+	else if(lightType == "VRayIES") then
+	(
+		local light = VRayIES()
+		light.color = lightColor
+		light.power = 11.5 * (intensity as float) * (lightDistance * lightDistance)
+		light.shape_subdivs = 24
+	)
+
+	if(lightType == "Direct" or lightType == "Spot" or lightType == "Omni" or lightType == "Photometric") then
+	(
+		light.rgb = lightColor
+		light.multiplier = (intensity as float)
 		light.shadowGenerator = VRayShadow()
 	)
 	
+	light.pos = [(xPos as float),  (yPos as float), (zPos as float)]
+	light.target = lightTarget
+
 	light.parent = sIBL_SCENE_NODES.lightsGroup
 
 	lightTarget.name = lightName + "_Target"
 	light.name = lightName
 )
 
-fn sIBL_3dsmax_VRay_createDynamicLights dynamicLights lightDistance =
+fn sIBL_3dsmax_VRay_createSun sunLightType sunColor sunMultiplier lightDistance sunU sunV =
+(
+	sIBL_3dsmax_VRay_getLight sunLightType "sIBL_Sun" sunColor sunMultiplier lightDistance sunU sunV
+)
+	
+fn sIBL_3dsmax_VRay_createDynamicLights dynamicLightsType dynamicLights lightDistance =
 (
 	local dynamicLightsTokens = filterString dynamicLights "|"
 
@@ -228,13 +275,8 @@ fn sIBL_3dsmax_VRay_createDynamicLights dynamicLights lightDistance =
 		local uCoordinate = dynamicLightsTokens[i+6] as float
 		local vCoordinate = dynamicLightsTokens[i+7] as float
 		
-		sIBL_3dsmax_VRay_getLight lightName lightColor intensity lightDistance uCoordinate vCoordinate False
+		sIBL_3dsmax_VRay_getLight dynamicLightsType lightName lightColor intensity lightDistance uCoordinate vCoordinate
 	)
-)
-
-fn sIBL_3dsmax_VRay_createSun sunColor sunMultiplier lightDistance sunU sunV asVraySun=
-(
-	sIBL_3dsmax_VRay_getLight "sIBL_Sun" sunColor sunMultiplier lightDistance sunU sunV asVraySun
 )
 	
 fn sIBL_3dsmax_VRay_getEnvironmentBranch branchName filePath =
@@ -272,7 +314,7 @@ fn sIBL_3dsmax_VRay_getClassicEnvironmentBranch branchName filePath =
 
 fn sIBL_3dsmax_VRay_setEnvironment createBackground createLighting createReflection backgroundFilePath lightingFilePath reflectionFilePath =
 (
-	if( createBackground == 1 ) then
+	if(createBackground == 1) then
 	(
 		local backgroundBranch = sIBL_3dsmax_VRay_getClassicEnvironmentBranch "sIBL_Background" backgroundFilePath
 		environmentMap = backgroundBranch
@@ -280,14 +322,14 @@ fn sIBL_3dsmax_VRay_setEnvironment createBackground createLighting createReflect
 		environmentMap.map.coordinates.mapping = 0
 	)
 	
-	if( createLighting == 1 ) then
+	if(createLighting == 1) then
 	(
 		local lightingBranch = sIBL_3dsmax_VRay_getEnvironmentBranch "sIBL_Lighting" lightingFilePath
 		renderers.current.environment_gi_on = True
 		renderers.current.environment_gi_map = lightingBranch
 	)
 	
-	if( createReflection == 1 ) then
+	if(createReflection == 1) then
 	(
 		local reflectionBranch = sIBL_3dsmax_VRay_getEnvironmentBranch "sIBL_Reflection" reflectionFilePath
 		renderers.current.environment_rr_on = True
@@ -301,17 +343,17 @@ fn sIBL_3dsmax_VRay_setEnvironment createBackground createLighting createReflect
 
 fn sIBL_3dsmax_VRay_connectFeedbackToSIBLShaders createBackground createLighting createReflection =
 (
-	if( createBackground == 1 ) then
+	if(createBackground == 1) then
 	(
 		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] environmentMap.map.coordinates[#U_Offset] "(Z_Rotation-(pi*2))*2/pi/4"
 	)
 	
-	if( createLighting == 1 ) then
+	if(createLighting == 1) then
 	(
 		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] renderers.current.environment_gi_map[#horizontalRotation] "-Z_Rotation+(pi/2)"
 	)
 	
-	if( createReflection == 1 ) then
+	if(createReflection == 1) then
 	(
 		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] renderers.current.environment_rr_map[#horizontalRotation] "-Z_Rotation+(pi/2)"
 		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] renderers.current.environment_refract_map[#horizontalRotation] "-Z_Rotation+(pi/2)"
@@ -320,7 +362,7 @@ fn sIBL_3dsmax_VRay_connectFeedbackToSIBLShaders createBackground createLighting
 
 fn sIBL_3dsmax_VRay_connectFeedbackToLights =
 (
-	if( sIBL_SCENE_NODES.lightsGroup != undefined ) then
+	if(sIBL_SCENE_NODES.lightsGroup != undefined) then
 	(
 		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] sIBL_SCENE_NODES.lightsGroup.rotation.controller[#Z_Rotation] "Z_Rotation"
 		paramWire.connect sIBL_SCENE_NODES.feedback.transform.controller[#Scale] sIBL_SCENE_NODES.lightsGroup.transform.controller[#Scale] "Scale"
@@ -329,12 +371,12 @@ fn sIBL_3dsmax_VRay_connectFeedbackToLights =
 
 fn sIBL_3dsmax_VRay_createGround currentScale shadowCatcher =
 (
-	local currentScale = currentScale * ( sqrt 2 )
+	local currentScale = currentScale * (sqrt 2)
 	local currentPlane = plane typeinCreationMethod:1 length:currentScale width:currentScale
 	currentPlane.backfacecull = on
 	currentPlane.parent = sIBL_SCENE_NODES.datasGroup
 	
-	if( shadowCatcher == 1) then
+	if(shadowCatcher == 1) then
 	(
 		local groundShader = VRayMtlWrapper name:"sIBL_GroundShader"
 		groundShader.baseMtl = VRayMtl  name:"sIBL_GroundShader_Base"
@@ -343,7 +385,7 @@ fn sIBL_3dsmax_VRay_createGround currentScale shadowCatcher =
 		groundShader.alphaContribution = -1
 		groundShader.matte_shadowsAffectAlpha = on
 		
-		for property in #( "VRay_GI_VisibleToGI", "VRay_GI_VisibleToReflections", "VRay_GI_VisibleToRefractions" ) do
+		for property in #("VRay_GI_VisibleToGI", "VRay_GI_VisibleToReflections", "VRay_GI_VisibleToRefractions") do
 			setUserProp currentPlane property false
 	)
 	else
@@ -359,7 +401,7 @@ fn sIBL_3dsmax_VRay_createGround currentScale shadowCatcher =
 fn sIBL_3dsmax_VRay_activateLinearWorkflow createBackground =
 (
 	renderers.current.colorMapping_gamma = 2.2
-	if( createBackground == 1 ) then
+	if(createBackground == 1) then
 	(
 		environmentMap.lightnessMode = 1
 		environmentMap.gammaRGB = 1/2.2
@@ -368,15 +410,15 @@ fn sIBL_3dsmax_VRay_activateLinearWorkflow createBackground =
 
 fn sIBL_3dsmax_VRay_setup  =
 (
-	if( vray != undefined ) then
+	if(vray != undefined) then
 	(
-		if( sIBL_3dsmax_preProcessCallback != undefined ) then
+		if(sIBL_3dsmax_preProcessCallback != undefined) then
 		(
 			print "sIBL_GUI | Executing Overall Preprocess Callback!"
 			sIBL_3dsmax_preProcessCallback()
 		)
 
-		if( sIBL_3dsmax_VRay_preProcessCallback != undefined ) then
+		if(sIBL_3dsmax_VRay_preProcessCallback != undefined) then
 		(
 			print "sIBL_GUI | Executing Template Specific Preprocess Callback!"
 			sIBL_3dsmax_VRay_preProcessCallback()
@@ -390,43 +432,43 @@ fn sIBL_3dsmax_VRay_setup  =
 
 		sIBL_3dsmax_VRay_activateVRay()
 		
-		if( sIBL_OPTIONS.hideLights == 1 ) then
+		if(sIBL_OPTIONS.hideLights == 1) then
 			sIBL_3dsmax_VRay_hideLights()
 
 		sIBL_3dsmax_VRay_getSIBLGroup()
 	
-		if( sIBL_OPTIONS.displayFeedback == 1 ) then
+		if(sIBL_OPTIONS.displayFeedback == 1) then
 			sIBL_3dsmax_VRay_getFeedback sIBL_OPTIONS.feedbackRadius sIBL_OPTIONS.createBackground sIBL_DATAS.backgroundFilePath
 
 		sIBL_3dsmax_VRay_setEnvironment sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection sIBL_DATAS.backgroundFilePath sIBL_DATAS.lightingFilePath sIBL_DATAS.reflectionFilePath
 		
-		if( sIBL_OPTIONS.displayFeedback == 1 ) then
+		if(sIBL_OPTIONS.displayFeedback == 1) then
 			sIBL_3dsmax_VRay_connectFeedbackToSIBLShaders  sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection
 		
-		if( sIBL_OPTIONS.createSun == 1 and sIBL_DATAS.sunU != -1 and sIBL_DATAS.sunV != -1 ) then
-			sIBL_3dsmax_VRay_createSun sIBL_DATAS.sunColor sIBL_DATAS.sunMultiplier sIBL_OPTIONS.feedbackRadius sIBL_DATAS.sunU sIBL_DATAS.sunV sIBL_OPTIONS.sunAsVraySun
+		if(sIBL_OPTIONS.createSun == 1 and sIBL_DATAS.sunU != -1 and sIBL_DATAS.sunV != -1) then
+			sIBL_3dsmax_VRay_createSun sIBL_OPTIONS.sunLightType sIBL_DATAS.sunColor sIBL_DATAS.sunMultiplier sIBL_OPTIONS.feedbackRadius sIBL_DATAS.sunU sIBL_DATAS.sunV
 	
-		if( sIBL_OPTIONS.createLights == 1 and sIBL_DATAS.dynamicLights != "-1" ) then
-			sIBL_3dsmax_VRay_createDynamicLights sIBL_DATAS.dynamicLights sIBL_OPTIONS.feedbackRadius
+		if(sIBL_OPTIONS.createLights == 1 and sIBL_DATAS.dynamicLights != "-1") then
+			sIBL_3dsmax_VRay_createDynamicLights sIBL_OPTIONS.dynamicLightsType sIBL_DATAS.dynamicLights sIBL_OPTIONS.feedbackRadius
 		
-		if( sIBL_OPTIONS.displayFeedback == 1 ) then
+		if(sIBL_OPTIONS.displayFeedback == 1) then
 			sIBL_3dsmax_VRay_connectFeedbackToLights()
 
-		if( sIBL_OPTIONS.createGround == 1 ) then
+		if(sIBL_OPTIONS.createGround == 1) then
 			sIBL_3dsmax_VRay_createGround sIBL_OPTIONS.feedbackRadius sIBL_OPTIONS.shadowCatcher
 		
-		if( sIBL_OPTIONS.activateLinearWorkflow == 1 ) then
+		if(sIBL_OPTIONS.activateLinearWorkflow == 1) then
 			sIBL_3dsmax_VRay_activateLinearWorkflow sIBL_OPTIONS.createBackground
 
 		print "sIBL_GUI | sIBL File Import Finished!"
 
-		if( sIBL_3dsmax_postProcessCallback != undefined ) then
+		if(sIBL_3dsmax_postProcessCallback != undefined) then
 		(
 			print "sIBL_GUI | Executing Overall Postprocess Callback!"
 			sIBL_3dsmax_postProcessCallback()
 		)
 
-		if( sIBL_3dsmax_VRay_postProcessCallback != undefined ) then
+		if(sIBL_3dsmax_VRay_postProcessCallback != undefined) then
 		(
 			print "sIBL_GUI | Executing Template Specific Postprocess Callback!"
 			sIBL_3dsmax_VRay_postProcessCallback()
