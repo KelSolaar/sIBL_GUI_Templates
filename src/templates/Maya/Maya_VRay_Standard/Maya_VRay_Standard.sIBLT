@@ -3,7 +3,7 @@ Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Standard Template Manual.html | String | Help File
 Release = @Release | 1.2.6 | String | Template Release
-Date = @Date | 22 February 2011 | String | Date
+Date = @Date | 23 February 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -652,13 +652,13 @@ global proc sIBL_Maya_VRay_getLight(string $lightType, string $lightName, float 
 		case "VRaySphere":
 			setAttr ($light + ".intensityMult") (10000 * $intensity);
 			setAttr ($light + ".radius") (1.0 * ($scale / 10));
-			setAttr ($light + ".subdivs") 32;
+			setAttr ($light + ".subdivs") 24;
 			break;
 		case "VRayRect":
 			setAttr ($light + ".intensityMult") (7500 * $intensity);
 			setAttr ($light + ".uSize") (1.0 * ($scale / 10));
 			setAttr ($light + ".vSize") (1.0 * ($scale / 10));
-			setAttr ($light + ".subdivs") 32;
+			setAttr ($light + ".subdivs") 24;
 			break;
 		case "VRayIES":
 			setAttr ($light + ".intensityMult") $intensity;
