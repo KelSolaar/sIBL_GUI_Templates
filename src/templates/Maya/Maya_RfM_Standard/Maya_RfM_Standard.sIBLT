@@ -2,8 +2,8 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard Template Manual.html | String | Help File
-Release = @Release | 1.1.5 | String | Template Release
-Date = @Date | 22 February 2011 | String | Date
+Release = @Release | 1.1.6 | String | Template Release
+Date = @Date | 24 February 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -44,7 +44,7 @@ createGround = @createGround | 1 | Boolean | Create Ground
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
-activateRaytracing = @activateRaytracing | 1 | Boolean | Activate Raytracing
+shadowsType = @shadowsType | Raytraced;Shadow Maps;Deep Shadow Maps | Enum | Shadows Type
 activateColorBleeding = @activateColorBleeding | 1 | Boolean | Activate Color Bleeding
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
@@ -89,7 +89,7 @@ int $createGround = @createGround;
 int $hideLights = @hideLights;
 string $sunLightType = "@sunLightType";
 string $dynamicLightsType = "@dynamicLightsType";
-int $activateRaytracing = @activateRaytracing;
+string $shadowsType = "@shadowsType";
 int $activateColorBleeding = @activateColorBleeding;
 int $activateLinearWorkflow = @activateLinearWorkflow;
 
@@ -120,7 +120,7 @@ sIBL_Maya_RfM_setup($backgroundFilePath,
 		$hideLights,
 		$sunLightType,
 		$dynamicLightsType,
-		$activateRaytracing,
+		$shadowsType,
 		$activateColorBleeding,
 		$activateLinearWorkflow);
 
@@ -151,7 +151,7 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 			int $hideLights,
 			string $sunLightType,
 			string $dynamicLightsType,
-			int $activateRaytracing,
+			string $shadowsType,
 			int $activateColorBleeding,
 			int $activateLinearWorkflow)
 {
@@ -205,7 +205,7 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 		{
 			if ($createSun)
 			{
-				sIBL_Maya_RfM_getSun($sunLightType, $sunU, $sunV, $sunColor, $sunMultiplier, $feedbackRadius);
+				sIBL_Maya_RfM_getSun($sunLightType, $shadowsType, $sunU, $sunV, $sunColor, $sunMultiplier, $feedbackRadius);
 			}
 		}
 
@@ -213,7 +213,7 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 		{
 			if ($createLights)
 			{
-				sIBL_Maya_RfM_getDynamicLights($dynamicLightsType, $dynamicLights, $feedbackRadius);
+				sIBL_Maya_RfM_getDynamicLights($dynamicLightsType, $shadowsType, $dynamicLights, $feedbackRadius);
 			}
 		}
 
@@ -223,7 +223,7 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 		if($createGround)
 			sIBL_Maya_RfM_getGround($feedbackRadius);
 
-		if ($activateRaytracing)
+		if ($shadowsType == "Raytraced")
 			sIBL_Maya_RfM_activateRaytracing();
 
 		if ($activateLinearWorkflow)
@@ -684,7 +684,7 @@ global proc string sIBL_Maya_RfM_getLigthsTargetLocator()
 	return $sIBL_Lights_Target_Locator[0];
 }
 
-global proc sIBL_Maya_RfM_getLight(string $lightType, string $lightName, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
+global proc sIBL_Maya_RfM_getLight(string $lightType, string $shadowsType, string $lightName, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
 {
 	switch($lightType)
 	{
@@ -710,7 +710,31 @@ global proc sIBL_Maya_RfM_getLight(string $lightType, string $lightName, float $
 	setAttr ($light + ".locatorScale") $scale;
 	setAttr -type double3 ($light + ".color") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
 	setAttr ($light + ".intensity") $intensity;
-	setAttr ($light + ".useRayTraceShadows") 1;
+	
+	if($shadowsType == "Raytraced")
+	{
+		setAttr ($light + ".useRayTraceShadows") 1;
+	}
+	else
+	{
+		setAttr ($light + ".useDepthMapShadows") 1;
+		setAttr ($light + ".dmapResolution") 4096;
+		
+		string $lightShapes[] = sIBL_Maya_RfM_getShapes($light);
+		if($lightType != "Area")
+		{
+			sIBL_Maya_RfM_addShadowsAttributes($lightShapes[0]);
+			if($shadowsType == "Shadow Maps")
+				$shadowsType = "Shadow";
+			else
+				$shadowsType = "DeepShadow";
+			rmanSetAttr($lightShapes[0], "rman__dmap_DefaultPassClass", $shadowsType);
+		}
+		else
+		{
+			sIBL_Maya_RfM_addSoftShadowsAttributes($lightShapes[0]);
+		}
+	}
 
 	switch($lightType)
 	{
@@ -747,12 +771,12 @@ global proc sIBL_Maya_RfM_getLight(string $lightType, string $lightName, float $
 	rename $constraint[0] ($lightName + "_" + `nodeType $constraint[0]`);
 }
 
-global proc sIBL_Maya_RfM_getSun(string $sunLightType, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
+global proc sIBL_Maya_RfM_getSun(string $sunLightType, string $shadowsType, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
 {
-	sIBL_Maya_RfM_getLight($sunLightType, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
+	sIBL_Maya_RfM_getLight($sunLightType, $shadowsType, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
 }
 
-global proc sIBL_Maya_RfM_getDynamicLights(string $dynamicLightsType, string $compactedDynamicLights, float $feedbackRadius)
+global proc sIBL_Maya_RfM_getDynamicLights(string $dynamicLightsType, string $shadowsType, string $compactedDynamicLights, float $feedbackRadius)
 {
 	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
 	string $feedback[] = `ls -fl "sIBL_Feedback"`;
@@ -763,8 +787,38 @@ global proc sIBL_Maya_RfM_getDynamicLights(string $dynamicLightsType, string $co
 	for($i=0; $i<size($dynamicLights); $i+=8)
 	{
 		float $color[] = {float($dynamicLights[$i + 2]), float($dynamicLights[$i + 3]), float($dynamicLights[$i + 4])};
-		sIBL_Maya_RfM_getLight($dynamicLightsType, "sIBL_DKL_" + $dynamicLights[$i + 1], ($feedbackRadius / 15), $color, float($dynamicLights[$i + 5]), float($dynamicLights[$i + 6]), float($dynamicLights[$i + 7]));
+		sIBL_Maya_RfM_getLight($dynamicLightsType, $shadowsType, "sIBL_DKL_" + $dynamicLights[$i + 1], ($feedbackRadius / 15), $color, float($dynamicLights[$i + 5]), float($dynamicLights[$i + 6]), float($dynamicLights[$i + 7]));
 	}
+}
+
+global proc sIBL_Maya_RfM_addShadowsAttributes(string $light)
+{
+	string $attrnm=`rmanGetAttrName rman__dmap_DefaultPassClass`;
+	rmanAddAttr $light $attrnm "DeepShadow";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapBias`;
+	rmanAddAttr $light $attrnm "0.1";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapSamples`;
+	rmanAddAttr $light $attrnm "16";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapFilterSize`;
+	rmanAddAttr $light $attrnm "1";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapFilter`;
+	rmanAddAttr $light $attrnm "gaussian";
+	string $attrnm=`rmanGetAttrName rman__TransmissionSubset`;
+	rmanAddAttr $light $attrnm "shadow";
+}
+
+global proc sIBL_Maya_RfM_addSoftShadowsAttributes(string $light)
+{
+	string $attrnm=`rmanGetAttrName rman__dmap_DefaultPassClass`;
+	rmanAddAttr $light $attrnm "MinMaxShadow";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapBias`;
+	rmanAddAttr $light $attrnm "0.1";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapGapBias`;
+	rmanAddAttr $light $attrnm "0.1";
+	string $attrnm=`rmanGetAttrName rman__ShadowMapSamples`;
+	rmanAddAttr $light $attrnm "32";
+	string $attrnm=`rmanGetAttrName rman__TransmissionSubset`;
+	rmanAddAttr $light $attrnm "shadow";
 }
 
 global proc sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders(string $target)

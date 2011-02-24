@@ -32,9 +32,9 @@ h3. Additional Attributes
 * *Hide Lights*: Hides all current Scene lights.
 * *Sun Light Type*: Create the Sun as one of these lights type: "Directional", "Area", "Spot", "Point".
 * *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point".
+* *Shadows Type*: Defines the shadows as one of type : "Raytraced", "Shadow Maps", "Deep Shadow Maps".
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
-* *Activate Raytracing*: Raytracing is activated in the current Scene.
-* *Activate Color Bleeding*: Color Bleeding is activated in the Diffuse Environment Ligth and the associated Radiosity Bake Pass is created and connected to the related Environment Light.
+* *Activate Color Bleeding*: Color Bleeding is activated in the Diffuse Environment Light and the associated Radiosity Bake Pass is created and connected to the related Environment Light.
 
 h3. Scene Components
 
