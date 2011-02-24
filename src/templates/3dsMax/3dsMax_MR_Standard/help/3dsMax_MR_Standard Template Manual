@@ -30,8 +30,8 @@ h3. Additional Attributes
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A Matte_Shadow_Reflection__mi Shader is assigned to the Ground.
 * *Hide Lights*: Hides all current Scene lights.
-* *Sun Light Type*: Create the Sun as one of these lights type: "mrSun", "Direct", "Spot", "Omni", "Photometric", "mrAreaSpot", "mrAreaOmni".
-* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Direct", "Spot", "Omni", "Photometric", "mrSun", "mrAreaSpot", "mrAreaOmni".
+* *Sun Light Type*: Creates the Sun as one of these lights type: "mrSun", "Direct", "Spot", "Omni", "Photometric", "mrAreaSpot", "mrAreaOmni".
+* *Dynamic Lights Type*: Creates the Dynamics Lights as one of these lights type: "Direct", "Spot", "Omni", "Photometric", "mrSun", "mrAreaSpot", "mrAreaOmni".
 * *Activate Linear Workflow*: Connect a Utility_Gamma___Gain__mi Shader to the current Render Settings Lens Shader slot.
 
 h2(#ChangeLog). Change Log

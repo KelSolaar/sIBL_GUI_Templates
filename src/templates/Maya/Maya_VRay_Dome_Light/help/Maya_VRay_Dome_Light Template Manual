@@ -32,8 +32,8 @@ h3. Additional Attributes
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A VRayObjectProperties Node is assigned to the Ground.
 * *Hide Lights*: Hides all current Scene lights.
-* *Sun Light Type*: Create the Sun as one of these lights type: "VRaySun", "Directional", "Area", "Spot", "Point", "VRaySphere", "VRayRect", "VRayIES".
-* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point", "VRaySun", "VRaySphere", "VRayRect", "VRayIES".
+* *Sun Light Type*: Creates the Sun as one of these lights type: "VRaySun", "Directional", "Area", "Spot", "Point", "VRaySphere", "VRayRect", "VRayIES".
+* *Dynamic Lights Type*: Creates the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point", "VRaySun", "VRaySphere", "VRayRect", "VRayIES".
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 
 h3. Scene Components

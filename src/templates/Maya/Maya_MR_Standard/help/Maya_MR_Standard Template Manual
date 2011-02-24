@@ -32,8 +32,8 @@ h3. Additional Attributes
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A mip_matteshadow Shader is assigned to the Ground.
 * *Hide Lights*: Hides all current Scene lights.
-* *Sun Light Type*: Create the Sun as one of these lights type: "Directional", "Area", "Spot", "Point".
-* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point".
+* *Sun Light Type*: Creates the Sun as one of these lights type: "Directional", "Area", "Spot", "Point".
+* *Dynamic Lights Type*: Creates the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point".
 * *Physical Sun*: The Sun is created with a mia_physicalsun shader.
 * *Activate Final* Gather: Final Gathering is activated in the current Scene.
 * *Activate Linear Workflow*: Connect a mia_exposure_simple shader in current / selected Camera(s).

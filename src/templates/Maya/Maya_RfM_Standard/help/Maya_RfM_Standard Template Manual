@@ -30,8 +30,8 @@ h3. Additional Attributes
 * *Display Feedback*: Displays a viewport Visual Feedback with the current IBL LDR Background image.
 * *Create Ground*: A Plane is added to the Scene.
 * *Hide Lights*: Hides all current Scene lights.
-* *Sun Light Type*: Create the Sun as one of these lights type: "Directional", "Area", "Spot", "Point".
-* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point".
+* *Sun Light Type*: Creates the Sun as one of these lights type: "Directional", "Area", "Spot", "Point".
+* *Dynamic Lights Type*: Creates the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point".
 * *Shadows Type*: Defines the shadows as one of type : "Raytraced", "Shadow Maps", "Deep Shadow Maps".
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 * *Activate Color Bleeding*: Color Bleeding is activated in the Diffuse Environment Light and the associated Radiosity Bake Pass is created and connected to the related Environment Light.
