@@ -35,10 +35,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Turtle_St
 Comment = "Maya Turtle Template: Implement Lights Types Support."
 
 [Maya_RfM_Standard]
-Release = 1.1.5
+Release = 1.1.6
 Type = "Stable"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Stable/Maya_RfM_Standard.zip"
-Comment = "Renderman For Maya Template: Implement Lights Types Support."
+Comment = "Renderman For Maya Template: Implement Shadows Types Support."
 
 [3dsMax_MR_Standard]
 Release = 1.0.8
