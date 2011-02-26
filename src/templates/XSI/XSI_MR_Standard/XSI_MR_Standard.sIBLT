@@ -2,8 +2,8 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_MR_Standard Template Manual.html | String | Help File
-Release = @Release | 1.6.9 | String | Template Release
-Date = @Date | 22 February 2010 | String | Date
+Release = @Release | 1.7.0 | String | Template Release
+Date = @Date | 26 February 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -13,7 +13,7 @@ Renderer = @Renderer | Mental Ray | String | Renderer
 OutputScript = @OutputScript | sIBL_XSI_Import.js | String | Output Script
 Comment = @Comment | This is XSI 7.0 To 2010 Mental Ray Template. | String | Comment
 
-[sIBL File Attributes]
+[Ibl Set Attributes]
 Background|BGfile = @BGfile
 Enviroment|EVfile = @EVfile
 Enviroment|EVmulti = @EVmulti
@@ -893,11 +893,11 @@ function sIBL_XSI_MR_update_lightsConstraints(light, scale, uCoordinate, vCoordi
 	for (var i = 0; i < subComponentsList.length; i++) 
 		globalKinematics(subComponentsList[i]).value = scale;
 	
-	var constraintslist = light.Kinematics.Constraints;
+	var constraints = light.Kinematics.Constraints;
 	
-	for (var k = 0; k < constraintslist.Count; k++) 
+	for (var k = 0; k < constraints.Count; k++) 
 	{
-		var constraint = constraintslist(k);
+		var constraint = constraints(k);
 		if (constraint.Type == "surfcns") 
 		{
 			// U -> V & V -> U Because Of The Invert Normal.
@@ -967,9 +967,9 @@ function sIBL_XSI_MR_update_dynamicsLights(dynamicLightsType, dynamicLights, fee
 	}
 }
 
-function sIBL_XSI_MR_getLight(parent, constraintParent, lightType, lightName, scale, physicalSun, intensity, color, uCoordinate, vCoordinate)
+function sIBL_XSI_MR_getLight(parent, constraintParent, type, name, scale, physicalSun, intensity, color, uCoordinate, vCoordinate)
 {
-	switch(lightType)
+	switch(type)
 	{
 		case "Infinite":
 			var primitiveType = "Infinite";
@@ -985,7 +985,7 @@ function sIBL_XSI_MR_getLight(parent, constraintParent, lightType, lightName, sc
 			break;
 	}
 
-	var light = ActiveSceneRoot.AddPrimitive(primitiveType + ".Preset", lightName);
+	var light = ActiveSceneRoot.AddPrimitive(primitiveType + ".Preset", name);
 	parent.AddChild(light);
 	
 	var globalKinematics = light.Kinematics.Global.Parameters;
@@ -1027,10 +1027,10 @@ function sIBL_XSI_MR_getLight(parent, constraintParent, lightType, lightName, sc
 	
 	var directionConstraint = ApplyCns("Direction", light, lightTarget);
 	
-	var constraintslist = light.Kinematics.Constraints;
-	for (var i = 0; i < constraintslist.Count; i++) 
+	var constraints = light.Kinematics.Constraints;
+	for (var i = 0; i < constraints.Count; i++) 
 	{
-		var constraint = constraintslist(i);
+		var constraint = constraints(i);
 		if (constraint.Type == "surfcns") 
 		{
 			// U -> V & V -> U Because Of The Invert Normal.
@@ -1190,7 +1190,7 @@ function sIBL_XSI_MR_objectExists(object)
 		return false
 }
 
-function sIBL_XSI_MR_commandExists( command )
+function sIBL_XSI_MR_commandExists(command)
 {
 	var commands = Application.Commands;
 

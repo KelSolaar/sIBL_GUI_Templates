@@ -2,8 +2,8 @@
 Name = @Name | Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Dome_Light Template Manual.html | String | Help File
-Release = @Release | 1.2.6 | String | Template Release
-Date = @Date | 23 February 2011 | String | Date
+Release = @Release | 1.2.7 | String | Template Release
+Date = @Date | 26 February 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -13,7 +13,7 @@ Renderer = @Renderer |VRay | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.mel | String | Output Script
 Comment = @Comment | This is Maya 2009 To 2011 VRay Dome Light Template. | String | Comment
 
-[sIBL File Attributes]
+[Ibl Set Attributes]
 Background|BGfile = @BGfile
 Background|BGheight = @BGheight
 Enviroment|EVfile = @EVfile
@@ -609,9 +609,9 @@ global proc string sIBL_Maya_VRay_DLight_getLigthsTargetLocator()
 	return $sIBL_Lights_Target_Locator[0];
 }
 
-global proc sIBL_Maya_VRay_DLight_getLight(string $lightType, string $lightName, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
+global proc sIBL_Maya_VRay_DLight_getLight(string $type, string $name, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
 {
-	switch($lightType)
+	switch($type)
 	{
 		case "Area":
 			string $primitiveType = "areaLight";
@@ -644,7 +644,7 @@ global proc sIBL_Maya_VRay_DLight_getLight(string $lightType, string $lightName,
 
 		string $light = `shadingNode -asLight $primitiveType`;
 
-	if($lightType == "Area" || $lightType == "Directional" || $lightType == "Point" || $lightType == "Spot" )
+	if($type == "Area" || $type == "Directional" || $type == "Point" || $type == "Spot" )
 	{
 		setAttr ($light + ".locatorScale") $scale;
 		setAttr -type double3 ($light + ".color") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
@@ -652,10 +652,10 @@ global proc sIBL_Maya_VRay_DLight_getLight(string $lightType, string $lightName,
 		setAttr ($light + ".useRayTraceShadows") 1;
 	}
 
-	if($lightType == "VRaySphere" || $lightType == "VRayRect" || $lightType == "VRayIES")
+	if($type == "VRaySphere" || $type == "VRayRect" || $type == "VRayIES")
 		setAttr -type double3 ($light + ".lightColor") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
 
-	switch($lightType)
+	switch($type)
 	{
 		case "Area":
 			setAttr($light + ".areaLight") 1;
@@ -703,14 +703,14 @@ global proc sIBL_Maya_VRay_DLight_getLight(string $lightType, string $lightName,
 
 	sIBL_Maya_VRay_DLight_addToDisplayLayer("sIBL_Lighting_Layer", $light);
 
-	rename $light $lightName;
-	rename $pointOnSurfaceInfo ($lightName + "_" + `nodeType $pointOnSurfaceInfo`);
-	rename $constraint[0] ($lightName + "_" + `nodeType $constraint[0]`);
+	rename $light $name;
+	rename $pointOnSurfaceInfo ($name + "_" + `nodeType $pointOnSurfaceInfo`);
+	rename $constraint[0] ($name + "_" + `nodeType $constraint[0]`);
 }
 
-global proc sIBL_Maya_VRay_DLight_getSun(string $lightType, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
+global proc sIBL_Maya_VRay_DLight_getSun(string $type, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
 {
-	sIBL_Maya_VRay_getLight($lightType, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
+	sIBL_Maya_VRay_getLight($type, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
 }
 
 global proc sIBL_Maya_VRay_DLight_getDynamicLights(string $dynamicLightsType, string $compactedDynamicLights, float $feedbackRadius)

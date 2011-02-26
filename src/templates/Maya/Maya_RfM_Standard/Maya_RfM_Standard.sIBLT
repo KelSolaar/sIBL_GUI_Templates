@@ -2,8 +2,8 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard Template Manual.html | String | Help File
-Release = @Release | 1.1.6 | String | Template Release
-Date = @Date | 24 February 2011 | String | Date
+Release = @Release | 1.1.7 | String | Template Release
+Date = @Date | 26 February 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -13,7 +13,7 @@ Renderer = @Renderer | RfM | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.mel | String | Output Script
 Comment = @Comment | This is Renderman For Maya 2008 To 2011 Template. | String | Comment
 
-[sIBL File Attributes]
+[Ibl Set Attributes]
 Background|BGfile = @BGfile
 Background|BGheight = @BGheight
 Enviroment|EVfile = @EVfile
@@ -684,9 +684,9 @@ global proc string sIBL_Maya_RfM_getLigthsTargetLocator()
 	return $sIBL_Lights_Target_Locator[0];
 }
 
-global proc sIBL_Maya_RfM_getLight(string $lightType, string $shadowsType, string $lightName, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
+global proc sIBL_Maya_RfM_getLight(string $type, string $shadowsType, string $name, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
 {
-	switch($lightType)
+	switch($type)
 	{
 		case "Area":
 			string $primitiveType = "areaLight";
@@ -721,7 +721,7 @@ global proc sIBL_Maya_RfM_getLight(string $lightType, string $shadowsType, strin
 		setAttr ($light + ".dmapResolution") 4096;
 		
 		string $lightShapes[] = sIBL_Maya_RfM_getShapes($light);
-		if($lightType != "Area")
+		if($type != "Area")
 		{
 			sIBL_Maya_RfM_addShadowsAttributes($lightShapes[0]);
 			if($shadowsType == "Shadow Maps")
@@ -736,7 +736,7 @@ global proc sIBL_Maya_RfM_getLight(string $lightType, string $shadowsType, strin
 		}
 	}
 
-	switch($lightType)
+	switch($type)
 	{
 		case "Area":
 			setAttr($light + ".areaLight") 1;
@@ -766,9 +766,9 @@ global proc sIBL_Maya_RfM_getLight(string $lightType, string $shadowsType, strin
 
 	sIBL_Maya_RfM_addToDisplayLayer("sIBL_Lighting_Layer", $light);
 
-	rename $light $lightName;
-	rename $pointOnSurfaceInfo ($lightName + "_" + `nodeType $pointOnSurfaceInfo`);
-	rename $constraint[0] ($lightName + "_" + `nodeType $constraint[0]`);
+	rename $light $name;
+	rename $pointOnSurfaceInfo ($name + "_" + `nodeType $pointOnSurfaceInfo`);
+	rename $constraint[0] ($name + "_" + `nodeType $constraint[0]`);
 }
 
 global proc sIBL_Maya_RfM_getSun(string $sunLightType, string $shadowsType, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
