@@ -111,7 +111,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 
 		if (sIBL_XSI_MR_commandExists("sIBL_XSI_MR_preProcessCommand"))
 		{
-			print("sIBL_GUI | Executing Template Specific Preprocess Command!");
+			LogMessage("sIBL_GUI | Executing Template Specific Preprocess Command!");
 			sIBL_XSI_MR_preProcessCommand();
 		}
 
@@ -311,7 +311,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultipl
 
 				if (sIBL_XSI_MR_commandExists("sIBL_XSI_MR_postProcessCommand"))
 				{
-					print("sIBL_GUI | Executing Template Specific Postprocess Command!");
+					LogMessage("sIBL_GUI | Executing Template Specific Postprocess Command!");
 					sIBL_XSI_MR_postProcessCommand();
 				}
 			}
@@ -908,6 +908,7 @@ function sIBL_XSI_MR_update_lightsConstraints(light, scale, uCoordinate, vCoordi
 		{
 			constraint.Parameters("dirx").Value = 0;
 			constraint.Parameters("dirz").Value = -1;
+			constraint.Parameters("upvct_active").Value = 1;
 		}
 	}
 }
