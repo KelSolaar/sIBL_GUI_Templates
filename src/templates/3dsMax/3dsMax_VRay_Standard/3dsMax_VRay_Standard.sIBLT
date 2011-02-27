@@ -25,18 +25,18 @@ Lights|DynamicLights = @dynamicLights
 
 [Common Attributes]
 createBackground = @createBackground | 1 | Boolean | Create Background
-createLighting = @createLighting | 1 | Boolean | Create Lighting
 createReflection = @createReflection | 1 | Boolean | Create Reflection
+createLighting = @createLighting | 1 | Boolean | Create Lighting
 createSun = @createSun | 1 | Boolean | Create Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
 displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
-createGround = @createGround | 1 | Boolean | Create Ground
-shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
-hideLights = @hideLights | 1 | Boolean | Hide Lights
 sunLightType = @sunLightType | VRaySun;Direct;Spot;Omni;Photometric;VRayLight;VRayIES | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Direct;Spot;Omni;Photometric;VRaySun;VRayLight;VRayIES | Enum | Dynamic Lights Type
+hideLights = @hideLights | 1 | Boolean | Hide Lights
+createGround = @createGround | 1 | Boolean | Create Ground
+shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
 [Remote Connection]

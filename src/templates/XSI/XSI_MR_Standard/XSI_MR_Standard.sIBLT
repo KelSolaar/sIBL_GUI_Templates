@@ -31,24 +31,24 @@ Lights|DynamicLights = @dynamicLights
 
 [Common Attributes]
 createBackground = @createBackground | 1 | Boolean | Create / Update Background
-createLighting = @createLighting | 1 | Boolean | Create / Update Lighting
 createReflection = @createReflection | 1 | Boolean | Create / Update Reflection
+createLighting = @createLighting | 1 | Boolean | Create / Update Lighting
 createSun = @createSun | 1 | Boolean | Create / Update Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
-displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
-createGround = @createGround | 1 | Boolean | Create Ground
-shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
-hideLights = @hideLights | 1 | Boolean | Hide Lights
-sunLightType = @sunLightType | Infinite;Light Box;Spot;Point | Enum | Sun Light Type
-dynamicLightsType = @dynamicLightsType | Infinite;Light Box;Spot;Point | Enum | Dynamic Lights Type
-physicalSun = @physicalSun | 1 | Boolean | Physical Sun
-activateFinalGather = @activateFinalGather | 1 | Boolean | Activate Final Gather
-activateColorManagement = @activateColorManagement | 1 | Boolean | Activate Color Management
 showPassesDialog = @showPassesDialog | 0 | Boolean | Passes Selection Dialog
 updateScene = @updateScene | 0 | Boolean | Update Scene
 overrideTweaks = @overrideTweaks | 0 | Boolean | Override User Tweaks
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
+sunLightType = @sunLightType | Infinite;Light Box;Spot;Point | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Infinite;Light Box;Spot;Point | Enum | Dynamic Lights Type
+hideLights = @hideLights | 1 | Boolean | Hide Lights
+createGround = @createGround | 1 | Boolean | Create Ground
+shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
+physicalSun = @physicalSun | 1 | Boolean | Physical Sun
+activateFinalGather = @activateFinalGather | 1 | Boolean | Activate Final Gather
+activateColorManagement = @activateColorManagement | 1 | Boolean | Activate Color Management
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type

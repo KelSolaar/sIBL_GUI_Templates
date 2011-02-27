@@ -18,23 +18,23 @@ h2(#Options). Options
 
 h3. Common Attributes
 
-* *Create / Update Lights*: Creates / Updates the sIBL Dynamics Lights.
 * *Create / Update Background*: Creates / Updates the Background Environment Branch of the Raytype Shader ( Using the High Resolution LDR file of the current IBL Set ).
 * *Create / Update Reflection*: Creates / Updates the Reflection Environment Branch of the Raytype Shader ( Using the Reflection HDR file of the current IBL Set ).
 * *Create / Update Lighting*: Creates / Updates the Lighting Environment Branch of the Raytype Shader ( Using the Lighting HDR file of the current IBL Set ).
 * *Create / Update Sun*: Creates / Updates the light used as Sun.
+* *Create / Update Lights*: Creates / Updates the sIBL Dynamics Lights.
 
 h3. Additional Attributes
 
+* *Passes Selection Dialog*: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the IBL.
 * *Override User Tweaks*: User tweaks on the Scene IBL Setup will be be overriden when updating the Scene.
 * *Update Scene*: Updates the Scene IBL Setup with the new provided informations, this option works with the "Override User Tweaks" one, there is a lot of possibilities available, it's possible to mix different IBL with those 2 options.
-* *Passes Selection Dialog*: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the IBL.
 * *Display Feedback*: Displays a viewport Visual Feedback with the current IBL LDR Background image.
-* *Create Ground*: A Grid is added to the Scene.
-* *Ground Shadow Catcher*: A mip_Matte_Shadow Shader is assigned to the Ground ( Unlike Maya, in Softimage, the Background is made Transparent so it's possible to see behind the Ground Plane, object crossing through will be visible ).
-* *Hide Lights*: Hides all current Scene lights.
 * *Sun Light Type*: Creates the Sun as one of these lights type: "Infinite", "Light Box", "Spot", "Point".
 * *Dynamic Lights Type*: Creates the Dynamics Lights as one of these lights type: "Infinite", "Light Box", "Spot", "Point".
+* *Hide Lights*: Hides all current Scene lights.
+* *Create Ground*: A Grid is added to the Scene.
+* *Ground Shadow Catcher*: A mip_Matte_Shadow Shader is assigned to the Ground ( Unlike Maya, in Softimage, the Background is made Transparent so it's possible to see behind the Ground Plane, object crossing through will be visible ).
 * *Physical Sun*: The Sun is created with a mia_Physical_Sun shader instead of the default soft_light one.
 * *Activate Final Gather*: Ambiant Lighting ( Ambience ) of the scene is desactivated and Final Gathering is set for the current / selected Pass(es).
 * *Activate Color Management*: Activates Softimage 7.0 Color Management ( Preferences > Display > Color Management ).

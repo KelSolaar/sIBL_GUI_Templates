@@ -19,21 +19,21 @@ h2(#Options). Options
 
 h3. Common Attributes
 
-* *Create Lights*: Creates the sIBL Dynamics Lights.
 * *Create Background*: Creates the Background Environment Branch of the Raytype Shader ( Using the High Resolution LDR file of the current IBL Set ).
 * *Create Reflection*: Creates the Reflection Environment Branch of the Raytype Shader ( Using the Reflection HDR file of the current IBL Set ).
 * *Create Lighting*: Creates the Lighting Environment Branch of the Raytype Shader ( Using the Lighting HDR file of the current IBL Set ).
 * *Create Sun*: Creates the light used as Sun.
+* *Create Dynamic Lights*: Creates the sIBL Dynamics Lights.
 
 h3. Additional Attributes
 
 * *Preserve Session Settings*: Preserves sIBL session setup settings: previous sIBL_Feedback and sIBL_Ground transformations are restored.
 * *Display Feedback*: Displays a viewport Visual Feedback with the current IBL LDR Background image.
-* *Create Ground*: A Plane is added to the Scene.
-* *Ground Shadow Catcher*: A VRayObjectProperties Node is assigned to the Ground.
-* *Hide Lights*: Hides all current Scene lights.
 * *Sun Light Type*: Creates the Sun as one of these lights type: "VRaySun", "Directional", "Area", "Spot", "Point", "VRaySphere", "VRayRect", "VRayIES".
 * *Dynamic Lights Type*: Creates the Dynamics Lights as one of these lights type: "Directional", "Area", "Spot", "Point", "VRaySun", "VRaySphere", "VRayRect", "VRayIES".
+* *Hide Lights*: Hides all current Scene lights.
+* *Create Ground*: A Plane is added to the Scene.
+* *Ground Shadow Catcher*: A VRayObjectProperties Node is assigned to the Ground.
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 
 h3. Scene Components
