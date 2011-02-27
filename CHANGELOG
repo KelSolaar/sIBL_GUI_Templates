@@ -1,6 +1,10 @@
-h1=. sIBL_GUI_Templates - 1.0.3 - Stable
+h1=. sIBL_GUI_Templates - 1.0.4 - Stable
 
 h2=. Change Log
+
+h3. 1.0.4 - Stable
+
+* Reordered templates attributes.
 
 h3. 1.0.3 - Stable
 
