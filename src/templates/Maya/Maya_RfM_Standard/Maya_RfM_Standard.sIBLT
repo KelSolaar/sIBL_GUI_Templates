@@ -184,7 +184,7 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 
 	sIBL_Maya_RfM_getMainLocator();
 
-	if ($hideLights)
+	if($hideLights)
 		sIBL_Maya_RfM_hideLights();
 
 	sIBL_Maya_RfM_getEnvironment($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $feedbackRadius, $displayFeedback, $activateColorBleeding);
@@ -199,19 +199,19 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 		sIBL_Maya_RfM_getFeedback($backgroundFilePath, $feedbackRadius, $displayFeedback);
 	}
 
-	if (sIBL_Maya_RfM_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
+	if(sIBL_Maya_RfM_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
 	{
-		if ($sunU != -1 && $sunV != -1)
+		if($sunU != -1 && $sunV != -1)
 		{
-			if ($createSun)
+			if($createSun)
 			{
 				sIBL_Maya_RfM_getSun($sunLightType, $shadowsType, $sunU, $sunV, $sunColor, $sunMultiplier, $feedbackRadius);
 			}
 		}
 
-		if ($dynamicLights != -1)
+		if($dynamicLights != -1)
 		{
-			if ($createLights)
+			if($createLights)
 			{
 				sIBL_Maya_RfM_getDynamicLights($dynamicLightsType, $shadowsType, $dynamicLights, $feedbackRadius);
 			}
@@ -223,10 +223,10 @@ global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
 		if($createGround)
 			sIBL_Maya_RfM_getGround($feedbackRadius);
 
-		if ($shadowsType == "Raytraced")
+		if($shadowsType == "Raytraced")
 			sIBL_Maya_RfM_activateRaytracing();
 
-		if ($activateLinearWorkflow)
+		if($activateLinearWorkflow)
 			sIBL_Maya_RfM_activateLinearWorkflow($createBackground);
 
 		if($preserveSessionSettings)
@@ -311,16 +311,16 @@ global proc sIBL_Maya_RfM_hideLights()
 
 global proc sIBL_Maya_RfM_deleteType(string $type, string $filter)
 {
-	string $typesList[] = `ls -type $type $filter`;
-	if(size($typesList) != 0)
-		delete($typesList);
+	string $types[] = `ls -type $type $filter`;
+	if(size($types) != 0)
+		delete($types);
 }
 
 global proc sIBL_Maya_RfM_environmentDeletion()
 {
 	// sIBL Transform Group Deletion.
 	string $sceneSIBLGroup[] = `ls -fl "sIBL"`;
-	if ($sceneSIBLGroup[0] != "")
+	if($sceneSIBLGroup[0] != "")
 	{
 		delete($sceneSIBLGroup);
 	}
@@ -372,24 +372,24 @@ global proc sIBL_Maya_RfM_getMainLocator()
 	setAttr -e-keyable true ($sIBLLocatorTransform + "." + "renderTogglers");
 	setAttr -lock true ($sIBLLocatorTransform + "." + "renderTogglers");
 
-	string $componentsList[] = {"Background", "Reflection", "Lighting"};
+	string $components[] = {"Background", "Reflection", "Lighting"};
 	
-	for($component in $componentsList)
+	for($component in $components)
 	{
 		addAttr -ln ("toggle" + $component)  -nn ($component) -at bool  $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + (".toggle" + $component));
 		setAttr ($sIBLLocatorTransform + (".toggle" + $component)) true;
 	}
 
-	string $controlsList[] = {"Bias", "Gain"};
+	string $controls[] = {"Bias", "Gain"};
 	
-	for($component in $componentsList)
+	for($component in $components)
 	{	
 		addAttr -ln ("cc" + $component) -nn ("[ " + $component + " CC ]") -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		setAttr -lock true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		
-		for($control in $controlsList)
+		for($control in $controls)
 		{
 			if($component == "Background" && $control == "Bias")
 				$control = "Gamma";
@@ -407,8 +407,8 @@ global proc sIBL_Maya_RfM_getMainLocator()
 	}
 
 	setAttr ($sIBLLocatorTransform + ".ty") 5;
-	string $locksList[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
-	for($lock in $locksList)
+	string $locks[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
+	for($lock in $locks)
 		setAttr -lock true -keyable false ($sIBLLocatorTransform + "." + $lock);
 
 	parent $sIBLLocatorTransform $sIBLGroup;
@@ -436,8 +436,8 @@ global proc sIBL_Maya_RfM_getEnvironmentSphereBranch(float $radius, string $pref
 	setAttr ($environmentSphere[0] + ".scaleZ") (-1);
 	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $environmentSphere[0];
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($environmentSphere[0] + "." + $scaleAttribute) $radius;
 
 	string $surfaceShader = `shadingNode -asShader "surfaceShader"`;
@@ -472,7 +472,7 @@ global proc sIBL_Maya_RfM_getEnvironmentSphereBranch(float $radius, string $pref
 
 	setAttr -type "string" ($file + ".fileTextureName") $filePath;
 
-	if (!`attributeExists "resolution" $file`)
+	if(!`attributeExists "resolution" $file`)
 		addAttr -ln "resolution" -at long $file;
  	setAttr  ($file + ".resolution") 2048;
 
@@ -517,8 +517,8 @@ global proc sIBL_Maya_RfM_getEnvironmentLightBranch(float $radius, string $prefi
 
 	string $environmentLightTransform = sIBL_Maya_RfM_getTransform($environmentLight);
 	
-	string $scaleAttributesList[] = {"scaleX", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($environmentLightTransform + "." + $scaleAttribute) $radius;
 	setAttr ($environmentLightTransform + ".scaleY") (- $radius);
 	setAttr ($environmentLightTransform + ".rotateX") -90;
@@ -531,7 +531,7 @@ global proc sIBL_Maya_RfM_getEnvironmentLightBranch(float $radius, string $prefi
 
 global proc sIBL_Maya_RfM_getEnvironment(int $createBackground, int $createLighting, int $createReflection, string $backgroundFilePath, string $lightingFilePath, string $reflectionFilePath, float $feedbackRadius, int $visibility, int $activateColorBleeding)
 {
-	if ($createBackground)
+	if($createBackground)
 	{
 		sIBL_Maya_RfM_getEnvironmentSphereBranch(($feedbackRadius - ($feedbackRadius * 5 / 100)), "sIBL_Background", $backgroundFilePath, $visibility, 1);
 		
@@ -540,14 +540,14 @@ global proc sIBL_Maya_RfM_getEnvironment(int $createBackground, int $createLight
 			setAttr ("sIBL_Background_Environment_SphereShape" + "." + $stat) false;
 	}
 
-	if ($createLighting)
+	if($createLighting)
 	{
 		sIBL_Maya_RfM_getEnvironmentLightBranch($feedbackRadius * 2 - ($feedbackRadius * 7.5 / 100), "sIBL_Lighting", $lightingFilePath);
 		
 		string $environmentLightNode = "sIBL_Lighting_EnvironmentLigthtShape";
 		setAttr ($environmentLightNode + ".rman__EnvEmitSpecular") 0;
 		
-		if ($activateColorBleeding)
+		if($activateColorBleeding)
 		{
 			rmanSetAttr($environmentLightNode,"rman__EnvGIScheme","colorbleeding");
 			string $passNode = `createRenderManNode pass:render:RenderRadiosity`;
@@ -559,7 +559,7 @@ global proc sIBL_Maya_RfM_getEnvironment(int $createBackground, int $createLight
 			rmanSetAttr("sIBL_Lighting_EnvironmentLigthtShape","rman__EnvGIScheme","occlusion");
 	}
 
-	if ($createReflection)
+	if($createReflection)
 	{
 		sIBL_Maya_RfM_getEnvironmentLightBranch($feedbackRadius * 2 - ($feedbackRadius * 10 / 100), "sIBL_Reflection", $reflectionFilePath);
 		
@@ -572,12 +572,12 @@ global proc sIBL_Maya_RfM_getEnvironment(int $createBackground, int $createLight
 global proc string sIBL_Maya_RfM_getSIBLGroup()
 {
 	string $sIBLGroup[] = `ls -fl "sIBL"`;
-	if ($sIBLGroup[0] == "")
+	if($sIBLGroup[0] == "")
 	{
 		$sIBLGroup[0] = `createNode "transform" -n "sIBL"`;
 
-		string $locksList[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-		for($lock in $locksList)
+		string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
+		for($lock in $locks)
 			setAttr -lock true -keyable false ($sIBLGroup[0] + "." + $lock);
 	}
 
@@ -599,14 +599,14 @@ global proc string sIBL_Maya_RfM_getFeedbackGeometry(float $feedbackRadius, int 
 	setAttr ($feedback[0] + ".scaleZ") (-1);
 	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $feedback[0];
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($feedback[0] + "." + $scaleAttribute) $feedbackRadius;
 
 	setAttr ($feedback[0] + ".rotateZ") 90;
 
-	string $locksList[] = {"tx", "ty", "tz", "ry", "rz"};
-	for($lock in $locksList)
+	string $locks[] = {"tx", "ty", "tz", "ry", "rz"};
+	for($lock in $locks)
 		setAttr -lock true -keyable false ($feedback[0] + "." + $lock);
 
 	setAttr ($feedback[0] + ".visibility") $feedBackVisibility;
@@ -634,7 +634,7 @@ global proc sIBL_Maya_RfM_getFeedback(string $backgroundFilePath, float $feedbac
 	connectAttr -f ($lambertShader + ".outColor") ($shadingEngine + ".surfaceShader");
 
 	string $file = `shadingNode -asTexture "file"`;
-	if (!`attributeExists "resolution" $file`)
+	if(!`attributeExists "resolution" $file`)
 		addAttr -ln "resolution" -at long $file;
  	setAttr  ($file + ".resolution") 2048;
 
@@ -665,7 +665,7 @@ global proc string sIBL_Maya_RfM_getLigthsTargetLocator()
 {
 	string $sIBL_Lights_Target_Locator[] = `ls -fl "sIBL_Lights_Target_Locator"`;
 
-	if ($sIBL_Lights_Target_Locator[0] == "")
+	if($sIBL_Lights_Target_Locator[0] == "")
 	{
 		string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
 
@@ -824,8 +824,8 @@ global proc sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders(string $target)
 		connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_EnvironmentLigtht.visibility") ;
 		string $lowerCaseTarget = `tolower $target`;
 
-		string $subComponentsList[] = {"R", "G", "B"};
-		for ($subComponent in $subComponentsList) 
+		string $subComponents[] = {"R", "G", "B"};
+		for($subComponent in $subComponents) 
 		{
 			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Bias") ("sIBL_" + $target + "_EnvironmentLigthtShape.rman__EnvColorBias.rman__EnvColorBias" + $subComponent);
 			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_EnvironmentLigthtShape.rman__EnvColorGain.rman__EnvColorGain" + $subComponent);
@@ -834,32 +834,32 @@ global proc sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders(string $target)
 
 global proc sIBL_Maya_RfM_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
 {
-	if ($connectToBackground)
+	if($connectToBackground)
 	{
 		expression -name "sIBL_Background_Expression" -s ("sIBL_Background_Environment_Sphere.rotateX = " + $feedback + ".rotateX;\nsIBL_Background_Environment_Sphere.scaleX = " + $feedback + ".scaleX-" + $feedback + ".scaleX * 5 / 100;\nsIBL_Background_Environment_Sphere.scaleY = " + $feedback + ".scaleY-" + $feedback + ".scaleY * 5 / 100;\nsIBL_Background_Environment_Sphere.scaleZ = " + $feedback + ".scaleZ-" + $feedback + ".scaleZ * 5 / 100;");
 
 		connectAttr -f "sIBL_Controls.toggleBackground" "sIBL_Background_condition.firstTerm";
 
-		string $gammaSubComponentsList[] = {"X", "Y", "Z"};
-		for ($gammaSubComponent in $gammaSubComponentsList) 
+		string $gammaSubComponents[] = {"X", "Y", "Z"};
+		for($gammaSubComponent in $gammaSubComponents) 
 		{
 			connectAttr -f ("sIBL_Controls.backgroundGamma") ("sIBL_Background_gammaCorrect.gamma" + $gammaSubComponent);
 		}
 
-		string $gainSubComponentsList[] = {"R", "G", "B"};
-		for ($gainSubComponent in $gainSubComponentsList) 
+		string $gainSubComponents[] = {"R", "G", "B"};
+		for($gainSubComponent in $gainSubComponents) 
 		{
 			connectAttr -f ("sIBL_Controls.backgroundGain") ("sIBL_Background_file.colorGain" + $gainSubComponent);
 		}
 	}
 
-	if ($connectToLighting)
+	if($connectToLighting)
 	{
 		expression -name "sIBL_Lighting_Expression" -s ("sIBL_Lighting_EnvironmentLigtht.rotateY = 90 +" + $feedback + ".rotateX;\nsIBL_Lighting_EnvironmentLigtht.scaleX = " + $feedback + ".scaleX * 2-" + $feedback + ".scaleX * 7.5 / 100;\nsIBL_Lighting_EnvironmentLigtht.scaleY = -(" + $feedback + ".scaleY * 2-" + $feedback + ".scaleY * 7.5 / 100);\nsIBL_Lighting_EnvironmentLigtht.scaleZ = " + $feedback + ".scaleZ * 2-" + $feedback + ".scaleZ * 7.5 / 100;");
 		sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders("Lighting");
 	}
 
-	if ($connectToReflection)
+	if($connectToReflection)
 	{
 		expression -name "sIBL_Reflection_Expression" -s ("sIBL_Reflection_EnvironmentLigtht.rotateY = 90 +" + $feedback + ".rotateX;\nsIBL_Reflection_EnvironmentLigtht.scaleX = " + $feedback + ".scaleX * 2-" + $feedback + ".scaleX * 10 / 100;\nsIBL_Reflection_EnvironmentLigtht.scaleY = -(" + $feedback + ".scaleY * 2-" + $feedback + ".scaleY * 10 / 100);\nsIBL_Reflection_EnvironmentLigtht.scaleZ = " + $feedback + ".scaleZ * 2-" + $feedback + ".scaleZ * 10 / 100;");
 		sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders("Reflection");
@@ -876,7 +876,7 @@ global proc sIBL_Maya_RfM_activateLinearWorkflow(int $createBackground)
 {
 	setAttr "rmanFinalOutputGlobals0.rman__riopt__Display_exposure1" 2.2;
 	
-	if ($createBackground)
+	if($createBackground)
 		setAttr  "sIBL_Controls.backgroundGamma" 0.454545;
 }
 
@@ -889,8 +889,8 @@ global proc sIBL_Maya_RfM_getGround(float $feedbackRadius)
 	setAttr ($ground[0] + ".overrideEnabled") 1;
 	setAttr ($ground[0] + ".overrideShading") 0;
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($ground[0] + "." + $scaleAttribute) ($feedbackRadius * sqrt(2));
 
 	parent $ground[0] $sIBLGroup;
@@ -902,7 +902,7 @@ global proc sIBL_Maya_RfM_getGround(float $feedbackRadius)
 
 global proc sIBL_Maya_RfM_activateRfM()
 {
-	if (`pluginInfo -q -loaded "RenderMan_for_Maya"` == 0)
+	if(`pluginInfo -q -loaded "RenderMan_for_Maya"` == 0)
 	{
 		loadPlugin("RenderMan_for_Maya");
 	}
@@ -942,7 +942,7 @@ global proc string[] sIBL_Maya_RfM_getShapes(string $xform)
 {
 	string $shapes[];
 	$shapes[0] = $xform;
-	if ("transform" == `nodeType $xform`)
+	if("transform" == `nodeType $xform`)
 		$shapes = `listRelatives -fullPath -shapes $xform`;
 	return $shapes;
 }
@@ -950,7 +950,7 @@ global proc string[] sIBL_Maya_RfM_getShapes(string $xform)
 global proc string sIBL_Maya_RfM_getTransform(string $shape)
 {
 	string $transform = "";
-	if ("transform" != `nodeType $shape`)
+	if("transform" != `nodeType $shape`)
 	{
 		string $parents[] = `listRelatives -fullPath -parent $shape`;
 		$transform = $parents[0];
@@ -960,8 +960,8 @@ global proc string sIBL_Maya_RfM_getTransform(string $shape)
 
 global proc int sIBL_Maya_RfM_objectExists(string $object, string $errorMessage)
 {
-	string $objectList[] = `ls -fl $object`;
-	if ($objectList[0] != "")
+	string $objects[] = `ls -fl $object`;
+	if($objects[0] != "")
 	{
 		return 1;
 	}

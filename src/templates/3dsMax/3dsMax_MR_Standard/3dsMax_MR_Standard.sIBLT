@@ -100,7 +100,7 @@ fn sIBL_3dsmax_MR_getExtendedFeedbackRadius feedbackRadius =
 
 fn sIBL_3dsmax_MR_hasProductionShadersSupport =
 (
-	if (maxVersion())[1]/1000 < 13 then
+	if(maxVersion())[1]/1000 < 13 then
 		return False
 	else
 		return True

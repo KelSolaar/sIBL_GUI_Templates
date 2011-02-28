@@ -180,7 +180,7 @@ global proc sIBL_Maya_Turtle_setup(string $backgroundFilePath,
 
 	sIBL_Maya_Turtle_getMainLocator();
 
-	if ($hideLights)
+	if($hideLights)
 		sIBL_Maya_Turtle_hideLights();
 
 	sIBL_Maya_Turtle_getEnvironment($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $feedbackRadius, $displayFeedback);
@@ -195,19 +195,19 @@ global proc sIBL_Maya_Turtle_setup(string $backgroundFilePath,
 		sIBL_Maya_Turtle_getFeedback($backgroundFilePath, $feedbackRadius, $displayFeedback);
 	}
 
-	if (sIBL_Maya_Turtle_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
+	if(sIBL_Maya_Turtle_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
 	{
-		if ($sunU != -1 && $sunV != -1)
+		if($sunU != -1 && $sunV != -1)
 		{
-			if ($createSun)
+			if($createSun)
 			{
 				sIBL_Maya_Turtle_getSun($sunLightType, $sunU, $sunV, $sunColor, $sunMultiplier, $feedbackRadius);
 			}
 		}
 
-		if ($dynamicLights != -1)
+		if($dynamicLights != -1)
 		{
-			if ($createLights)
+			if($createLights)
 			{
 				sIBL_Maya_Turtle_getDynamicLights($dynamicLightsType, $dynamicLights, $feedbackRadius);
 			}
@@ -219,10 +219,10 @@ global proc sIBL_Maya_Turtle_setup(string $backgroundFilePath,
 		if($createGround)
 			sIBL_Maya_Turtle_getGround($feedbackRadius);
 
-		if ($activateGlobalIllumination)
+		if($activateGlobalIllumination)
 			sIBL_Maya_Turtle_activateGlobalIllumination();
 
-		if ($activateLinearWorkflow)
+		if($activateLinearWorkflow)
 			sIBL_Maya_Turtle_activateLinearWorkflow($createBackground);
 
 		if($preserveSessionSettings)
@@ -307,16 +307,16 @@ global proc sIBL_Maya_Turtle_hideLights()
 
 global proc sIBL_Maya_Turtle_deleteType(string $type, string $filter)
 {
-	string $typesList[] = `ls -type $type $filter`;
-	if(size($typesList) != 0)
-		delete($typesList);
+	string $types[] = `ls -type $type $filter`;
+	if(size($types) != 0)
+		delete($types);
 }
 
 global proc sIBL_Maya_Turtle_environmentDeletion()
 {
 	// sIBL Transform Group Deletion.
 	string $sceneSIBLGroup[] = `ls -fl "sIBL"`;
-	if ($sceneSIBLGroup[0] != "")
+	if($sceneSIBLGroup[0] != "")
 	{
 		delete($sceneSIBLGroup);
 	}
@@ -362,24 +362,24 @@ global proc sIBL_Maya_Turtle_getMainLocator()
 	setAttr -e-keyable true ($sIBLLocatorTransform + "." + "renderTogglers");
 	setAttr -lock true ($sIBLLocatorTransform + "." + "renderTogglers");
 
-	string $componentsList[] = {"Background", "Reflection", "Lighting"};
+	string $components[] = {"Background", "Reflection", "Lighting"};
 	
-	for($component in $componentsList)
+	for($component in $components)
 	{	
 		addAttr -ln ("toggle" + $component)  -nn ($component) -at bool  $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + (".toggle" + $component));
 		setAttr ($sIBLLocatorTransform + (".toggle" + $component)) true;
 	}
 	
-	string $controlsList[] = {"Gamma", "Gain"};
+	string $controls[] = {"Gamma", "Gain"};
 
-	for($component in $componentsList)
+	for($component in $components)
 	{	
 		addAttr -ln ("cc" + $component) -nn ("[ " + $component + " CC ]") -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		setAttr -lock true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		
-		for($control in $controlsList)
+		for($control in $controls)
 		{
 			string $lowerCaseComponent = `tolower $component`;
 			addAttr -ln ($lowerCaseComponent + $control)  -nn $control -at double  $sIBLLocatorTransform;
@@ -389,8 +389,8 @@ global proc sIBL_Maya_Turtle_getMainLocator()
 	}
 
 	setAttr ($sIBLLocatorTransform + ".ty") 5;
-	string $locksList[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
-	for($lock in $locksList)
+	string $locks[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
+	for($lock in $locks)
 		setAttr -lock true -keyable false ($sIBLLocatorTransform + "." + $lock);
 
 	parent $sIBLLocatorTransform $sIBLGroup;
@@ -419,8 +419,8 @@ global proc sIBL_Maya_Turtle_getEnvironmentSphereBranch(float $radius, string $p
 	setAttr ($environmentSphere[0] + ".scaleZ") (-1);
 	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $environmentSphere[0];
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($environmentSphere[0] + "." + $scaleAttribute) $radius;
 
 	string $surfaceShader = `shadingNode -asShader "surfaceShader"`;
@@ -455,7 +455,7 @@ global proc sIBL_Maya_Turtle_getEnvironmentSphereBranch(float $radius, string $p
 
 	setAttr -type "string" ($file + ".fileTextureName") $filePath;
 
-	if (!`attributeExists "resolution" $file`)
+	if(!`attributeExists "resolution" $file`)
 		addAttr -ln "resolution" -at long $file;
  	setAttr  ($file + ".resolution") 2048;
 
@@ -486,7 +486,7 @@ global proc sIBL_Maya_Turtle_getEnvironmentSphereBranch(float $radius, string $p
 
 global proc sIBL_Maya_Turtle_getEnvironment(int $createBackground, int $createLighting, int $createReflection, string $backgroundFilePath, string $lightingFilePath, string $reflectionFilePath, float $feedbackRadius, int $visibility)
 {
-	if ($createBackground)
+	if($createBackground)
 	{
 		sIBL_Maya_Turtle_getEnvironmentSphereBranch(($feedbackRadius - ($feedbackRadius * 5 / 100)) , "sIBL_Background", $backgroundFilePath, $visibility, 1);
 
@@ -496,7 +496,7 @@ global proc sIBL_Maya_Turtle_getEnvironment(int $createBackground, int $createLi
 			setAttr ($environmentSphereShapes[0] + "." + $stat) false;
 	}
 
-	if ($createLighting)
+	if($createLighting)
 	{
 		sIBL_Maya_Turtle_getEnvironmentSphereBranch(($feedbackRadius - ($feedbackRadius * 7.5 / 100)), "sIBL_Lighting", $lightingFilePath, $visibility, 1);
 
@@ -506,7 +506,7 @@ global proc sIBL_Maya_Turtle_getEnvironment(int $createBackground, int $createLi
 			setAttr ($environmentSphereShapes[0] + "." + $stat) false;
 	}
 
-	if ($createReflection)
+	if($createReflection)
 	{
 		sIBL_Maya_Turtle_getEnvironmentSphereBranch(($feedbackRadius - ($feedbackRadius * 10 / 100)), "sIBL_Reflection", $reflectionFilePath, $visibility, 1);
 
@@ -520,12 +520,12 @@ global proc sIBL_Maya_Turtle_getEnvironment(int $createBackground, int $createLi
 global proc string sIBL_Maya_Turtle_getSIBLGroup()
 {
 	string $sIBLGroup[] = `ls -fl "sIBL"`;
-	if ($sIBLGroup[0] == "")
+	if($sIBLGroup[0] == "")
 	{
 		$sIBLGroup[0] = `createNode "transform" -n "sIBL"`;
 
-		string $locksList[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-		for($lock in $locksList)
+		string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
+		for($lock in $locks)
 			setAttr -lock true -keyable false ($sIBLGroup[0] + "." + $lock);
 	}
 
@@ -541,14 +541,14 @@ global proc string sIBL_Maya_Turtle_getFeedbackGeometry(float $feedbackRadius, i
 	setAttr ($feedback[0] + ".scaleZ") (-1);
 	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $feedback[0];
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($feedback[0] + "." + $scaleAttribute) $feedbackRadius;
 
 	setAttr ($feedback[0] + ".rotateZ") 90;
 
-	string $locksList[] = {"tx", "ty", "tz", "ry", "rz"};
-	for($lock in $locksList)
+	string $locks[] = {"tx", "ty", "tz", "ry", "rz"};
+	for($lock in $locks)
 		setAttr -lock true -keyable false ($feedback[0] + "." + $lock);
 	
 	setAttr ($feedback[0] + ".visibility") $feedBackVisibility;
@@ -578,7 +578,7 @@ global proc sIBL_Maya_Turtle_getFeedback(string $backgroundFilePath, float $feed
 	connectAttr -f ($lambertShader + ".outColor") ($shadingEngine + ".surfaceShader");
 
 	string $file = `shadingNode -asTexture "file"`;
-	if (!`attributeExists "resolution" $file`)
+	if(!`attributeExists "resolution" $file`)
 		addAttr -ln "resolution" -at long $file;
  	setAttr  ($file + ".resolution") 2048;
 
@@ -609,7 +609,7 @@ global proc string sIBL_Maya_Turtle_getLigthsTargetLocator()
 {
 	string $sIBL_Lights_Target_Locator[] = `ls -fl "sIBL_Lights_Target_Locator"`;
 
-	if ($sIBL_Lights_Target_Locator[0] == "")
+	if($sIBL_Lights_Target_Locator[0] == "")
 	{
 		string $sIBLGroup = sIBL_Maya_Turtle_getSIBLGroup();
 
@@ -714,14 +714,14 @@ global proc sIBL_Maya_Turtle_bridgeFeedbackControlsAndShaders(string $target)
 	connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_condition.firstTerm") ;
 	string $lowerCaseTarget = `tolower $target`;
 	
-	string $gammaSubComponentsList[] = {"X", "Y", "Z"};
-	for ($gammaSubComponent in $gammaSubComponentsList) 
+	string $gammaSubComponents[] = {"X", "Y", "Z"};
+	for($gammaSubComponent in $gammaSubComponents) 
 	{
 		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gamma") ("sIBL_" + $target + "_gammaCorrect.gamma" + $gammaSubComponent);
 	}
 	
-	string $gainSubComponentsList[] = {"R", "G", "B"};
-	for ($gainSubComponent in $gainSubComponentsList) 
+	string $gainSubComponents[] = {"R", "G", "B"};
+	for($gainSubComponent in $gainSubComponents) 
 	{
 		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_file.colorGain" + $gainSubComponent);
 	}
@@ -729,19 +729,19 @@ global proc sIBL_Maya_Turtle_bridgeFeedbackControlsAndShaders(string $target)
 
 global proc sIBL_Maya_Turtle_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
 {
-	if ($connectToBackground)
+	if($connectToBackground)
 	{
 		expression -name "sIBL_Background_Expression" -s ("sIBL_Background_Environment_Sphere.rotateX = " + $feedback + ".rotateX;\nsIBL_Background_Environment_Sphere.scaleX = " + $feedback + ".scaleX-" + $feedback + ".scaleX * 5 / 100;\nsIBL_Background_Environment_Sphere.scaleY = " + $feedback + ".scaleY-" + $feedback + ".scaleY * 5 / 100;\nsIBL_Background_Environment_Sphere.scaleZ = " + $feedback + ".scaleZ-" + $feedback + ".scaleZ * 5 / 100;");
 		sIBL_Maya_Turtle_bridgeFeedbackControlsAndShaders("Background");
 	}
 
-	if ($connectToLighting)
+	if($connectToLighting)
 	{
 		expression -name "sIBL_Lighting_Expression" -s ("sIBL_Lighting_Environment_Sphere.rotateX = " + $feedback + ".rotateX;\nsIBL_Lighting_Environment_Sphere.scaleX = " + $feedback + ".scaleX-" + $feedback + ".scaleX * 7.5 / 100;\nsIBL_Lighting_Environment_Sphere.scaleY = " + $feedback + ".scaleY-" + $feedback + ".scaleY * 7.5 / 100;\nsIBL_Lighting_Environment_Sphere.scaleZ = " + $feedback + ".scaleZ-" + $feedback + ".scaleZ * 7.5 / 100;");
 		sIBL_Maya_Turtle_bridgeFeedbackControlsAndShaders("Lighting");
 	}
 
-	if ($connectToReflection)
+	if($connectToReflection)
 	{
 		expression -name "sIBL_Reflection_Expression" -s ("sIBL_Reflection_Environment_Sphere.rotateX = " + $feedback + ".rotateX;\nsIBL_Reflection_Environment_Sphere.scaleX = " + $feedback + ".scaleX-" + $feedback + ".scaleX * 10 / 100;\nsIBL_Reflection_Environment_Sphere.scaleY = " + $feedback + ".scaleY-" + $feedback + ".scaleY * 10 / 100;\nsIBL_Reflection_Environment_Sphere.scaleZ = " + $feedback + ".scaleZ-" + $feedback + ".scaleZ * 10 / 100;");
 		sIBL_Maya_Turtle_bridgeFeedbackControlsAndShaders("Reflection");
@@ -759,7 +759,7 @@ global proc sIBL_Maya_Turtle_activateLinearWorkflow(int $createBackground)
 {
 	setAttr TurtleRenderOptions.outputCorrection 1;
 	
-	if ($createBackground)
+	if($createBackground)
 		setAttr  "sIBL_Controls.backgroundGamma" 0.454545;
 }
 
@@ -772,8 +772,8 @@ global proc sIBL_Maya_Turtle_getGround(float $feedbackRadius)
 	setAttr ($ground[0] + ".overrideEnabled") 1;
 	setAttr ($ground[0] + ".overrideShading") 0;
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($ground[0] + "." + $scaleAttribute) ($feedbackRadius * sqrt(2));
 
 	parent $ground[0] $sIBLGroup;
@@ -792,7 +792,7 @@ global proc sIBL_Maya_Turtle_activateTurtle()
 	if($tokensNumber != 0)
 	{
 		string $turtlePlugin = "TurtleForMaya" + $mayaVersion[0];
-		if (`pluginInfo -q -loaded $turtlePlugin` == 0)
+		if(`pluginInfo -q -loaded $turtlePlugin` == 0)
 		{
 			loadPlugin($turtlePlugin);
 		}
@@ -836,7 +836,7 @@ global proc string[] sIBL_Maya_Turtle_getShapes(string $xform)
 {
 	string $shapes[];
 	$shapes[0] = $xform;
-	if ("transform" == `nodeType $xform`)
+	if("transform" == `nodeType $xform`)
 		$shapes = `listRelatives -fullPath -shapes $xform`;
 	return $shapes;
 }
@@ -844,7 +844,7 @@ global proc string[] sIBL_Maya_Turtle_getShapes(string $xform)
 global proc string sIBL_Maya_Turtle_getTransform(string $shape)
 {
 	string $transform = "";
-	if ("transform" != `nodeType $shape`)
+	if("transform" != `nodeType $shape`)
 	{
 		string $parents[] = `listRelatives -fullPath -parent $shape`;
 		$transform = $parents[0];
@@ -854,8 +854,8 @@ global proc string sIBL_Maya_Turtle_getTransform(string $shape)
 
 global proc int sIBL_Maya_Turtle_objectExists(string $object, string $errorMessage)
 {
-	string $objectList[] = `ls -fl $object`;
-	if ($objectList[0] != "")
+	string $objects[] = `ls -fl $object`;
+	if($objects[0] != "")
 	{
 		return 1;
 	}

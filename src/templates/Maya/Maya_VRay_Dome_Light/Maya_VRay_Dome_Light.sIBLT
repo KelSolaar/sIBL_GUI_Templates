@@ -180,7 +180,7 @@ global proc sIBL_Maya_VRay_DLight_setup(string $backgroundFilePath,
 
 	sIBL_Maya_VRay_DLight_getMainLocator();
 
-	if ($hideLights)
+	if($hideLights)
 		sIBL_Maya_VRay_DLight_hideLights();
 
 	sIBL_Maya_VRay_DLight_getEnvironment($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $displayFeedback);
@@ -195,19 +195,19 @@ global proc sIBL_Maya_VRay_DLight_setup(string $backgroundFilePath,
 		sIBL_Maya_VRay_DLight_getFeedback($backgroundFilePath, $feedbackRadius, $displayFeedback);
 	}
 
-	if (sIBL_Maya_VRay_DLight_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
+	if(sIBL_Maya_VRay_DLight_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
 	{
-		if ($sunU != -1 && $sunV != -1)
+		if($sunU != -1 && $sunV != -1)
 		{
-			if ($createSun)
+			if($createSun)
 			{
 				sIBL_Maya_VRay_DLight_getSun($sunLightType, $sunU, $sunV, $sunColor, $sunMultiplier, $feedbackRadius);
 			}
 		}
 
-		if ($dynamicLights != -1)
+		if($dynamicLights != -1)
 		{
-			if ($createLights)
+			if($createLights)
 			{
 				sIBL_Maya_VRay_DLight_getDynamicLights($dynamicLightsType, $dynamicLights, $feedbackRadius);
 			}
@@ -219,7 +219,7 @@ global proc sIBL_Maya_VRay_DLight_setup(string $backgroundFilePath,
 		if($createGround)
 			sIBL_Maya_VRay_DLight_getGround($feedbackRadius, $shadowCatcher);
 
-		if ($activateLinearWorkflow)
+		if($activateLinearWorkflow)
 			sIBL_Maya_VRay_DLight_activateLinearWorkflow();
 
 		if($preserveSessionSettings)
@@ -304,16 +304,16 @@ global proc sIBL_Maya_VRay_DLight_hideLights()
 
 global proc sIBL_Maya_VRay_DLight_deleteType(string $type, string $filter)
 {
-	string $typesList[] = `ls -type $type $filter`;
-	if(size($typesList) != 0)
-		delete($typesList);
+	string $types[] = `ls -type $type $filter`;
+	if(size($types) != 0)
+		delete($types);
 }
 
 global proc sIBL_Maya_VRay_DLight_environmentDeletion()
 {
 	// sIBL Transform Group Deletion.
 	string $sceneSIBLGroup[] = `ls -fl "sIBL"`;
-	if ($sceneSIBLGroup[0] != "")
+	if($sceneSIBLGroup[0] != "")
 	{
 		delete($sceneSIBLGroup);
 	}
@@ -365,24 +365,24 @@ global proc sIBL_Maya_VRay_DLight_getMainLocator()
 	setAttr -e-keyable true ($sIBLLocatorTransform + "." + "renderTogglers");
 	setAttr -lock true ($sIBLLocatorTransform + "." + "renderTogglers");
 
-	string $componentsList[] = {"Background", "Reflection", "Lighting"};
+	string $components[] = {"Background", "Reflection", "Lighting"};
 	
-	for($component in $componentsList)
+	for($component in $components)
 	{	
 		addAttr -ln ("toggle" + $component)  -nn ($component) -at bool  $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + (".toggle" + $component));
 		setAttr ($sIBLLocatorTransform + (".toggle" + $component)) true;
 	}
 	
-	string $controlsList[] = {"Gamma", "Gain"};
+	string $controls[] = {"Gamma", "Gain"};
 
-	for($component in $componentsList)
+	for($component in $components)
 	{	
 		addAttr -ln ("cc" + $component) -nn ("[ " + $component + " CC ]") -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		setAttr -lock true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		
-		for($control in $controlsList)
+		for($control in $controls)
 		{
 			string $lowerCaseComponent = `tolower $component`;
 			addAttr -ln ($lowerCaseComponent + $control)  -nn $control -at double  $sIBLLocatorTransform;
@@ -392,8 +392,8 @@ global proc sIBL_Maya_VRay_DLight_getMainLocator()
 	}
 
 	setAttr ($sIBLLocatorTransform + ".ty") 5;
-	string $locksList[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
-	for($lock in $locksList)
+	string $locks[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
+	for($lock in $locks)
 		setAttr -lock true -keyable false ($sIBLLocatorTransform + "." + $lock);
 
 	parent $sIBLLocatorTransform $sIBLGroup;
@@ -446,34 +446,34 @@ global proc sIBL_Maya_VRay_DLight_getEnvironment(int $createBackground, int $cre
 {
 	setAttr "vraySettings.cam_overrideEnvtex" 1;
 
-	if ($createBackground)
+	if($createBackground)
 	{
 		sIBL_Maya_VRay_DLight_getEnvironmentTexturesBranch("vraySettings.cam_envtexBg", $backgroundFilePath, "sIBL_Background", 1);
 	}
 
-	if ($createLighting)
+	if($createLighting)
 	{
 		setAttr "vraySettings.cam_envtexGi" -type double3 0 0 0 ;
 
 		string $sIBLGroup = sIBL_Maya_VRay_DLight_getSIBLGroup();
 
 		string $VRayDomeLight = `shadingNode -asLight "VRayLightDomeShape"`;
-		string $scaleAttributeList[] = {"sx", "sy", "sz"};
-		for($attribute in $scaleAttributeList)
+		string $scaleAttribute[] = {"sx", "sy", "sz"};
+		for($attribute in $scaleAttribute)
 			setAttr ($VRayDomeLight + "." + $attribute)  (2.0 / 3.0);
 
-		string $locksList[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-		for($lock in $locksList)
+		string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
+		for($lock in $locks)
 			setAttr -keyable false ($VRayDomeLight + "." + $lock);
 		
 		setAttr ($VRayDomeLight + ".visibility") $visibility;
 
 		string $VRayDomeLightShapes[] = sIBL_Maya_VRay_DLight_getShapes($VRayDomeLight);
-		string $VRayDomeLightAttributesList[] = {"domeSpherical", "useDomeTex", "invisible"};
-		for($attribute in $VRayDomeLightAttributesList)
+		string $VRayDomeLightAttributes[] = {"domeSpherical", "useDomeTex", "invisible"};
+		for($attribute in $VRayDomeLightAttributes)
 			setAttr ($VRayDomeLightShapes[0] + "." + $attribute) 1;
-		string $VRayDomeLightAttributesList[] = {"affectReflections", "affectSpecular", "texAdaptive"};
-		for($attribute in $VRayDomeLightAttributesList)
+		string $VRayDomeLightAttributes[] = {"affectReflections", "affectSpecular", "texAdaptive"};
+		for($attribute in $VRayDomeLightAttributes)
 			setAttr ($VRayDomeLightShapes[0] + "." + $attribute) 0;
 		setAttr ($VRayDomeLightShapes[0] + ".subdivs") 128;
 
@@ -484,7 +484,7 @@ global proc sIBL_Maya_VRay_DLight_getEnvironment(int $createBackground, int $cre
 		rename $VRayDomeLight ("sIBL_VRay_DomeLight");
 	}
 
-	if ($createReflection)
+	if($createReflection)
 	{
 		sIBL_Maya_VRay_DLight_getEnvironmentTexturesBranch("vraySettings.cam_envtexReflect", $reflectionFilePath, "sIBL_Reflection", 1);
 	}
@@ -493,12 +493,12 @@ global proc sIBL_Maya_VRay_DLight_getEnvironment(int $createBackground, int $cre
 global proc string sIBL_Maya_VRay_DLight_getSIBLGroup()
 {
 	string $sIBLGroup[] = `ls -fl "sIBL"`;
-	if ($sIBLGroup[0] == "")
+	if($sIBLGroup[0] == "")
 	{
 		$sIBLGroup[0] = `createNode "transform" -n "sIBL"`;
 
-		string $locksList[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-		for($lock in $locksList)
+		string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
+		for($lock in $locks)
 			setAttr -lock true -keyable false ($sIBLGroup[0] + "." + $lock);
 	}
 
@@ -514,14 +514,14 @@ global proc string sIBL_Maya_VRay_DLight_getFeedbackGeometry(float $feedbackRadi
 	setAttr ($feedback[0] + ".scaleZ") (-1);
 	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $feedback[0];
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($feedback[0] + "." + $scaleAttribute) $feedbackRadius;
 
 	setAttr ($feedback[0] + ".rotateZ") 90;
 
-	string $locksList[] = {"tx", "ty", "tz", "ry", "rz"};
-	for($lock in $locksList)
+	string $locks[] = {"tx", "ty", "tz", "ry", "rz"};
+	for($lock in $locks)
 		setAttr -lock true -keyable false ($feedback[0] + "." + $lock);
 
 	setAttr ($feedback[0] + ".visibility") $feedBackVisibility;
@@ -549,7 +549,7 @@ global proc sIBL_Maya_VRay_DLight_getFeedback(string $backgroundFilePath, float 
 	connectAttr -f ($lambertShader + ".outColor") ($shadingEngine + ".surfaceShader");
 
 	string $file = `shadingNode -asTexture "file"`;
-	if (!`attributeExists "resolution" $file`)
+	if(!`attributeExists "resolution" $file`)
 		addAttr -ln "resolution" -at long $file;
  	setAttr  ($file + ".resolution") 2048;
 
@@ -572,12 +572,12 @@ global proc sIBL_Maya_VRay_DLight_getFeedback(string $backgroundFilePath, float 
 
 	string $VRayObjPropertiesNode = `createNode "VRayObjectProperties"`;
 	connectAttr -f ($feedback + ".instObjGroups[0]") ($VRayObjPropertiesNode + ".dnSetMembers[0]");
-	string $attributesList[] = {"generateGI", "receiveGI", "generateCaustics", "receiveCaustics", "giVisibility", "reflectionVisibility", "refractionVisibility"};
-	for($attribute in $attributesList)
+	string $attributes[] = {"generateGI", "receiveGI", "generateCaustics", "receiveCaustics", "giVisibility", "reflectionVisibility", "refractionVisibility"};
+	for($attribute in $attributes)
 		setAttr ($VRayObjPropertiesNode + "." + $attribute) 0;
 
-	$attributesList = {"castsShadows", "receiveShadows", "motionBlur", "primaryVisibility", "smoothShading", "visibleInReflections", "visibleInRefractions"};
-	for($attribute in $attributesList)
+	$attributes = {"castsShadows", "receiveShadows", "motionBlur", "primaryVisibility", "smoothShading", "visibleInReflections", "visibleInRefractions"};
+	for($attribute in $attributes)
 		setAttr ($feedback + "." + $attribute) 0;
 
 	rename $lambertShader ("sIBL_Feedback_" + `nodeType $lambertShader`);
@@ -591,7 +591,7 @@ global proc string sIBL_Maya_VRay_DLight_getLigthsTargetLocator()
 {
 	string $sIBL_Lights_Target_Locator[] = `ls -fl "sIBL_Lights_Target_Locator"`;
 
-	if ($sIBL_Lights_Target_Locator[0] == "")
+	if($sIBL_Lights_Target_Locator[0] == "")
 	{
 		string $sIBLGroup = sIBL_Maya_VRay_DLight_getSIBLGroup();
 
@@ -732,14 +732,14 @@ global proc sIBL_Maya_VRay_DLight_bridgeFeedbackControlsAndShaders(string $targe
 		connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_condition.firstTerm") ;
 		string $lowerCaseTarget = `tolower $target`;
 		
-		string $gammaSubComponentsList[] = {"X", "Y", "Z"};
-		for ($gammaSubComponent in $gammaSubComponentsList) 
+		string $gammaSubComponents[] = {"X", "Y", "Z"};
+		for($gammaSubComponent in $gammaSubComponents) 
 		{
 			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gamma") ("sIBL_" + $target + "_gammaCorrect.gamma" + $gammaSubComponent);
 		}
 		
-		string $gainSubComponentsList[] = {"R", "G", "B"};
-		for ($gainSubComponent in $gainSubComponentsList) 
+		string $gainSubComponents[] = {"R", "G", "B"};
+		for($gainSubComponent in $gainSubComponents) 
 		{
 			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_file.colorGain" + $gainSubComponent);
 		}
@@ -747,13 +747,13 @@ global proc sIBL_Maya_VRay_DLight_bridgeFeedbackControlsAndShaders(string $targe
 
 global proc sIBL_Maya_VRay_DLight_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
 {
-	if ($connectToBackground)
+	if($connectToBackground)
 	{
 		expression -name "sIBL_Background_Rotate_Expression" -s ("sIBL_Background_VRayPlaceEnvTex.horRotation = -" + $feedback + ".rotateX + 90;");
 		sIBL_Maya_VRay_DLight_bridgeFeedbackControlsAndShaders("Background");
 	}
 
-	if ($connectToLighting)
+	if($connectToLighting)
 	{
 		expression -name "sIBL_Lighting_Expression" -s ("sIBL_Lighting_VRayPlaceEnvTex.horRotation = -" + $feedback + ".rotateX + 90;\nsetAttr sIBL_VRay_DomeLightShape.locatorScale (`getAttr " + $feedback + ".scaleX`*60 / 100);");
 		sIBL_Maya_VRay_DLight_bridgeFeedbackControlsAndShaders("Lighting");
@@ -761,7 +761,7 @@ global proc sIBL_Maya_VRay_DLight_connectFeedbackToSIBLShaders(string $feedback,
 		string $scaleConstraint[] = `scaleConstraint -mo $feedback "sIBL_VRay_DomeLight"`;
 	}
 
-	if ($connectToReflection)
+	if($connectToReflection)
 	{
 		expression -name "sIBL_Reflection_Rotate_Expression" -s ("sIBL_Reflection_VRayPlaceEnvTex.horRotation = -" + $feedback + ".rotateX + 90;");
 		sIBL_Maya_VRay_DLight_bridgeFeedbackControlsAndShaders("Reflection");
@@ -782,21 +782,21 @@ global proc sIBL_Maya_VRay_DLight_getGround(float $feedbackRadius, int $shadowCa
 	setAttr ($ground[0] + ".overrideEnabled") 1;
 	setAttr ($ground[0] + ".overrideShading") 0;
 
-	string $scaleAttributesList[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributesList)
+	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
+	for($scaleAttribute in $scaleAttributes)
 		setAttr ($ground[0] + "." + $scaleAttribute) ($feedbackRadius * sqrt(2));
 
 	parent $ground[0] $sIBLGroup;
 	
-	if ($shadowCatcher)
+	if($shadowCatcher)
 	{
 		string $VRayObjPropertiesNode = `createNode "VRayObjectProperties"`;
 		connectAttr -f ($ground[0] + ".instObjGroups[0]") ($VRayObjPropertiesNode + ".dnSetMembers[0]");
-		string $attributesList[] = {"giVisibility"};
-		for($attribute in $attributesList)
+		string $attributes[] = {"giVisibility"};
+		for($attribute in $attributes)
 			setAttr ($VRayObjPropertiesNode + "." + $attribute) 0;
-		string $attributesList[] = {"matteSurface", "shadows"};
-		for($attribute in $attributesList)
+		string $attributes[] = {"matteSurface", "shadows"};
+		for($attribute in $attributes)
 			setAttr ($VRayObjPropertiesNode + "." + $attribute) 1;
 		
 		setAttr ($VRayObjPropertiesNode + ".shadowBrightness") 0.5;
@@ -812,7 +812,7 @@ global proc sIBL_Maya_VRay_DLight_getGround(float $feedbackRadius, int $shadowCa
 
 global proc sIBL_Maya_VRay_DLight_activateVRay()
 {
-	if (`pluginInfo -q -loaded "vrayformaya"` == 0)
+	if(`pluginInfo -q -loaded "vrayformaya"` == 0)
 	{
 		loadPlugin("vrayformaya");
 	}
@@ -852,7 +852,7 @@ global proc string[] sIBL_Maya_VRay_DLight_getShapes(string $xform)
 {
 	string $shapes[];
 	$shapes[0] = $xform;
-	if ("transform" == `nodeType $xform`)
+	if("transform" == `nodeType $xform`)
 		$shapes = `listRelatives -fullPath -shapes $xform`;
 	return $shapes;
 }
@@ -860,7 +860,7 @@ global proc string[] sIBL_Maya_VRay_DLight_getShapes(string $xform)
 global proc string sIBL_Maya_VRay_DLight_getTransform(string $shape)
 {
 	string $transform = "";
-	if ("transform" != `nodeType $shape`)
+	if("transform" != `nodeType $shape`)
 	{
 		string $parents[] = `listRelatives -fullPath -parent $shape`;
 		$transform = $parents[0];
@@ -870,8 +870,8 @@ global proc string sIBL_Maya_VRay_DLight_getTransform(string $shape)
 
 global proc int sIBL_Maya_VRay_DLight_objectExists(string $object, string $errorMessage)
 {
-	string $objectList[] = `ls -fl $object`;
-	if ($objectList[0] != "")
+	string $objects[] = `ls -fl $object`;
+	if($objects[0] != "")
 	{
 		return 1;
 	}
