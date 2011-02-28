@@ -63,93 +63,93 @@ DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 // sIBL_GUI
 string $backgroundFilePath = "@BGfile";
 int $backgroundWidth = @BGheight * 2;
-string $lightingFilePath = "@EVfile";
-float $lightingMultiplier = @EVmulti;
-float $lightingGamma = @EVgamma;
 string $reflectionFilePath = "@REFfile";
 float $reflectionMultiplier = @REFmulti;
 float $reflectionGamma = @REFgamma;
+string $lightingFilePath = "@EVfile";
+float $lightingMultiplier = @EVmulti;
+float $lightingGamma = @EVgamma;
 float $sunU = @SUNu;
 float $sunV = @SUNv;
 float $sunColor[] = {@SUNcolor};
 float $sunMultiplier = @SUNmulti;
+string $dynamicLights = "@dynamicLights";
 float $height = @Height;
 float $north = @North;
-string $dynamicLights = "@dynamicLights";
 int $createBackground = @createBackground;
-int $createLighting = @createLighting;
 int $createReflection = @createReflection;
+int $createLighting = @createLighting;
 int $createSun = @createSun;
 int $createLights = @createLights;
 int $preserveSessionSettings = @preserveSessionSettings;
 int $displayFeedback = @displayFeedback;
 float $feedbackRadius = 100;
-int $createGround = @createGround;
-int $shadowCatcher = @shadowCatcher;
-int $hideLights = @hideLights;
 string $sunLightType = "@sunLightType";
 string $dynamicLightsType = "@dynamicLightsType";
+int $hideLights = @hideLights;
+int $createGround = @createGround;
+int $shadowCatcher = @shadowCatcher;
 int $activateLinearWorkflow = @activateLinearWorkflow;
 
 sIBL_Maya_VRay_DLight_setup($backgroundFilePath,
-		$backgroundWidth,
-		$lightingFilePath,
-		$lightingMultiplier,
-		$lightingGamma,
-		$reflectionFilePath,
-		$reflectionMultiplier,
-		$reflectionGamma,
-		$sunU,
-		$sunV,
-		$sunColor,
-		$sunMultiplier,
-		$height,
-		$north,
-		$dynamicLights,
-		$createBackground,
-		$createLighting,
-		$createReflection,
-		$createSun,
-		$createLights,
-		$preserveSessionSettings,
-		$displayFeedback,
-		$createGround,
-		$shadowCatcher,
-		$feedbackRadius,
-		$hideLights,
-		$sunLightType,
-		$dynamicLightsType,
-		$activateLinearWorkflow);
+					$backgroundWidth,
+					$reflectionFilePath,
+					$reflectionMultiplier,
+					$reflectionGamma,
+					$lightingFilePath,
+					$lightingMultiplier,
+					$lightingGamma,
+					$sunU,
+					$sunV,
+					$sunColor,
+					$sunMultiplier,
+					$dynamicLights,
+					$height,
+					$north,
+					$createBackground,
+					$createReflection,
+					$createLighting,
+					$createSun,
+					$createLights,
+					$preserveSessionSettings,
+					$displayFeedback,
+					$feedbackRadius,
+					$sunLightType,
+					$dynamicLightsType,
+					$hideLights,
+					$createGround,
+					$shadowCatcher,
+					$activateLinearWorkflow);
 
 global proc sIBL_Maya_VRay_DLight_setup(string $backgroundFilePath,
-			int $backgroundWidth,
-			string $lightingFilePath,
-			float $lightingMultiplier,
-			float $lightingGamma,
-			string $reflectionFilePath,
-			float $reflectionMultiplier,
-			float $reflectionGamma,
-			float $sunU,
-			float $sunV,
-			float $sunColor[],
-			float $sunMultiplier,
-			float $height,
-			float $north,
-			string $dynamicLights,
-			int $createBackground,
-			int $createLighting,
-			int $createReflection,
-			int $createSun,
-			int $createLights,
-			int $preserveSessionSettings,
-			int $displayFeedback,
-			int $createGround,
-			int $shadowCatcher,
-			float $feedbackRadius,
-			int $hideLights,
-			string $sunLightType,
-			string $dynamicLightsType,
-			int $activateLinearWorkflow)
+							int $backgroundWidth,
+							string $reflectionFilePath,
+							float $reflectionMultiplier,
+							float $reflectionGamma,
+							string $lightingFilePath,
+							float $lightingMultiplier,
+							float $lightingGamma,
+							float $sunU,
+							float $sunV,
+							float $sunColor[],
+							float $sunMultiplier,
+							string $dynamicLights,
+							float $height,
+							float $north,
+							int $createBackground,
+							int $createReflection,
+							int $createLighting,
+							int $createSun,
+							int $createLights,
+							int $preserveSessionSettings,
+							int $displayFeedback,
+							float $feedbackRadius,
+							string $sunLightType,
+							string $dynamicLightsType,
+							int $hideLights,
+							int $createGround,
+							int $shadowCatcher,
+							int $activateLinearWorkflow)
 {
 	if(`exists sIBL_Maya_preProcessCallback`)
 	{
@@ -710,7 +710,7 @@ global proc sIBL_Maya_VRay_DLight_getLight(string $type, string $name, float $sc
 
 global proc sIBL_Maya_VRay_DLight_getSun(string $type, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
 {
-	sIBL_Maya_VRay_getLight($type, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
+	sIBL_Maya_VRay_DLight_getLight($type, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
 }
 
 global proc sIBL_Maya_VRay_DLight_getDynamicLights(string $dynamicLightsType, string $compactedDynamicLights, float $feedbackRadius)

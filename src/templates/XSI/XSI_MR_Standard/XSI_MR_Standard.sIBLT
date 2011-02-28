@@ -15,19 +15,19 @@ Comment = @Comment | This is XSI 7.0 To 2010 Mental Ray Template. | String | Com
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile
-Enviroment|EVfile = @EVfile
-Enviroment|EVmulti = @EVmulti
-Enviroment|EVgamma = @EVgamma
 Reflection|REFfile = @REFfile
 Reflection|REFmulti = @REFmulti
 Reflection|REFgamma = @REFgamma
+Enviroment|EVfile = @EVfile
+Enviroment|EVmulti = @EVmulti
+Enviroment|EVgamma = @EVgamma
 Sun|SUNu = @SUNu
 Sun|SUNv = @SUNv
 Sun|SUNcolor = @SUNcolor
 Sun|SUNmulti = @SUNmulti
+Lights|DynamicLights = @dynamicLights
 Header|Height = @Height
 Header|North = @North
-Lights|DynamicLights = @dynamicLights
 
 [Common Attributes]
 createBackground = @createBackground | 1 | Boolean | Create / Update Background
@@ -65,41 +65,103 @@ DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 // Template Last Modified: @Date
 // sIBL_GUI
 var backgroundFilePath = "@BGfile";
-var lightingFilePath = "@EVfile";
-var lightingMultiplier = @EVmulti;
-var lightingGamma = @EVgamma;
 var reflectionFilePath = "@REFfile";
 var reflectionMultiplier = @REFmulti;
 var reflectionGamma = @REFgamma;
+var lightingFilePath = "@EVfile";
+var lightingMultiplier = @EVmulti;
+var lightingGamma = @EVgamma;
 var sunU = @SUNu;
 var sunV = @SUNv;
 var sunColor = [@SUNcolor];
 var sunMultiplier = @SUNmulti;
+var dynamicLights = "@dynamicLights";
 var height = @Height;
 var north = @North;
-var dynamicLights = "@dynamicLights";
 var createBackground = @createBackground;
-var createLighting = @createLighting;
 var createReflection = @createReflection;
+var createLighting = @createLighting;
 var createSun = @createSun;
 var createLights = @createLights;
-var displayFeedback = @displayFeedback;
-var feedbackRadius = 100;
-var createGround = @createGround;
-var shadowCatcher = @shadowCatcher;
-var hideLights = @hideLights;
-var sunLightType = "@sunLightType";
-var dynamicLightsType = "@dynamicLightsType";
-var physicalSun = @physicalSun;
-var activateFinalGather = @activateFinalGather;
-var activateColorManagement = @activateColorManagement;
 var showPassesDialog = @showPassesDialog;
 var updateScene = @updateScene;
 var overrideTweaks = @overrideTweaks;
+var displayFeedback = @displayFeedback;
+var feedbackRadius = 100;
+var sunLightType = "@sunLightType";
+var dynamicLightsType = "@dynamicLightsType";
+var hideLights = @hideLights;
+var createGround = @createGround;
+var shadowCatcher = @shadowCatcher;
+var physicalSun = @physicalSun;
+var activateFinalGather = @activateFinalGather;
+var activateColorManagement = @activateColorManagement;
 
-sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultiplier, lightingGamma, reflectionFilePath, reflectionMultiplier, reflectionGamma, sunU, sunV, sunColor, sunMultiplier, height, north, dynamicLights, createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, createGround, shadowCatcher, feedbackRadius, hideLights, sunLightType, dynamicLightsType, physicalSun, activateFinalGather, activateColorManagement, showPassesDialog, updateScene, overrideTweaks);
+sIBL_XSI_MR_setup(backgroundFilePath,
+			reflectionFilePath,
+			reflectionMultiplier,
+			reflectionGamma,
+			lightingFilePath,
+			lightingMultiplier,
+			lightingGamma,
+			sunU,
+			sunV,
+			sunColor,
+			sunMultiplier,
+			dynamicLights,
+			height,
+			north,
+			createBackground,
+			createReflection,
+			createLighting,
+			createSun,
+			createLights,
+			showPassesDialog,
+			updateScene,
+			overrideTweaks,
+			displayFeedback,
+			feedbackRadius,
+			sunLightType,
+			dynamicLightsType,
+			hideLights,
+			createGround,
+			shadowCatcher,
+			physicalSun,
+			activateFinalGather,
+			activateColorManagement);
 
-function sIBL_XSI_MR_setup(backgroundFilePath, lightingFilePath, lightingMultiplier, lightingGamma, reflectionFilePath, reflectionMultiplier, reflectionGamma, sunU, sunV, sunColor, sunMultiplier, height, north, dynamicLights, createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, createGround, shadowCatcher, feedbackRadius, hideLights, sunLightType, dynamicLightsType, physicalSun, activateFinalGather, activateColorManagement, showPassesDialog, updateScene, overrideTweaks)
+function sIBL_XSI_MR_setup(backgroundFilePath,
+					reflectionFilePath,
+					reflectionMultiplier,
+					reflectionGamma,
+					lightingFilePath,
+					lightingMultiplier,
+					lightingGamma,
+					sunU,
+					sunV,
+					sunColor,
+					sunMultiplier,
+					dynamicLights,
+					height,
+					north,
+					createBackground,
+					createReflection,
+					createLighting,
+					createSun,
+					createLights,
+					showPassesDialog,
+					updateScene,
+					overrideTweaks,
+					displayFeedback,
+					feedbackRadius,
+					sunLightType,
+					dynamicLightsType,
+					hideLights,
+					createGround,
+					shadowCatcher,
+					physicalSun,
+					activateFinalGather,
+					activateColorManagement)
 {
 	try 
 	{

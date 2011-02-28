@@ -14,13 +14,13 @@ OutputScript = @OutputScript | sIBL_3dsmax_Import.ms | String | Output Script
 Comment = @Comment | This is 3dsmax 2009 To 2011 VRay Template. | String | Comment
 
 [Ibl Set Attributes]
+Background|BGfile = @BGfile
+Reflection|REFfile = @REFfile
+Enviroment|EVfile = @EVfile
 Sun|SUNu = @SUNu
 Sun|SUNv = @SUNv
 Sun|SUNcolor = @SUNcolor
 Sun|SUNmulti = @SUNmulti
-Background|BGfile = @BGfile
-Enviroment|EVfile = @EVfile
-Reflection|REFfile = @REFfile
 Lights|DynamicLights = @dynamicLights
 
 [Common Attributes]
@@ -55,12 +55,12 @@ Template Last Modified: @Date
 sIBL_GUI
 */
 
-struct sIBL_datas (backgroundFilePath, lightingFilePath, reflectionFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
+struct sIBL_datas (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
 struct sIBL_options (createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, shadowCatcher, activateLinearWorkflow)
 struct sIBL_sceneNodes (datasGroup,  lightsGroup, feedback)
 	
-global sIBL_DATAS =  sIBL_datas backgroundFilePath:"@BGfile" lightingFilePath:"@EVfile" reflectionFilePath:"@REFfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
-global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createLighting:@createLighting createReflection:@createReflection createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 hideLights:@hideLights sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
+global sIBL_DATAS =  sIBL_datas backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
+global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global sIBL_SCENE_NODES = sIBL_sceneNodes()
 
 fn sIBL_3dsmax_VRay_getSceneExtent =
