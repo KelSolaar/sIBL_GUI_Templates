@@ -696,8 +696,7 @@ global proc sIBL_Maya_MR_getFeedback(string $backgroundFilePath, float $feedback
 
 	setAttr ($place2dTexture + ".rotateFrame") 90;
 
-	select -r $feedback;
-	sets -e -forceElement $shadingEngine;
+	sets -e -forceElement $shadingEngine $feedback;
 
 	rename $lambertShader ("sIBL_Feedback_" + `nodeType $lambertShader`);
 	rename $shadingEngine ("sIBL_Feedback_" + `nodeType $shadingEngine`);
@@ -881,7 +880,7 @@ global proc sIBL_Maya_MR_activateLinearWorkflow(string $camerasList[], int $crea
 
 	for($camera in $camerasList)
 	{
-			connectAttr -f ($tonemapper + ".message") ($camera + ".miLensShader");
+		connectAttr -f ($tonemapper + ".message") ($camera + ".miLensShader");
 	}
 	
 	if ($framebufferGamma)

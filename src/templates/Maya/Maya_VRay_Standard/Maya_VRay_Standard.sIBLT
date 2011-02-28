@@ -544,8 +544,7 @@ global proc sIBL_Maya_VRay_getFeedback(string $backgroundFilePath, float $feedba
 
 	setAttr ($place2dTexture + ".rotateFrame") 90;
 
-	select -r $feedback;
-	sets -e -forceElement $shadingEngine;
+	sets -e -forceElement $shadingEngine $feedback;
 
 	string $VRayObjPropertiesNode = `createNode "VRayObjectProperties"`;
 	connectAttr -f ($feedback + ".instObjGroups[0]") ($VRayObjPropertiesNode + ".dnSetMembers[0]");

@@ -472,8 +472,7 @@ global proc sIBL_Maya_Turtle_getEnvironmentSphereBranch(float $radius, string $p
 
 	setAttr ($place2dTexture + ".rotateFrame") 90;
 
-	select -r $environmentSphere[0];
-	sets -e -forceElement $shadingEngine;
+	sets -e -forceElement $shadingEngine $environmentSphere[0];
 
 	parent $environmentSphere[0] $sIBLGroup;
 
@@ -598,8 +597,7 @@ global proc sIBL_Maya_Turtle_getFeedback(string $backgroundFilePath, float $feed
 
 	setAttr ($place2dTexture + ".rotateFrame") 90;
 
-	select -r $feedback;
-	sets -e -forceElement $shadingEngine;
+	sets -e -forceElement $shadingEngine $feedback;
 
 	rename $lambertShader ("sIBL_Feedback_" + `nodeType $lambertShader`);
 	rename $shadingEngine ("sIBL_Feedback_" + `nodeType $shadingEngine`);
