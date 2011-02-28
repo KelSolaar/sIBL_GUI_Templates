@@ -191,7 +191,7 @@ global proc sIBL_Maya_MR_setup(string $backgroundFilePath,
 	{
 		string $locator = `createNode "locator"`;
 		string $locatorTransform = sIBL_Maya_MR_getTransform($locator);
-		addAttr -ln "camerasList"  -dt "string"  $locatorTransform;
+		addAttr -ln "cameras"  -dt "string"  $locatorTransform;
 		rename $locatorTransform "sIBL_GUI_CamerasList_Container";
 		string $pickSessionResult = `layoutDialog -t "sIBL_GUI Camera Chooser" -ui "sIBL_Maya_MR_cameraChooser"`;
 		if($pickSessionResult == "Cancel")
@@ -201,7 +201,7 @@ global proc sIBL_Maya_MR_setup(string $backgroundFilePath,
 			delete "sIBL_GUI_CamerasList_Container";
 			return;
 		}
-		$cameras = stringToStringArray(`getAttr "sIBL_GUI_CamerasList_Container.camerasList"`, ",");
+		$cameras = stringToStringArray(`getAttr "sIBL_GUI_CamerasList_Container.cameras"`, ",");
 		if(size($cameras) == 0)
 		{
 			$breakExecution = 1;
@@ -321,8 +321,8 @@ global proc sIBL_Maya_MR_cameraChooser()
 			-sc "sIBL_Maya_MR_setSelectedCameras"
 		camerasScrollList`;
 
-	string $camera[] = `ls -l -type "camera"`;
-	for($camera in $camera)
+	string $cameras[] = `ls -l -type "camera"`;
+	for($camera in $cameras)
 	{
 		textScrollList -e -append $camera camerasScrollList;
 	}
@@ -358,7 +358,7 @@ global proc sIBL_Maya_MR_cameraChooser()
 global proc sIBL_Maya_MR_setSelectedCameras()
 {
 	string $containerValue = stringArrayToString(`textScrollList -q -si camerasScrollList`, ",");
-	setAttr -type "string" "sIBL_GUI_CamerasList_Container.camerasList" $containerValue;
+	setAttr -type "string" "sIBL_GUI_CamerasList_Container.cameras" $containerValue;
 }
 
 global proc string[] sIBL_Maya_MR_getSessionPreservedAttributes()

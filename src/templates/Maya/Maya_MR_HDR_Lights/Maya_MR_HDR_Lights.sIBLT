@@ -129,7 +129,7 @@ global proc sIBL_Maya_MR_HDR_Lights_setup(string $lightName,
 	{
 		string $locator = `createNode "locator"`;
 		string $locatorTransform = sIBL_Maya_MR_HDR_Lights_getTransform($locator);
-		addAttr -ln "camerasList"  -dt "string"  $locatorTransform;
+		addAttr -ln "cameras"  -dt "string"  $locatorTransform;
 		rename $locatorTransform "sIBL_GUI_CamerasList_Container";
 		string $pickSessionResult = `layoutDialog -t "sIBL_GUI Camera Chooser" -ui "sIBL_Maya_MR_HDR_Lights_cameraChooser"`;
 		if($pickSessionResult == "Cancel")
@@ -139,7 +139,7 @@ global proc sIBL_Maya_MR_HDR_Lights_setup(string $lightName,
 			delete "sIBL_GUI_CamerasList_Container";
 			return;
 		}
-		$cameras = stringToStringArray(`getAttr "sIBL_GUI_CamerasList_Container.camerasList"`, ",");
+		$cameras = stringToStringArray(`getAttr "sIBL_GUI_CamerasList_Container.cameras"`, ",");
 		if(size($cameras) == 0)
 		{
 			$breakExecution = 1;
@@ -208,8 +208,8 @@ global proc sIBL_Maya_MR_HDR_Lights_cameraChooser()
 			-sc "sIBL_Maya_MR_HDR_Lights_setSelectedCameras"
 		camerasScrollList`;
 
-	string $camera[] = `ls -l -type "camera"`;
-	for($camera in $camera)
+	string $cameras[] = `ls -l -type "camera"`;
+	for($camera in $cameras)
 	{
 		textScrollList -e -append $camera camerasScrollList;
 	}
@@ -245,7 +245,7 @@ global proc sIBL_Maya_MR_HDR_Lights_cameraChooser()
 global proc sIBL_Maya_MR_HDR_Lights_setSelectedCameras()
 {
 	string $containerValue = stringArrayToString(`textScrollList -q -si camerasScrollList`, ",");
-	setAttr -type "string" "sIBL_GUI_CamerasList_Container.camerasList" $containerValue;
+	setAttr -type "string" "sIBL_GUI_CamerasList_Container.cameras" $containerValue;
 }
 
 global proc string sIBL_Maya_MR_HDR_Lights_getHDRILightFileShaderBranch(string $filePath, string $name)
@@ -280,6 +280,8 @@ global proc string sIBL_Maya_MR_HDR_Lights_getLight(string $name, string $shape,
 	for($lock in $locks)
 		setAttr -lock true -keyable false ($light + "." + $lock);
 	
+	
+	$light = `rename $light ($name + "_Light")`;
 	return $light;
 }
 
@@ -294,7 +296,7 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILightShaderBranch(string $inpu
 	connectAttr -f ($colorMultiplyDivide + ".output") ($intensityMultiplyDivide + ".input1");
 	
 	string $modulationMultiplyDivide = `shadingNode -asUtility "multiplyDivide"`;
-	connectAttr -f ($intensityMultiplyDivide + ".input1") ($modulationMultiplyDivide + ".input1");
+	connectAttr -f ($intensityMultiplyDivide + ".output") ($modulationMultiplyDivide + ".input1");
 	
 	for($slot in $connectionSlots)
 		connectAttr -f ($modulationMultiplyDivide + ".output") ($inputShader + "." + $slot);
@@ -306,13 +308,14 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILightShaderBranch(string $inpu
 	return $modulationMultiplyDivide;
 }
 
-global proc sIBL_XSI_Arnold_HDR_Lights_connectLightToSupport(string $light, string $support)
+global proc sIBL_XSI_Arnold_HDR_Lights_connectLightToSupport(string $light, string $name)
 {
-	/*string $subComponents[] = {"X", "Y", "Z"};
-	for($subComponents in $subComponents) 
+	connectAttr -f ($light + ".color") ($name + "_Color_multiplyDivide.input2");
+	string $subComponents[] = {"X", "Y", "Z"};
+	for($subComponent in $subComponents) 
 	{
-		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gamma") ("sIBL_" + $target + "_gammaCorrect.gamma" + $gammaSubComponent);
-	}*/
+		connectAttr -f ($light + ".intensity") ($name + "_Intensity_multiplyDivide.input2" + $subComponent);
+	}
 }
 
 global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $lightFile, string $lightMaskFile, float $lightWidth, float $lightHeight, string $lightObject, string $lightObjectFrame, float $lightObjectFrameColor[], float $scale, string $shape, int $createLight, int $connectedLight)
@@ -374,10 +377,10 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	
 	string $lambertShader = `shadingNode -asShader "lambert"`;
 	setAttr -type double3 ($lambertShader + ".color") ($lightObjectFrameColor[0] / 255) ($lightObjectFrameColor[1] / 255) ($lightObjectFrameColor[2] / 255) ;
-	$shadingEngine = `sets -renderable true -noSurfaceShader true -empty`;
-	sets -renderable true -noSurfaceShader true -empty -name $shadingEngine;
-	connectAttr -f ($lambertShader + ".outColor") ($shadingEngine + ".surfaceShader");
-	sets -e -forceElement $shadingEngine $lightFrame;
+	string $frameShadingEngine = `sets -renderable true -noSurfaceShader true -empty`;
+	sets -renderable true -noSurfaceShader true -empty -name $frameShadingEngine;
+	connectAttr -f ($lambertShader + ".outColor") ($frameShadingEngine + ".surfaceShader");
+	sets -e -forceElement $frameShadingEngine $lightFrame;
 	
 	if($createLight || $connectedLight)
 	{
@@ -388,8 +391,8 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	{
 		string $light[] = {sIBL_Maya_MR_HDR_Lights_getLight($name, $shape, $lightWidth, $lightHeight)};
 		$light = `parent $light $lightHook[0]`;
+		sIBL_XSI_Arnold_HDR_Lights_connectLightToSupport($light[0], $name);
 		setAttr ($light[0] + ".emitSpecular") 0;
-		//sIBL_XSI_Arnold_HDR_Lights_connectLightToSupport($light[0], )
 	}
 	string $attributes[] = {"sx", "sy", "sz"};
 	for($attribute in $attributes)
@@ -401,6 +404,20 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 		for($attribute in $attributes)
 			setAttr ($lightRoot[0] + "." + $attribute) ($scale * 2);	
 	}
+	
+	rename $constraint[0] ($name + "_" + `nodeType $constraint[0]`);
+	rename $surfaceShader ($name + "_" + `nodeType $surfaceShader`);
+	rename $shadingEngine ($name + "_" + `nodeType $shadingEngine`);
+	rename $lambertShader ($name + "_Frame_" + `nodeType $lambertShader`);
+	rename $frameShadingEngine ($name + "_Frame_" + `nodeType $frameShadingEngine`);
+	rename $reverse ($name + "_" + `nodeType $reverse`);
+
+	rename $lightSupport[0] ($name + "_Support");
+	rename $lightFrame[0] ($name + "_Frame");
+	rename $lightHook[0] ($name + "_Hook");
+	rename $lightRoot[0] ($name + "_Root");
+	rename $lightTarget[0] ($name + "_Target");	
+	$lightGroup = `rename $lightGroup $name`;
 	
 	return $lightGroup;
 }
