@@ -396,9 +396,7 @@ global proc sIBL_Maya_VRay_getMainLocator()
 	}
 
 	setAttr ($sIBLLocatorTransform + ".ty") 5;
-	string $locks[] = {"rx", "ry", "rz", "sx", "sy", "sz"};
-	for($lock in $locks)
-		setAttr -lock true -keyable false ($sIBLLocatorTransform + "." + $lock);
+	sIBL_Maya_VRay_lockAttributes($sIBLLocatorTransform, {"rx", "ry", "rz", "sx", "sy", "sz"});
 
 	parent $sIBLLocatorTransform $sIBLGroup;
 	
@@ -472,10 +470,7 @@ global proc string sIBL_Maya_VRay_getSIBLGroup()
 	if($sIBLGroup[0] == "")
 	{
 		$sIBLGroup[0] = `createNode "transform" -n "sIBL"`;
-
-		string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-		for($lock in $locks)
-			setAttr -lock true -keyable false ($sIBLGroup[0] + "." + $lock);
+		sIBL_Maya_VRay_lockAttributes($sIBLGroup[0], {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"});
 	}
 
 	return $sIBLGroup[0];
@@ -496,9 +491,7 @@ global proc string sIBL_Maya_VRay_getFeedbackGeometry(float $feedbackRadius, int
 
 	setAttr ($feedback[0] + ".rotateZ") 90;
 
-	string $locks[] = {"tx", "ty", "tz", "ry", "rz"};
-	for($lock in $locks)
-		setAttr -lock true -keyable false ($feedback[0] + "." + $lock);
+	sIBL_Maya_VRay_lockAttributes($feedback[0], {"tx", "ty", "tz", "ry", "rz"});
 
 	setAttr ($feedback[0] + ".visibility") $feedBackVisibility;
 
@@ -798,6 +791,12 @@ global proc sIBL_Maya_VRay_activateVRay()
 	}
 	setAttr -type "string" defaultRenderGlobals.currentRenderer "vray";
 	vrayCreateVRaySettingsNode();
+}
+
+global proc sIBL_Maya_VRay_lockAttributes(string $node, string $attributes[])
+{
+	for($attribute in $attributes)
+		setAttr -lock true -keyable false ($node + "." + $attribute);
 }
 
 global proc float sIBL_Maya_VRay_getSceneExtent()

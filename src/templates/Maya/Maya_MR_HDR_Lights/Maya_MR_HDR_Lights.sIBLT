@@ -457,12 +457,6 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	return $lightGroup;
 }
 
-global proc sIBL_Maya_MR_HDR_Lights_lockAttributes(string $node, string $attributes[])
-{
-	for($attribute in $attributes)
-		setAttr -lock true -keyable false ($node + "." + $attribute);
-}
-
 global proc sIBL_Maya_MR_HDR_Lights_activateFinalGather()
 {
 	setAttr "defaultRenderGlobals.enableDefaultLight" 0;
@@ -528,6 +522,12 @@ global proc sIBL_Maya_MR_HDR_Lights_activateMentalRay()
 	miCreateGlobalsNode;
 	miCreateDefaultNodes;
 	miCreateOtherOptionsNodesForURG;
+}
+
+global proc sIBL_Maya_MR_HDR_Lights_lockAttributes(string $node, string $attributes[])
+{
+	for($attribute in $attributes)
+		setAttr -lock true -keyable false ($node + "." + $attribute);
 }
 
 global proc string sIBL_Maya_MR_HDR_Lights_setPadding(string $data, int $padding)
