@@ -29,7 +29,7 @@ HDRLight|HDRLightScale = @HDRLightScale
 HDRLight|HDRLightShape = @HDRLightShape
 
 [Common Attributes]
-lightScale = @lightScale | 5 | Float | Light Scale
+lightScale = @lightScale | 1 | Float | Light Scale
 createLight = @createLight | 0 | Boolean | Create Light
 connectToLights = @connectToLights | 0 | Boolean | Connect To Smart Ibl Lights
 
@@ -248,6 +248,39 @@ global proc sIBL_Maya_MR_HDR_Lights_setSelectedCameras()
 	setAttr -type "string" "sIBL_GUI_CamerasList_Container.cameras" $containerValue;
 }
 
+global proc string[] sIBL_Maya_MR_HDR_Lights_getControlsLocator(string $name)
+{
+	string $controlsLocator = `createNode "annotationShape"`;
+	
+	setAttr ($controlsLocator + ".displayArrow") 0;
+	setAttr -lock true -keyable false ($controlsLocator + ".displayArrow");
+	setAttr -type "string" ($controlsLocator + ".text") ("[ " + $name + " Controls ]");
+	
+	string $controlsLocatorTransform = sIBL_Maya_MR_getTransform($controlsLocator);
+
+	addAttr -ln "hdrLightControls" -nn "[ HDR Light Controls ]" -at "enum" -en $name $controlsLocatorTransform;
+	setAttr -e-keyable true ($controlsLocatorTransform + "." + "hdrLightControls");
+	setAttr -lock true ($controlsLocatorTransform + "." + "hdrLightControls");
+	
+	addAttr -ln "color" -at float3 -uac $controlsLocatorTransform;
+	addAttr -ln "colorX" -at "float" -p "color" $controlsLocatorTransform;
+	addAttr -ln "colorY" -at "float" -p "color" $controlsLocatorTransform;
+	addAttr -ln "colorZ" -at "float" -p "color" $controlsLocatorTransform;
+	setAttr -type float3 ($controlsLocatorTransform + ".color") 1 1 1;
+	setAttr -e-keyable true ($controlsLocatorTransform + ".color") ;
+	setAttr -e-keyable true ($controlsLocatorTransform + ".colorX") ;
+	setAttr -e-keyable true ($controlsLocatorTransform + ".colorY") ;
+	setAttr -e-keyable true ($controlsLocatorTransform + ".colorZ") ;
+	
+	addAttr -ln "intensity" -at double  $controlsLocatorTransform;
+	setAttr -e-keyable true ($controlsLocatorTransform + ".intensity");
+	setAttr ($controlsLocatorTransform + ".intensity") 1;
+	
+	$controlsLocatorTransform = `rename $controlsLocatorTransform ($name + "_Controls")`;
+
+	return {$controlsLocatorTransform, $controlsLocator};
+}
+
 global proc string sIBL_Maya_MR_HDR_Lights_getHDRILightFileShaderBranch(string $filePath, string $name)
 {
 	string  $file = `shadingNode -asTexture "file"`;
@@ -276,10 +309,7 @@ global proc string sIBL_Maya_MR_HDR_Lights_getLight(string $name, string $shape,
 	
 	setAttr ($light + ".sx") ($scaleX / 2);
 	setAttr ($light + ".sy") ($scaleY / 2);
-	string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-	for($lock in $locks)
-		setAttr -lock true -keyable false ($light + "." + $lock);
-	
+	sIBL_Maya_MR_HDR_Lights_lockAttributes($light, {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"});
 	
 	$light = `rename $light ($name + "_Light")`;
 	return $light;
@@ -308,13 +338,13 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILightShaderBranch(string $inpu
 	return $modulationMultiplyDivide;
 }
 
-global proc sIBL_XSI_Arnold_HDR_Lights_connectLightToSupport(string $light, string $name)
+global proc sIBL_XSI_Arnold_HDR_Lights_connectDriverToSupport(string $driver, string $name)
 {
-	connectAttr -f ($light + ".color") ($name + "_Color_multiplyDivide.input2");
+	connectAttr -f ($driver + ".color") ($name + "_Color_multiplyDivide.input2");
 	string $subComponents[] = {"X", "Y", "Z"};
 	for($subComponent in $subComponents) 
 	{
-		connectAttr -f ($light + ".intensity") ($name + "_Intensity_multiplyDivide.input2" + $subComponent);
+		connectAttr -f ($driver + ".intensity") ($name + "_Intensity_multiplyDivide.input2" + $subComponent);
 	}
 }
 
@@ -326,10 +356,10 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	
 	string $lightGroup = `createNode "transform"`;
 
-	float $lightRootRadius = sIBL_Maya_MR_HDR_Lights_truncFloatNumber(3 * (($lightWidth + $lightHeight)/2), 0.1);
+	float $lightRootRadius = sIBL_Maya_MR_HDR_Lights_truncFloatNumber(1.5 * (($lightWidth + $lightHeight)/2), 0.1);
 	string $lightRoot[] = `circle -nr 0 0 1 -ch 0 -r $lightRootRadius`;
 	
-	float $lightHookRadius = sIBL_Maya_MR_HDR_Lights_truncFloatNumber(1.5 * (($lightWidth + $lightHeight)/2), 0.1);
+	float $lightHookRadius = sIBL_Maya_MR_HDR_Lights_truncFloatNumber(1.0 * (($lightWidth + $lightHeight)/2), 0.1);
 	string $lightHook[] = `circle -nr 0 0 1 -ch 0 -r $lightHookRadius`;	
 	
 	string $lightTarget[] = `spaceLocator`;
@@ -354,12 +384,9 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	$lightRoot = `parent $lightRoot[0] $lightGroup`;
 	$lightTarget = `parent $lightTarget[0] $lightGroup`;
 	
-	string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
-	for($lock in $locks)
-	{
-		setAttr -lock true -keyable false ($lightSupport[0] + "." + $lock);
-		setAttr -lock true -keyable false ($lightFrame[0] + "." + $lock);
-	}
+	string $attributes[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
+	sIBL_Maya_MR_HDR_Lights_lockAttributes($lightSupport[0], $attributes);
+	sIBL_Maya_MR_HDR_Lights_lockAttributes($lightFrame[0], $attributes);
 	
 	string $constraint[] = `aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 0 -1 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0 $lightTarget[0] $lightRoot[0]`;
 	
@@ -391,16 +418,24 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	{
 		string $light[] = {sIBL_Maya_MR_HDR_Lights_getLight($name, $shape, $lightWidth, $lightHeight)};
 		$light = `parent $light $lightHook[0]`;
-		sIBL_XSI_Arnold_HDR_Lights_connectLightToSupport($light[0], $name);
+		sIBL_XSI_Arnold_HDR_Lights_connectDriverToSupport($light[0], $name);
 		setAttr ($light[0] + ".emitSpecular") 0;
 	}
-	string $attributes[] = {"sx", "sy", "sz"};
+	else
+	{
+		string $controlsLocator[] = sIBL_Maya_MR_HDR_Lights_getControlsLocator($name);
+		$controlsLocator = `parent $controlsLocator[0] $lightHook[0]`;
+		sIBL_Maya_MR_HDR_Lights_lockAttributes($controlsLocator[0], $attributes);
+		sIBL_XSI_Arnold_HDR_Lights_connectDriverToSupport($controlsLocator[0], $name);
+	}
+
+	$attributes= {"sx", "sy", "sz"};
 	for($attribute in $attributes)
 		setAttr ($lightRoot[0] + "." + $attribute) $scale;
 	
 	if(!$connectedLight)
 	{
-		string $attributes[] = {"tx", "ty", "tz"};
+		$attributes = {"tx", "ty", "tz"};
 		for($attribute in $attributes)
 			setAttr ($lightRoot[0] + "." + $attribute) ($scale * 2);	
 	}
@@ -420,6 +455,12 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	$lightGroup = `rename $lightGroup $name`;
 	
 	return $lightGroup;
+}
+
+global proc sIBL_Maya_MR_HDR_Lights_lockAttributes(string $node, string $attributes[])
+{
+	for($attribute in $attributes)
+		setAttr -lock true -keyable false ($node + "." + $attribute);
 }
 
 global proc sIBL_Maya_MR_HDR_Lights_activateFinalGather()
