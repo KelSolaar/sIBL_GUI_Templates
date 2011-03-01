@@ -772,6 +772,11 @@ global proc sIBL_Maya_MR_getLight(string $type, int $physicalSun, string $name, 
 			setAttr($light + ".penumbraAngle") 16;
 			break;
 	}
+	
+	if($type == "Area")
+		$scale = $scale / 2;
+	for($attribute in {"sx", "sy", "sz"})
+		setAttr ($light + "." + $attribute) $scale;
 
 	parent $light $sIBLGroup;
 

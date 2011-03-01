@@ -355,6 +355,22 @@ global proc sIBL_XSI_Arnold_HDR_Lights_connectDriverToSupport(string $driver, st
 	}
 }
 
+global proc string[] sIBL_Maya_MR_HDR_Lights_importObjFile(string $file)
+{
+	$nodesBefore = `ls -l`;
+	file -import -type "OBJ" -options "mo=0" $file;
+	$nodes = `ls -l`;
+	string $objects[] = stringArrayRemove($nodesBefore, $nodes);
+
+	for($object in $objects)
+	{
+		setAttr ($object + ".visibleInReflections") 1;
+		setAttr ($object + ".visibleInRefractions") 1;
+	}
+
+	return $objects;
+}
+
 global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $lightFile, string $lightMaskFile, float $lightWidth, float $lightHeight, float $lightColor[], string $lightObject, string $lightObjectFrame, float $lightObjectFrameColor[], float $scale, string $shape, int $createLight, int $connectedLight)
 {
 	string $existingObjects[] = `ls ("*" + $name + "_*_Support")`;
@@ -370,20 +386,9 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	string $lightHook[] = `circle -nr 0 0 1 -ch 0 -r $lightHookRadius`;	
 	
 	string $lightTarget[] = `spaceLocator`;
-	
-	string $nodesBefore[] = `ls -l`;
-	file -import -type "OBJ" -rpr "Synthetic_Area_B" -options "mo=0"  $lightObject;
-	string $nodes[] = `ls -l`;
-	string $lightSupport[] = stringArrayRemove($nodesBefore, $nodes);
-	setAttr ($lightSupport[0] + ".visibleInReflections") 1;
-	setAttr ($lightSupport[0] + ".visibleInRefractions") 1;
 
-	$nodesBefore = `ls -l`;
-	file -import -type "OBJ" -rpr "Synthetic_Area_B" -options "mo=0"  $lightObjectFrame;
-	$nodes = `ls -l`;
-	string $lightFrame[] = stringArrayRemove($nodesBefore, $nodes);
-	setAttr ($lightFrame[0] + ".visibleInReflections") 1;
-	setAttr ($lightFrame[0] + ".visibleInRefractions") 1;
+	string $lightSupport[] = sIBL_Maya_MR_HDR_Lights_importObjFile($lightObject);
+	string $lightFrame[] = sIBL_Maya_MR_HDR_Lights_importObjFile($lightObjectFrame);
 	
 	$lightSupport = `parent $lightSupport[0] $lightHook[0]`;
 	$lightFrame = `parent $lightFrame[0] $lightHook[0]`;
@@ -482,7 +487,8 @@ global proc 	sIBL_Maya_MR_HDR_Lights_connectToLights(string $name, string $light
 	for($sIBLLight in $sIBLLights)
 	{
 		string $tokens[] = {};
-		tokenize (sIBL_Maya_MR_HDR_Lights_getTransform($sIBLLight)) "|" $tokens;
+		string $sIBLLightTransform = sIBL_Maya_MR_HDR_Lights_getTransform($sIBLLight);
+		tokenize $sIBLLightTransform "|" $tokens;
 		string $lightName = $tokens[size($tokens)-1]  + "_" + $name;
 		float $lightColor[] = getAttr ($sIBLLight + ".color");
 		$lightColor = {$lightColor[0] * 255, $lightColor[1] * 255, $lightColor[2] * 255};
@@ -492,7 +498,7 @@ global proc 	sIBL_Maya_MR_HDR_Lights_connectToLights(string $name, string $light
 		for($relative in $lightRelatives)
 			if( `gmatch $relative "*_Root"` && `nodeType $relative` == "transform")
 			{
-				$lightRoot = `parent $relative $sIBLLight `;
+				$lightRoot = `parent $relative $sIBLLightTransform`;
 				break;
 			}
 		string $lightRootRelatives[] = `listRelatives -f -ad $lightRoot[0]`;
@@ -502,9 +508,13 @@ global proc 	sIBL_Maya_MR_HDR_Lights_connectToLights(string $name, string $light
 				delete $relative;
 				break;
 			}
-		
+		float $averagedSupportSize = ($lightWidth + $lightHeight) / 2;
 		for($attribute in {"sx", "sy", "sz"})
-			setAttr ($lightRoot[0] + "." + $attribute) 1;
+		{
+			float $sIBLLightAxisScale = `getAttr ($sIBLLightTransform + "."+ $attribute)`;
+			float $lightRootAxisScale = `getAttr ($lightRoot[0]  + "."+ $attribute)`;
+			setAttr ($lightRoot[0] + "." + $attribute) ($lightRootAxisScale * (($sIBLLightAxisScale * 2) / $averagedSupportSize));
+		}
 		for($attribute in {"tx", "ty", "tz", "rx", "ry", "rz"})
 			setAttr ($lightRoot[0] + "." + $attribute) 0;
 		sIBL_XSI_Arnold_HDR_Lights_connectDriverToSupport($sIBLLight, $light);

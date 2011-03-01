@@ -655,6 +655,11 @@ global proc sIBL_Maya_VRay_getLight(string $type, string $name, float $scale, fl
 			break;
 	}
 
+	if($type == "Area")
+		$scale = $scale / 2;
+	for($attribute in {"sx", "sy", "sz"})
+		setAttr ($light + "." + $attribute) $scale;
+
 	parent $light $sIBLGroup;
 
 	string $pointOnSurfaceInfo = `createNode "pointOnSurfaceInfo"`;
@@ -677,7 +682,7 @@ global proc sIBL_Maya_VRay_getLight(string $type, string $name, float $scale, fl
 
 global proc sIBL_Maya_VRay_getSun(string $type, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
 {
-	sIBL_Maya_VRay_getLight($type, "sIBL_Sun", ($feedbackRadius / 10), $sunColor, $sunMultiplier, $sunU, $sunV);
+	sIBL_Maya_VRay_getLight($type, "sIBL_Sun", ($feedbackRadius / 15), $sunColor, $sunMultiplier, $sunU, $sunV);
 }
 
 global proc sIBL_Maya_VRay_getDynamicLights(string $dynamicLightsType, string $compactedDynamicLights, float $feedbackRadius)

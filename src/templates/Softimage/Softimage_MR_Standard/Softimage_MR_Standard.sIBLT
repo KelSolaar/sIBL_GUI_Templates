@@ -981,7 +981,7 @@ function sIBL_XSI_MR_update_sun(sunLightType, sunU, sunV, sunColor, sunMultiplie
 		sun = sun(0);
 		if(sun != null) 
 		{
-			sIBL_XSI_MR_update_lightsConstraints(sun, feedbackRadius / 10, sunU, sunV)
+			sIBL_XSI_MR_update_lightsConstraints(sun, feedbackRadius / 15, sunU, sunV)
 		}
 		else 
 		{
