@@ -642,7 +642,6 @@ global proc sIBL_Maya_Turtle_getLight(string $type, string $name, float $scale, 
 
 	string $light = `shadingNode -asLight $primitiveType`;
 
-	setAttr ($light + ".locatorScale") $scale;
 	setAttr -type double3 ($light + ".color") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
 	setAttr ($light + ".intensity") $intensity;
 	setAttr ($light + ".useRayTraceShadows") 1;

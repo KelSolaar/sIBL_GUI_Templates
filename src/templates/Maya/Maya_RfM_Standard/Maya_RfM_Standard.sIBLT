@@ -698,7 +698,6 @@ global proc sIBL_Maya_RfM_getLight(string $type, string $shadowsType, string $na
 
 	string $light = `shadingNode -asLight $primitiveType`;
 
-	setAttr ($light + ".locatorScale") $scale;
 	setAttr -type double3 ($light + ".color") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
 	setAttr ($light + ".intensity") $intensity;
 	
