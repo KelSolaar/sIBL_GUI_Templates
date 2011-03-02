@@ -298,7 +298,7 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILightFileShaderBranch(string $
 global proc string sIBL_Maya_MR_HDR_Lights_getLight(string $name, string $shape, float $scaleX, float $scaleY, float $lightColor[])
 {
 	string $light = `shadingNode -asLight "areaLight"`;
-	setAttr -type double3 ($light + ".color") ($lightColor[0] / 255) ($lightColor[1] / 255) ($lightColor[2] / 255) ;
+	setAttr -type double3 ($light + ".color") $lightColor[0] $lightColor[1] $lightColor[2];
 	setAttr ($light + ".emitSpecular") 0;
 	setAttr ($light + ".decayRate") 2;
 	setAttr ($light + ".useRayTraceShadows") 1;
@@ -415,7 +415,7 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	sets -e -forceElement $shadingEngine $lightSupport;
 	
 	string $lambertShader = `shadingNode -asShader "lambert"`;
-	setAttr -type double3 ($lambertShader + ".color") ($lightObjectFrameColor[0] / 255) ($lightObjectFrameColor[1] / 255) ($lightObjectFrameColor[2] / 255) ;
+	setAttr -type double3 ($lambertShader + ".color") $lightObjectFrameColor[0] $lightObjectFrameColor[1] $lightObjectFrameColor[2] ;
 	string $frameShadingEngine = `sets -renderable true -noSurfaceShader true -empty`;
 	sets -renderable true -noSurfaceShader true -empty -name $frameShadingEngine;
 	connectAttr -f ($lambertShader + ".outColor") ($frameShadingEngine + ".surfaceShader");
@@ -431,10 +431,10 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 		string $light[] = {sIBL_Maya_MR_HDR_Lights_getLight($name, $shape, $lightWidth, $lightHeight, $lightColor)};
 		$light = `parent $light $lightHook[0]`;
 		sIBL_XSI_Arnold_HDR_Lights_connectDriverToSupport($light[0], $name);
-		setAttr ($name + "_Modulation_multiplyDivide.input2X") (1 / ($lightColor[0] / 255));
-		setAttr ($name + "_Modulation_multiplyDivide.input2Y") (1 / ($lightColor[1] / 255));
-		setAttr ($name + "_Modulation_multiplyDivide.input2Z") (1 / ($lightColor[2] / 255));
 		setAttr ($light[0] + ".emitSpecular") 0;
+		setAttr ($name + "_Modulation_multiplyDivide.input2X") (1 / ($lightColor[0]));
+		setAttr ($name + "_Modulation_multiplyDivide.input2Y") (1 / ($lightColor[1]));
+		setAttr ($name + "_Modulation_multiplyDivide.input2Z") (1 / ($lightColor[2]));
 	}
 	else
 	{
@@ -454,7 +454,7 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 		setAttr ($lightRoot[0] + "." + $attribute) $scale;
 	if(!$connectedLight)
 		for($attribute in {"tx", "ty", "tz"})
-			setAttr ($lightRoot[0] + "." + $attribute) ($scale * 2);	
+			setAttr ($lightRoot[0] + "." + $attribute) $scale;	
 	
 	rename $constraint[0] ($name + "_" + `nodeType $constraint[0]`);
 	rename $surfaceShader ($name + "_" + `nodeType $surfaceShader`);
@@ -491,7 +491,7 @@ global proc 	sIBL_Maya_MR_HDR_Lights_connectToLights(string $name, string $light
 		tokenize $sIBLLightTransform "|" $tokens;
 		string $lightName = $tokens[size($tokens)-1]  + "_" + $name;
 		float $lightColor[] = getAttr ($sIBLLight + ".color");
-		$lightColor = {$lightColor[0] * 255, $lightColor[1] * 255, $lightColor[2] * 255};
+		$lightColor = {$lightColor[0], $lightColor[1], $lightColor[2]};
 		string $light = sIBL_Maya_MR_HDR_Lights_getHDRILight($lightName, $lightFile, $lightMaskFile, $lightWidth, $lightHeight, $lightColor, $lightObject, $lightObjectFrame, $lightObjectFrameColor, 1, "",  false, true);
 		string $lightRelatives[] = `listRelatives -f -ad $light`;
 		string $lightRoot[] = {};

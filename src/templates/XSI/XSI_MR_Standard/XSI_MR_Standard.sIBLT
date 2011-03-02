@@ -1075,6 +1075,21 @@ function sIBL_XSI_MR_getLight(parent, constraintParent, type, name, scale, physi
 		light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("shadow").value = true;
 	}
 	
+	switch(type)
+	{
+		case "Distant":
+			break;
+		case "Point":
+			break;
+		case "Quad":
+			var subComponents = ["SX", "SY", "SZ"];
+			for(var i = 0; i < subComponents.length; i++) 
+				light.Primitives("light").Parameters("LightAreaXform" + subComponents[i]).value = 1;
+			break;
+		case "Spot":
+			break;
+	}	
+
 	var surfaceConstraint = ApplyCns("Surface", light, constraintParent);
 	
 	if(sIBL_XSI_MR_objectExists("sIBL_Lights_Target")) 
