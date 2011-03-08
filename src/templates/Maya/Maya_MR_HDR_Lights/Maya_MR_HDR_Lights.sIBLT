@@ -3,7 +3,7 @@ Name = @Name | HDR Lights | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_HDR_Lights Template Manual.html | String | Help File
 Release = @Release | 0.9.0 | String | Template Release
-Date = @Date | 1 March 2011 | String | Date
+Date = @Date | 7 March 2011 | String | Date
 Author = @Author | Kel Solaar / Brainspoon | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -166,7 +166,7 @@ global proc sIBL_Maya_MR_HDR_Lights_setup(string $lightName,
 		
 		// Creates The HDRI Lights.
 		if($connectToLights)
-			sIBL_Maya_MR_HDR_Lights_connectToLights($lightName, $lightFilePath, $lightMaskFilePath, $lightWidth, $lightHeight, $lightObjectPath, $lightObjectFramePath, $lightObjectFrameColor, $texturedLight);
+			sIBL_Maya_MR_HDR_Lights_connectToLights($lightFilePath, $lightMaskFilePath, $lightWidth, $lightHeight, $lightObjectPath, $lightObjectFramePath, $lightObjectFrameColor, $texturedLight);
 		else
 			sIBL_Maya_MR_HDR_Lights_getHDRILight(sIBL_Maya_MR_HDR_Lights_getNonClashingName($lightName), $lightFilePath, $lightMaskFilePath, $lightWidth, $lightHeight, $lightColor, $lightObjectPath, $lightObjectFramePath, $lightObjectFrameColor, $lightScale, $lightShape, $createLight, $texturedLight);
 
@@ -529,7 +529,7 @@ global proc string sIBL_Maya_MR_HDR_Lights_getHDRILight(string $name, string $li
 	return $lightGroup;
 }
 								
-global proc sIBL_Maya_MR_HDR_Lights_connectToLights(string $name, string $lightFile, string $lightMaskFile, float $lightWidth, float $lightHeight, string $lightObject, string $lightObjectFrame, float $lightObjectFrameColor[], int $texturedLight)
+global proc sIBL_Maya_MR_HDR_Lights_connectToLights(string $lightFile, string $lightMaskFile, float $lightWidth, float $lightHeight, string $lightObject, string $lightObjectFrame, float $lightObjectFrameColor[], int $texturedLight)
 {
 	string $sIBLGroup = "|sIBL";
 	if(`objExists $sIBLGroup`)
@@ -623,8 +623,6 @@ global proc sIBL_Maya_MR_HDR_Lights_connectToLights(string $name, string $lightF
 					float $colorAverage = ($lightColor[0] +  $lightColor[1] +  $lightColor[2]) / 3;
 					string $subComponents[] = {"red", "green", "blue"};
 					string $alternativeSubComponents[] = {"X", "Y", "Z"};
-					print $colorAverage;
-					print $lightIntensity;
 					for($i = 0; $i < size($subComponents); $i++)
 					{
 						setAttr ($name + "_Controls" + "." + $subComponents[$i] + "Color") $lightColor[$i];
