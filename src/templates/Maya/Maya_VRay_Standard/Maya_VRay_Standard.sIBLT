@@ -702,20 +702,20 @@ global proc sIBL_Maya_VRay_getDynamicLights(string $dynamicLightsType, string $c
 
 global proc sIBL_Maya_VRay_bridgeFeedbackControlsAndShaders(string $target)
 {
-		connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_condition.firstTerm") ;
-		string $lowerCaseTarget = `tolower $target`;
+	connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_condition.firstTerm") ;
+	string $lowerCaseTarget = `tolower $target`;
 		
-		string $gammaSubComponents[] = {"X", "Y", "Z"};
-		for($gammaSubComponent in $gammaSubComponents) 
-		{
-			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gamma") ("sIBL_" + $target + "_gammaCorrect.gamma" + $gammaSubComponent);
-		}
+	string $gammaSubComponents[] = {"X", "Y", "Z"};
+	for($gammaSubComponent in $gammaSubComponents) 
+	{
+		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gamma") ("sIBL_" + $target + "_gammaCorrect.gamma" + $gammaSubComponent);
+	}
 		
-		string $gainSubComponents[] = {"R", "G", "B"};
-		for($gainSubComponent in $gainSubComponents) 
-		{
-			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_file.colorGain" + $gainSubComponent);
-		}
+	string $gainSubComponents[] = {"R", "G", "B"};
+	for($gainSubComponent in $gainSubComponents) 
+	{
+		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_file.colorGain" + $gainSubComponent);
+	}
 }
 
 global proc sIBL_Maya_VRay_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
