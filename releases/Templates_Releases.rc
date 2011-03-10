@@ -34,12 +34,6 @@ Type = "Stable"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Stable/Maya_RfM_Standard.zip"
 Comment = "Renderman For Maya Template: Code Refactoring."
 
-[Maya_Turtle_Standard]
-Release = 1.2.8
-Type = "Stable"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Turtle_Standard/Stable/Maya_Turtle_Standard.zip"
-Comment = "Maya Turtle Template: Code Refactoring."
-
 [Maya_VRay_Dome_Light]
 Release = 1.2.7
 Type = "Stable"

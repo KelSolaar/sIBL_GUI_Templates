@@ -25,9 +25,6 @@ python sIBL_GUI_Templates_textileToHtml.py "$TEMPLATES/Maya/Maya_MR_Standard/hel
 #! Maya_RfM_Standard Template Documentation Building.
 python sIBL_GUI_Templates_textileToHtml.py "$TEMPLATES/Maya/Maya_RfM_Standard/help/Maya_RfM_Standard Template Manual" "$TEMPLATES/Maya/Maya_RfM_Standard/help/Maya_RfM_Standard Template Manual.html"  "Maya RfM Standard - Template - Manual - Help File"
 
-#! Maya_Turtle_Standard Template Documentation Building.
-python sIBL_GUI_Templates_textileToHtml.py "$TEMPLATES/Maya/Maya_Turtle_Standard/help/Maya_Turtle_Standard Template Manual" "$TEMPLATES/Maya/Maya_Turtle_Standard/help/Maya_Turtle_Standard Template Manual.html"  "Maya Turtle Standard - Template - Manual - Help File"
-
 #! Maya_VRay_Dome_Light Template Documentation Building.
 python sIBL_GUI_Templates_textileToHtml.py "$TEMPLATES/Maya/Maya_VRay_Dome_Light/help/Maya_VRay_Dome_Light Template Manual" "$TEMPLATES/Maya/Maya_VRay_Dome_Light/help/Maya_VRay_Dome_Light Template Manual.html"  "Maya VRay Dome Light - Template - Manual - Help File"
 

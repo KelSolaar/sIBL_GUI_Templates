@@ -25,7 +25,6 @@ cd ../Maya
 zip -r ../../../releases/repository/templates/Maya_MR_Lightsmith.zip Maya_MR_Lightsmith -xi "./Maya_MR_Lightsmith/help/Maya_MR_Lightsmith Template Manual"
 zip -r ../../../releases/repository/templates/Maya_MR_Standard.zip Maya_MR_Standard -xi "./Maya_MR_Standard/help/Maya_MR_Standard Template Manual"
 zip -r ../../../releases/repository/templates/Maya_RfM_Standard.zip Maya_RfM_Standard -xi "./Maya_RfM_Standard/help/Maya_RfM_Standard Template Manual"
-zip -r ../../../releases/repository/templates/Maya_Turtle_Standard.zip Maya_Turtle_Standard -xi "./Maya_Turtle_Standard/help/Maya_Turtle_Standard Template Manual"
 zip -r ../../../releases/repository/templates/Maya_VRay_Dome_Light.zip Maya_VRay_Dome_Light -xi "./Maya_VRay_Dome_Light/help/Maya_VRay_Dome_Light Template Manual"
 zip -r ../../../releases/repository/templates/Maya_VRay_Lightsmith.zip Maya_VRay_Lightsmith -xi "./Maya_VRay_Lightsmith/help/Maya_VRay_Lightsmith Template Manual"
 zip -r ../../../releases/repository/templates/Maya_VRay_Standard.zip Maya_VRay_Standard -xi "./Maya_VRay_Standard/help/Maya_VRay_Standard Template Manual"
