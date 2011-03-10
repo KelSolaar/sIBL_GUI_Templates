@@ -4,6 +4,7 @@ h2=. Change Log
 
 h3. 1.0.4 - Stable
 
+* Introduced new Lightsmith templates: "Maya_MR_Lightsmith", "Maya_VRay_Lightsmith", "Softimage_MR_Lightsmith".
 * Reordered templates attributes.
 
 h3. 1.0.3 - Stable
