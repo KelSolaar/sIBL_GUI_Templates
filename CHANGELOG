@@ -4,8 +4,9 @@ h2=. Change Log
 
 h3. 1.0.5 - Stable
 
-* Hide scene default light in "Softimage_MR_Lightsmith" template.
-* Implement Ibl Sets compatibility guard.
+* Hide scene default light in "Softimage_MR_Lightsmith" and "Softimage_Arnold_Lightsmith" templates.
+* Implement ibl sets compatibility guard.
+* Arnold Renderer templates are now public.
 
 h3. 1.0.4 - Stable
 

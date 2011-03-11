@@ -1,0 +1,83 @@
+<html>
+	<head>
+		<title>XSI Arnold Standard - Template - Manual - Help File</title>
+		<style type="text/css">
+	            body {
+	                text-align: justify;
+	                font-size: 10pt;
+	                margin: 10px 10px 10px 10px;
+	                background-color: rgb(192, 192, 192);
+	                color: rgb(50, 50, 50);
+	            }
+	            A:link {
+	                text-decoration: none;
+	                color: rgb(50, 85, 125);
+	            }
+	            A:visited {
+	                text-decoration: none;
+	                color: rgb(50, 85, 125);
+	            }
+	            A:active {
+	                text-decoration: none;
+	                color: rgb(50, 85, 125);
+	            }
+	            A:hover {
+	                text-decoration: underline;
+	                color: rgb(50, 85, 125);
+	            }
+	        </style>
+	</head>
+	<body>
+		<h1 style="text-align:center;"><span class="caps">XSI</span> Arnold Standard &#8211; Template</h1>
+		<h1 style="text-align:center;">Manual &#8211; Help File</h1>
+		<h2>Table Of Content</h2>
+		<ul style="color:rgb(50, 85, 125); font-size: 11pt;">
+			<li><a href="#Introduction">Introduction</a></li>
+			<li><a href="#Options">Options</a></li>
+			<li><a href="#ChangeLog">Change Log</a></li>
+			<li><a href="#About">About</a></li>
+		</ul>
+		<h2 id="Introduction">Introduction</h2>
+		<p><span class="caps">XSI</span> Arnold Standard is a sIBL_GUI Template for <span class="caps">XSI</span> and Arnold for <span class="caps">XSI</span> 2010 version. It provides a bridge between <span class="caps">XSI</span>, Arnold and Smart <span class="caps">IBL</span>.<br />There is a <span class="caps">XSI</span> Addon with everything needed to use sIBL_GUI smoothly with <span class="caps">XSI</span> here: <a href="http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511">sIBL_GUI For XSI</a></p>
+		<h2 id="Options">Options</h2>
+		<h3>Common Attributes</h3>
+		<ul>
+			<li><strong>Create Background</strong>: Creates the Background Environment Branch of the Sky Shader ( Using the High Resolution <span class="caps">LDR</span> file of the current <span class="caps">IBL</span> Set ).</li>
+			<li><strong>Create Reflection</strong>: Creates the Reflection Environment Branch of the Sky Shader ( Using the Reflection <span class="caps">HDR</span> file of the current <span class="caps">IBL</span> Set ).</li>
+			<li><strong>Create Lighting</strong>: Creates the Lighting Environment Branch of the Sky Shader ( Using the Lighting <span class="caps">HDR</span> file of the current <span class="caps">IBL</span> Set ).</li>
+			<li><strong>Create Sun</strong>: Creates the light used as Sun.</li>
+			<li><strong>Create Dynamic Lights</strong>: Creates the sIBL Dynamics Lights.</li>
+		</ul>
+		<h3>Additional Attributes</h3>
+		<ul>
+			<li><strong>Passes Selection Dialog</strong>: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the <span class="caps">IBL</span>.</li>
+			<li><strong>Display Feedback</strong>: Displays a viewport Visual Feedback with the current <span class="caps">IBL</span> <span class="caps">LDR</span> Background image.</li>
+			<li><strong>Sun Light Type</strong>: Create the Sun as one of these lights type: &#8220;Distant&#8221;, &#8220;Quad&#8221;, &#8220;Spot&#8221;, &#8220;Point&#8221;.</li>
+			<li><strong>Dynamic Lights Type</strong>: Create the Dynamics Lights as one of these lights type: &#8220;Distant&#8221;, &#8220;Quad&#8221;, &#8220;Spot&#8221;, &#8220;Point&#8221;.</li>
+			<li><strong>Hide Lights</strong>: Hides all current Scene lights.</li>
+			<li><strong>Create Ground</strong>: A Grid is added to the Scene.</li>
+			<li><strong>Use Lighting Image For Glossy</strong>: Lighting Image branch is connected to the sIBL_Sky Glossy slot. </li>
+			<li><strong>Activate Linear Workflow</strong>: Activates Linear Workflow.</li>
+			<li><strong>Use Arnold Gamma Correction</strong>: Uses Arnold Gamma Correction instead of <span class="caps">XSI</span> Native Color Management ( Preferences > Display > Color Management ).</li>
+		</ul>
+		<h3>Scene Components</h3>
+		<h4>Smart_IBL_Controls</h4>
+		<table style="border-collapse: collapse; border-width: 1px; border-style: solid; border-color: gray;" class="class" id="id">
+			<tr>
+				<td><img src="resources/pictures/Smart_IBL_Controls.jpg" title="Smart_IBL_Controls" alt="Smart_IBL_Controls" /></td>
+			</tr>
+		</table>
+		<p>There are several Controls Attributes on the Smart_IBL_Controls Property available in the sIBL Group.</p>
+		<ul>
+			<li>Render Togglers: 
+		<ul>
+			<li>Activate / Deactivate the different Smart <span class="caps">IBL</span> Components.</li>
+			<li>* Color Correction: Gamma / Gain Controls of the different Smart <span class="caps">IBL</span> Components.</li>
+		</ul></li>
+		</ul>
+		<h2 id="ChangeLog">Change Log</h2>
+	<p><a href="http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html">sIBL_GUI_Templates &#8211; Change Log</a></p>
+		<h2 id="About">About</h2>
+		<p>sIBL_GUI by Thomas Mansencal &#8211; 2008 &#8211; 2011<br />Copyright&#169; 2008 &#8211; 2011 &#8211; Thomas Mansencal &#8211; <a href="mailto:thomas.mansencal@gmail.com">thomas.mansencal@gmail.com</a> <br />This Software Is Released Under Terms Of <span class="caps">GNU</span> <span class="caps">GPL</span> V3 License: <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a> <br /><a href="http://www.thomasmansencal.com/">http://www.thomasmansencal.com/</a></p>		</span>
+	</body>
+</html>

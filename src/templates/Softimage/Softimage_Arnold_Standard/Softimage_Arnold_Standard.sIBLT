@@ -1,0 +1,1119 @@
+[Template]
+Name = @Name | Standard | String | Template Name
+Path = @Path | | String | Template Path
+HelpFile = @HelpFile | help/Softimage_Arnold_Standard Template Manual.html | String | Help File
+Release = @Release | 1.0.6 | String | Template Release
+Date = @Date | 11 March 2011 | String | Date
+Author = @Author | Kel Solaar | String | Author
+Email = @Email | thomas.mansencal@gmail.com | String | Email
+Url = @Url | http://www.thomasmansencal.com/ | String | Url
+Software = @Software | Softimage | String | Software
+Version = @Version | 2011 | String | Version
+Renderer = @Renderer | Arnold | String | Renderer
+OutputScript = @OutputScript | sIBL_XSI_Import.js | String | Output Script
+Comment = @Comment | This is Softimage 2011 Arnold Standard Template. | String | Comment
+
+[Ibl Set Attributes]
+Background|BGfile = @BGfile
+Reflection|REFfile = @REFfile
+Reflection|REFmulti = @REFmulti
+Reflection|REFgamma = @REFgamma
+Enviroment|EVfile = @EVfile
+Enviroment|EVmulti = @EVmulti
+Enviroment|EVgamma = @EVgamma
+Sun|SUNu = @SUNu
+Sun|SUNv = @SUNv
+Sun|SUNcolor = @SUNcolor
+Sun|SUNmulti = @SUNmulti
+Lights|DynamicLights = @dynamicLights
+Header|Height = @Height
+Header|North = @North
+
+[Common Attributes]
+createBackground = @createBackground | 1 | Boolean | Create Background
+createReflection = @createReflection | 1 | Boolean | Create Reflection
+createLighting = @createLighting | 1 | Boolean | Create Lighting
+createSun = @createSun | 1 | Boolean | Create Sun
+createLights = @createLights | 1 | Boolean | Create Dynamic Lights
+
+[Additional Attributes]
+showPassesDialog = @showPassesDialog | 0 | Boolean | Passes Selection Dialog
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
+sunLightType = @sunLightType | Distant;Quad;Spot;Point | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Distant;Quad;Spot;Point | Enum | Dynamic Lights Type
+hideLights = @hideLights | 1 | Boolean | Hide Lights
+createGround = @createGround | 1 | Boolean | Create Ground
+useLightingForGlossy = @useLightingForGlossy | 0 | Boolean | Use Lighting Image For Glossy
+activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
+useArnoldGammaCorrection = @useArnoldGammaCorrection | 1 | Boolean | Use Arnold Gamma Correction
+
+[Remote Connection]
+ConnectionType = @ConnectionType | Socket | String | Connection Type
+ExecutionCommand = @ExecutionCommand | $loaderScriptPath | String | ExecutionCommand
+DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
+DefaultPort = @DefaultPort | 12288 | Integer | Default Port
+
+[Script]
+// @OutputScript - @Release For @Software @Version
+// Author: @Author
+// EMail: @Email
+// Homepage: @Url
+// Template Path: @Path
+// Template Last Modified: @Date
+// sIBL_GUI
+var backgroundFilePath = "@BGfile";
+var reflectionFilePath = "@REFfile";
+var reflectionMultiplier = @REFmulti;
+var reflectionGamma = @REFgamma;
+var lightingFilePath = "@EVfile";
+var lightingMultiplier = @EVmulti;
+var lightingGamma = @EVgamma;
+var sunU = @SUNu;
+var sunV = @SUNv;
+var sunColor = [@SUNcolor];
+var sunMultiplier = @SUNmulti;
+var dynamicLights = "@dynamicLights";
+var height = @Height;
+var north = @North;
+var createBackground = @createBackground;
+var createReflection = @createReflection;
+var createLighting = @createLighting;
+var createSun = @createSun;
+var createLights = @createLights;
+var showPassesDialog = @showPassesDialog;
+var displayFeedback = @displayFeedback;
+var feedbackRadius = 100;
+var createGround = @createGround;
+var sunLightType = "@sunLightType";
+var dynamicLightsType = "@dynamicLightsType";
+var hideLights = @hideLights;
+var useLightingForGlossy = @useLightingForGlossy;
+var activateLinearWorkflow = @activateLinearWorkflow;
+var useArnoldGammaCorrection = @useArnoldGammaCorrection;
+
+var proceedSetup = true;
+if(backgroundFilePath == "-1" || reflectionFilePath == "-1" || lightingFilePath == "-1")
+{
+	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	if (result == siMsgNo )
+		proceedSetup = false;
+}
+if(proceedSetup)
+	sIBL_XSI_Arnold_setup(backgroundFilePath,
+					reflectionFilePath,
+					reflectionMultiplier,
+					reflectionGamma,
+					lightingFilePath,
+					lightingMultiplier,
+					lightingGamma,
+					sunU,
+					sunV,
+					sunColor,
+					sunMultiplier,
+					dynamicLights,
+					height,
+					north,
+					createBackground,
+					createReflection,
+					createLighting,
+					createSun,
+					createLights,
+					showPassesDialog,
+					displayFeedback,
+					feedbackRadius,
+					createGround,
+					sunLightType,
+					dynamicLightsType,
+					hideLights,
+					useLightingForGlossy,
+					activateLinearWorkflow,
+					useArnoldGammaCorrection);
+else
+	LogMessage("sIBL_GUI | sIBL File Import Aborted!");
+
+function sIBL_XSI_Arnold_setup(backgroundFilePath,
+					reflectionFilePath,
+					reflectionMultiplier,
+					reflectionGamma,
+					lightingFilePath,
+					lightingMultiplier,
+					lightingGamma,
+					sunU,
+					sunV,
+					sunColor,
+					sunMultiplier,
+					dynamicLights,
+					height,
+					north,
+					createBackground,
+					createReflection,
+					createLighting,
+					createSun,
+					createLights,
+					showPassesDialog,
+					displayFeedback,
+					feedbackRadius,
+					createGround,
+					sunLightType,
+					dynamicLightsType,
+					hideLights,
+					useLightingForGlossy,
+					activateLinearWorkflow,
+					useArnoldGammaCorrection)
+{
+	try
+	{
+		if(sIBL_XSI_Arnold_arnoldRendererExists()) 
+		{
+			if(sIBL_XSI_Arnold_commandExists("sIBL_XSI_preProcessCommand"))
+			{
+				LogMessage("sIBL_GUI | Executing Overall Preprocess Command!");
+				sIBL_XSI_preProcessCommand();
+			}
+
+			if(sIBL_XSI_Arnold_commandExists(" sIBL_XSI_Arnold_preProcessCommand"))
+			{
+				LogMessage("sIBL_GUI | Executing Template Specific Preprocess Command!");
+				 sIBL_XSI_Arnold_preProcessCommand();
+			}
+
+			// Storing Active Layer. 
+			var layer = ActiveProject.ActiveScene.ActiveLayer;
+			
+			var selectedPasses = [];
+			
+			if(showPassesDialog) 
+				selectedPasses = sIBL_XSI_Arnold_getPasses();
+			else 
+				selectedPasses[0] = GetCurrentPass();
+			
+			if(selectedPasses != null) 
+			{
+				if(selectedPasses.length != 0) 
+				{
+					LogMessage("sIBL_GUI | Starting sIBL File Import!");
+					
+					sIBL_XSI_Arnold_scriptEditorVerbose(false);
+					sIBL_XSI_Arnold_autoInspectState(false);
+					
+					var progressBar = XSIUIToolkit.ProgressBar;
+					progressBar.Maximum = 100;
+					progressBar.CancelEnabled = false;
+					
+					progressBar.Caption = "sIBL_GUI | Setting Up sIBL File!";
+					
+					progressBar.Step = 10;
+					progressBar.Visible = true;
+					
+					// Defines Sun And Dynamic Lights Existence From sIBL File.
+					if(sunU != -1 && sunV != -1) 
+						var sunExists = true;
+					else 
+						var sunExists = false;
+					
+					if(dynamicLights != -1) 
+						var dynamicLightsExists = true
+					else 
+						var dynamicLightsExists = false
+					
+					// Scene Cleanup.
+					sIBL_XSI_Arnold_environmentDeletion();
+					progressBar.Increment();
+
+					// Defines sIBL_Feedback Radius From Scene Extent.
+					feedbackRadius = sIBL_XSI_Arnold_getExtendedFeedbackRadius(feedbackRadius);
+					
+					// Activating Renderer.
+					sIBL_XSI_Arnold_activateArnoldRenderer();
+					progressBar.Increment();
+					
+					// Lights Hide.
+					if(hideLights) 
+						sIBL_XSI_Arnold_hideLights();
+					progressBar.Increment();
+					
+					// Environment Shaders Creation.
+					sIBL_XSI_Arnold_getEnvironmentShaders(createBackground, createLighting, createReflection, backgroundFilePath, lightingFilePath, reflectionFilePath, useLightingForGlossy, selectedPasses);
+					progressBar.Increment();
+					
+					// Feedback Creation.
+					sIBL_XSI_Arnold_getFeedback(feedbackRadius, createBackground, displayFeedback);
+					progressBar.Increment();
+					
+					// Sun Creation
+					if(sunExists) 
+					{
+						if(createSun) 
+						{
+							if(sIBL_XSI_Arnold_objectExists("sIBL_Feedback")) 
+							{
+								sIBL_XSI_Arnold_getSun(sunLightType, sunU, sunV, sunColor, sunMultiplier, feedbackRadius);
+							}
+						}
+					}
+					progressBar.Increment();
+					
+					// Dynamic Lights Creation.
+					if(dynamicLightsExists) 
+					{
+						if(createLights) 
+						{
+							sIBL_XSI_Arnold_getDynamicLights(dynamicLightsType, dynamicLights, feedbackRadius);
+						}
+					}
+					progressBar.Increment();
+					
+					// Shaders / Feedback Connection.
+					var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
+					if(feedback != null) 
+						sIBL_XSI_Arnold_connectFeedbackToShaders(feedback, createBackground, createLighting, createReflection, selectedPasses);
+					progressBar.Increment();
+					
+					// Ground Creation.
+					if(createGround) 
+						sIBL_XSI_Arnold_getGround(feedbackRadius);
+					progressBar.Increment();
+					
+					// Linear Workflow Activation.
+					if(activateLinearWorkflow) 
+						sIBL_XSI_Arnold_activateColorManagement(createBackground, useArnoldGammaCorrection, selectedPasses);
+					progressBar.Increment();
+					
+					progressBar.Visible = false;
+					
+					SetCurrentLayer(layer);
+										
+					sIBL_XSI_Arnold_scriptEditorVerbose(true);
+					sIBL_XSI_Arnold_autoInspectState(true);
+					
+					LogMessage("sIBL_GUI | sIBL File Import Finished!");
+
+					if(sIBL_XSI_Arnold_commandExists("sIBL_XSI_postProcessCommand"))
+					{
+						LogMessage("sIBL_GUI | Executing Overall Postprocess Command!");
+						sIBL_XSI_postProcessCommand();
+					}
+
+					if(sIBL_XSI_Arnold_commandExists(" sIBL_XSI_Arnold_postProcessCommand"))
+					{
+						LogMessage("sIBL_GUI | Executing Template Specific Postprocess Command!");
+						 sIBL_XSI_Arnold_postProcessCommand();
+					}
+				}
+				else 
+				{
+					// Restoring Active Layer. 
+					SetCurrentLayer(layer);
+					
+					sIBL_XSI_Arnold_scriptEditorVerbose(true);
+					sIBL_XSI_Arnold_autoInspectState(true);
+					
+					LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
+				}
+			}
+		}
+		else 
+		{
+			var errorMessage = "sIBL_GUI | Arnold Renderer Is Not Available, Aborting Loader Script Import!"
+			XSIUIToolkit.Msgbox(errorMessage, siMsgCritical);
+			throw (new Error(errorMessage));
+		}
+	}
+	catch (error)
+	{
+		sIBL_XSI_Arnold_scriptEditorVerbose(true);
+		sIBL_XSI_Arnold_autoInspectState(true);
+		
+		LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
+		throw (error)
+	}
+}
+
+function sIBL_XSI_Arnold_getPasses()
+{
+	var passes = new ActiveXObject("XSI.Collection");
+	passes.SetAsText("Passes.List.*");
+	
+	var sIBL_GUI_Passes_Chooser = Application.ActiveSceneRoot.AddCustomProperty("sIBL_GUI_Passes_Chooser", false);
+	
+	var passParameters = []
+	for(var i = 0; i < passes.count; i++) 
+	{
+		passParameters[i] = sIBL_GUI_Passes_Chooser.AddParameter3(passes.item(i).name, siBool, true);
+	}
+	
+	var sIBL_GUI_Passes_Chooser_Layout = sIBL_GUI_Passes_Chooser.PPGLayout;
+	
+	sIBL_GUI_Passes_Chooser_Layout.AddGroup("Scene Passes");
+	for(var i = 0; i < passes.count; i++) 
+	{
+		sIBL_GUI_Passes_Chooser_Layout.AddItem(passes.item(i).name);
+	}
+	sIBL_GUI_Passes_Chooser_Layout.EndGroup();
+	sIBL_GUI_Passes_Chooser_Layout.AddRow();
+	sIBL_GUI_Passes_Chooser_Layout.AddGroup("", false, 100);
+	sIBL_GUI_Passes_Chooser_Layout.EndGroup();
+	sIBL_GUI_Passes_Chooser_Layout.AddGroup("Options");
+	var button = sIBL_GUI_Passes_Chooser_Layout.AddButton("ToggleAll", "Toggle All");
+	button.SetAttribute(siUICX, 96)
+	button = sIBL_GUI_Passes_Chooser_Layout.AddButton("UnToggleAll", "UnToggle All");
+	button.SetAttribute(siUICX, 96)
+	sIBL_GUI_Passes_Chooser_Layout.EndGroup();
+	sIBL_GUI_Passes_Chooser_Layout.EndRow();
+	
+	sIBL_GUI_Passes_Chooser_Layout.Logic = ToggleAll_OnClicked.toString() + UnToggleAll_OnClicked.toString();
+	sIBL_GUI_Passes_Chooser_Layout.Language = "JScript";
+	
+	var returnValue = InspectObj(sIBL_GUI_Passes_Chooser, "", "sIBL GUI Passes Chooser", siModal, false);
+	
+	if(!returnValue) 
+	{
+		var selectedPasses = [];
+		for(var i = 0; i < passParameters.length; i++) 
+		{
+			if(passParameters[i].value == true) 
+			{
+				selectedPasses[selectedPasses.length] = "Passes." + passParameters[i].name;
+			}
+		}
+		sIBL_XSI_Arnold_deleteRequestedProperties("sIBL_GUI_Passes_Chooser");
+		return selectedPasses;
+	}
+	else 
+	{
+		sIBL_XSI_Arnold_deleteRequestedProperties("sIBL_GUI_Passes_Chooser");
+		return null;
+	}
+}
+
+function ToggleAll_OnClicked()
+{
+	// Starting At 1 To Ignore The PPG Name.
+	for(var i = 1; i < PPG.Inspected.Item(0).Parameters.count; i++) 
+	{
+		var boolean = "True";
+		PPG.Inspected.Item(0).Parameters(i).value = boolean;
+	}
+}
+
+function UnToggleAll_OnClicked()
+{
+	// Starting At 1 To Ignore The PPG Name.
+	for(var i = 1; i < PPG.Inspected.Item(0).Parameters.count; i++) 
+	{
+		var boolean = "False";
+		PPG.Inspected.Item(0).Parameters(i).value = boolean;
+	}
+}
+
+function sIBL_XSI_Arnold_hideLights()
+{
+	var lights = Application.ActiveSceneRoot.FindChildren("", siLightPrimType);
+	for(var i = 0; i < lights.count; i++) 
+	{
+		lights(i).Properties("visibility").Parameters("viewvis").value = 0;
+		lights(i).Properties("visibility").Parameters("rendvis").value = 0;
+	}
+}
+
+function sIBL_XSI_Arnold_passesEnvironmentShaderStackParametersDeletion()
+{
+	var passes = new ActiveXObject("XSI.Collection");
+	passes.SetAsText("Passes.List.*");	
+	var passParameters = [];
+	for(var i = 0; i < passes.count; i++) 
+	{
+		environmentShaderStack = passes.item(i).NestedObjects("EnvironmentShaderStack");
+		for(var j = environmentShaderStack.Parameters.Count - 1; j >= 0; j--)
+		{
+			if(environmentShaderStack.Parameters.item(j).Sources.Count == 0)
+				environmentShaderStack.Remove( j );
+		}	
+	}
+}
+
+function sIBL_XSI_Arnold_environmentDeletion()
+{
+	try
+	{
+		// sIBL Transform Group Deletion.
+		var sceneSIBLGroup = Application.ActiveSceneRoot.FindChild("sIBL");
+		if(sceneSIBLGroup != null) 
+		{
+			Application.DeleteObj("B:sIBL");
+		}
+		
+		// sIBL Clips Deletion.
+		DeleteObj(sIBL_XSI_Arnold_getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL", false));
+
+		// sIBL Shaders Deletion.
+		DeleteObj(sIBL_XSI_Arnold_getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL", false));
+	
+		// sIBL Environment Shader Stack Parameters Deletion.
+		sIBL_XSI_Arnold_passesEnvironmentShaderStackParametersDeletion()
+		
+		// sIBL Display Layers Deletion.
+		DeleteObj(sIBL_XSI_Arnold_getMatchingObjectsByClassID("{479F2E10-3900-11D1-B0B3-00A024C79287}", "sIBL", false));
+	} 
+	catch (error)
+	{
+	}
+}
+
+function sIBL_XSI_Arnold_getEnvironmentShaderBranch(pass, inputShader, imageSource, connectionPorts, name)
+{
+	var imageShader = CreateShaderFromProgID("Softimage.txt2d-image-explicit.1.0", pass);
+	SIConnectShaderToCnxPoint(imageSource, imageShader + ".tex", false);
+	
+	var colorMathBasicShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1.0", pass);
+	colorMathBasicShader.Parameters("op").value = 2;
+	SIConnectShaderToCnxPoint(imageShader, colorMathBasicShader + ".input1", false);
+	
+	var color_Math_ExponentShader = CreateShaderFromProgID("Softimage.sib_color_math_exponent.1.0", pass);
+	SIConnectShaderToCnxPoint(colorMathBasicShader, color_Math_ExponentShader + ".input", false);
+	
+	var colorMathBasicGammaShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1.0", pass);
+	var subComponents = ["red", "green", "blue"];
+	for(var i = 0; i < subComponents.length; i++) 
+		colorMathBasicGammaShader.Parameters("input1").Parameters(subComponents[i]).value = 1;
+	colorMathBasicGammaShader.Parameters("op").value = 3;
+	SIConnectShaderToCnxPoint(colorMathBasicGammaShader, color_Math_ExponentShader + ".factor", false);
+	
+	var colorBooleanSwitchShader = CreateShaderFromProgID("Softimage.sib_color_switch.1.0", pass);
+	for(var i = 0; i < subComponents.length; i++) 
+		colorBooleanSwitchShader.Parameters("input2").Parameters(subComponents[i]).value = 0;
+	SIConnectShaderToCnxPoint(color_Math_ExponentShader, colorBooleanSwitchShader + ".input1", false);
+	
+	for(var i = 0; i < connectionPorts.length; i++) 
+		SIConnectShaderToCnxPoint(colorBooleanSwitchShader, inputShader + "." + connectionPorts[i], false);
+	
+	imageShader.Parameters("name").value = name + "_Image";
+	colorMathBasicShader.Parameters("name").value = name + "_Color_Math_Basic";
+	color_Math_ExponentShader.Parameters("name").value = name + "_Color_Math_Exponent";
+	colorMathBasicGammaShader.Parameters("name").value = name + "_Gamma_Color_Math_Basic";
+	colorBooleanSwitchShader.Parameters("name").value = name + "_Color_Boolean_Switch";
+}
+
+function sIBL_XSI_Arnold_getEnvironmentShaders(createBackground, createLighting, createReflection, backgroundFilePath, lightingFilePath, reflectionFilePath, useLightingForGlossy, passes)
+{
+	var pass = passes[0];
+	
+	var skyShader = CreateShaderFromPreset(sIBL_XSI_Arnold_getShadersPath() + "Shaders/Environment/sky.Preset", pass);
+	skyShader.Parameters("format").value = "latlong";
+	skyShader.Parameters("X").Parameters("x").value = -1;
+	SIConnectShaderToCnxPoint(skyShader, pass + ".EnvironmentShaderStack", false);
+	
+	var raySwitchShader = CreateShaderFromPreset(sIBL_XSI_Arnold_getShadersPath() + "Shaders/Material/ray_switch.Preset", pass);
+	var subComponents = ["red", "green", "blue"];
+	for(var i = 0; i < subComponents.length; i++) 
+		raySwitchShader.Parameters("shadow").Parameters(subComponents[i]).value = 0;
+	SIConnectShaderToCnxPoint(raySwitchShader, skyShader + ".color", false);
+	
+	var ports = ["camera", "refraction"];
+	if(createBackground) 
+	{
+		var backgroundSource = Application.CreateImageClip2(backgroundFilePath, "sIBL_Background_Clip");
+		sIBL_XSI_Arnold_getEnvironmentShaderBranch(pass, raySwitchShader, backgroundSource, ports, "sIBL_Background");
+	}
+	else 
+	{
+		for(var i = 0; i < ports.length; i++) 
+		{
+			for(var j = 0; j < subComponents.length; j++) 
+				raySwitchShader.Parameters(ports[i]).Parameters(subComponents[j]).value = 0;
+		}
+	}
+	
+	if(useLightingForGlossy)
+		ports = ["diffuse", "glossy"];
+	else
+		ports = ["diffuse"];
+	if(createLighting) 
+	{
+		var lightingSource = Application.CreateImageClip2(lightingFilePath, "sIBL_Lighting_Clip");
+		sIBL_XSI_Arnold_getEnvironmentShaderBranch(pass, raySwitchShader, lightingSource, ports, "sIBL_Lighting");
+	}
+	else 
+	{
+		for(var i = 0; i < ports.length; i++) 
+		{
+			for(var j = 0; j < subComponents.length; j++) 
+				raySwitchShader.Parameters(ports[i]).Parameters(subComponents[j]).value = 0;
+		}
+	}
+	
+	if(useLightingForGlossy)
+		ports = ["reflection"];
+	else
+		ports = ["reflection", "glossy"];
+	if(createReflection) 
+	{
+		var reflectionSource = Application.CreateImageClip2(reflectionFilePath, "sIBL_Reflection_Clip");
+		sIBL_XSI_Arnold_getEnvironmentShaderBranch(pass, raySwitchShader, reflectionSource, ports, "sIBL_Reflection");
+	}
+	else 
+	{
+		for(var i = 0; i < ports.length; i++) 
+		{
+			for(var j = 0; j < subComponents.length; j++) 
+				raySwitchShader.Parameters(ports[i]).Parameters(subComponents[j]).value = 0;
+		}
+	}
+	
+	// Connecting The Raytype Shader To Others Passes.
+	for(var i = 1; i < passes.length; i++) 
+	{
+		SIConnectShaderToCnxPoint(skyShader, passes[i] + ".EnvironmentShaderStack", false);
+	}
+	
+	skyShader.Parameters("name").value = "sIBL_Sky";
+	raySwitchShader.Parameters("name").value = "sIBL_RaySwitch";
+}
+
+function sIBL_XSI_Arnold_getSIBLControls(sIBLGroup)
+{
+	var sIBL_GUI_Controls = sIBLGroup.AddCustomProperty("Smart_IBL_Controls", false);
+	
+	// Render Togglers Parameters.
+	sIBL_GUI_Controls.AddParameter3("Background_Toggle", siBool, true);
+	sIBL_GUI_Controls.AddParameter3("Reflection_Toggle", siBool, true);
+	sIBL_GUI_Controls.AddParameter3("Lighting_Toggle", siBool, true);
+	
+	var slots = ["Background", "Reflection", "Lighting"];
+	var components = ["Gamma", "Gain"];
+	
+	for(var i = 0; i < slots.length; i++) 
+	{
+		for(var j = 0; j < components.length; j++) 
+			sIBL_GUI_Controls.AddParameter3(slots[i] + "_" + components[j], siFloat, 1, 0, 10);
+	}
+	
+	var sIBL_GUI_Controls_Layout = sIBL_GUI_Controls.PPGLayout;
+	
+	sIBL_GUI_Controls_Layout.AddGroup("Render Togglers");
+	sIBL_GUI_Controls_Layout.AddItem("Background_Toggle", "Background");
+	sIBL_GUI_Controls_Layout.AddItem("Reflection_Toggle", "Reflection");
+	sIBL_GUI_Controls_Layout.AddItem("Lighting_Toggle", "Lighting");
+	sIBL_GUI_Controls_Layout.EndGroup();
+	
+	for(var i = 0; i < slots.length; i++) 
+	{
+		sIBL_GUI_Controls_Layout.AddGroup(slots[i] + " Color Correction");
+		for(var j = 0; j < components.length; j++) 
+			sIBL_GUI_Controls_Layout.AddItem(slots[i] + "_" + components[j], components[j]);
+		sIBL_GUI_Controls_Layout.EndGroup();
+	}
+}
+
+function sIBL_XSI_Arnold_getSIBLGroup()
+{
+	var sceneSIBLGroup = Application.ActiveSceneRoot.FindChild("sIBL");
+	
+	if(sceneSIBLGroup == null) 
+	{
+		var null_ = ActiveSceneRoot.AddPrimitive("Null", "helperNull");
+		var sceneSIBLGroup = Application.CreateTransformGroup("sIBL", "B:" + null_);
+		
+		var locks = ["sclx", "scly", "sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
+		var globalKinematics = sceneSIBLGroup.Kinematics.Global.Parameters;
+		for(var i = 0; i < locks.length; i++) 
+			globalKinematics(locks[i]).SetLock(siLockLevelManipulation);
+		
+		localKinematics = sceneSIBLGroup.Kinematics.Local.Parameters;
+		for(var i = 0; i < locks.length; i++) 
+			localKinematics(locks[i]).SetLock(siLockLevelManipulation);
+		
+		DeleteObj(null_);
+		
+		sIBL_XSI_Arnold_getSIBLControls(sceneSIBLGroup)
+	}
+	
+	return sceneSIBLGroup
+}
+
+function sIBL_XSI_Arnold_getFeedbackGeometry(feedbackRadius, displayFeedback)
+{
+	var feedback = ActiveSceneRoot.AddGeometry("Sphere", "NurbsSurface", "sIBL_Feedback");
+	feedback.properties("visibility").Parameters("rendvis").value = 0;
+	
+	if(!displayFeedback) 
+		feedback.properties("visibility").Parameters("viewvis").value = 0;
+	
+	CreateProjection(feedback, siTxtUV, siTxtDefaultPlanarXY, null, "sIBL_Texture_Projection");
+
+	// Object Oriented Trick To Shift UVs By "-0.125".
+	samplesCluster= feedback.ActivePrimitive.Geometry.Clusters.Filter( "sample" )(0)
+	uvsProjection = samplesCluster.Properties.Filter("uvspace")(0)
+	feedBackProjectionChildren = uvsProjection.NestedObjects;
+	for(var i = 0; i < feedBackProjectionChildren.Count; i++) 
+	{
+		if(feedBackProjectionChildren(i).type == "uvprojdef" )
+		{
+			feedBackProjectionChildren(i).Parameters( "projtrsu" ).value = -0.125;
+			FreezeUVWTransformation(feedBackProjectionChildren(i));
+			FreezeObj(samplesCluster)
+			break;
+		}
+			
+	}
+
+	var globalKinematics = feedback.Kinematics.Global.Parameters;
+	globalKinematics("sclx").value = -globalKinematics("sclx").value;
+	ResetTransform(feedback, siCtr, siSRT, siXYZ);
+	globalKinematics("sclx").value = feedbackRadius;
+	globalKinematics("scly").value = feedbackRadius;
+	globalKinematics("sclz").value = feedbackRadius;
+	
+	ApplyTopoOp("Inverse", feedback, 3, siImmediateOperation);
+	
+	sIBL_XSI_Arnold_addToDisplayLayer("sIBL_Feedback_Layer", feedback);
+	
+	return feedback;
+}
+
+function sIBL_XSI_Arnold_getFeedback(feedbackRadius, createBackground, displayFeedback)
+{
+	var sIBLGroup = sIBL_XSI_Arnold_getSIBLGroup();
+	var feedback = sIBL_XSI_Arnold_getFeedbackGeometry(feedbackRadius, displayFeedback);
+	
+	sIBLGroup.AddChild(feedback);
+	
+	var feedbackMaterial = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", "sIBL_Feedback_Material");
+	
+	var subComponents = ["red", "green", "blue"];
+	for(var i = 0; i < subComponents.length; i++) 
+		feedbackMaterial.Parameters("Surface").NestedObjects(0).Parameters("transparency").Parameters(subComponents[i]).value = 0.5;
+	
+	AssignMaterial(feedbackMaterial + "," + feedback);
+	if(createBackground) 
+		SIConnectShaderToCnxPoint("Clips.sIBL_Background_Clip", feedbackMaterial + ".sIBL_Feedback_Material.color");
+	
+	return feedback
+}
+
+function sIBL_XSI_Arnold_getLight(parent, constraintParent, type, name, scale, intensity, color, uCoordinate, vCoordinate)
+{
+	switch(type)
+	{
+		case "Distant":
+			var primitiveType = "Infinite";
+			var shaderType = "arnold_distant_light";
+			break;
+		case "Point":
+			var primitiveType = "Point";
+			var shaderType = "arnold_point_light";
+			break;
+		case "Quad":
+			var primitiveType = "Light_Box";
+			var shaderType = "arnold_quad_light";
+			break;
+		case "Spot":
+			var primitiveType = "Spot";
+			var shaderType = "arnold_spot_light";
+			break;
+	}
+	
+	var light = ActiveSceneRoot.AddPrimitive(primitiveType + ".Preset", name);
+	var lightShader = CreateShaderFromPreset(sIBL_XSI_Arnold_getShadersPath() + "Shaders/Light/" + shaderType, light);
+	SIConnectShaderToCnxPoint(lightShader, light + ".LightShader", false);
+	
+	light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("intensity").value = intensity;
+	var subComponents = ["red", "green", "blue"];
+	for(var i = 0; i < subComponents.length; i++) 
+		light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("color").Parameters(subComponents[i]).value = color[i] / 255;
+	
+	light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("samples").value = 4;
+
+	switch(type)
+	{
+		case "Distant":
+			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("angle").value = 2;
+			break;
+		case "Point":
+			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("radius").value = 4;
+			break;
+		case "Quad":
+			var subComponents = ["SX", "SY", "SZ"];
+			for(var i = 0; i < subComponents.length; i++) 
+				light.Primitives("light").Parameters("LightAreaXform" + subComponents[i]).value = 1;
+			break;
+		case "Spot":
+			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("radius").value = 8;
+			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("cone_angle").value = 96;
+			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("penumbra_angle").value = 16;
+			break;
+	}	
+
+	parent.AddChild(light);
+	
+	var globalKinematics = light.Kinematics.Global.Parameters;
+	var subComponents = ["sclx", "scly", "sclz"];
+	for(var i = 0; i < subComponents.length; i++) 
+		globalKinematics(subComponents[i]).value = scale;
+	
+	var surfaceConstraint = ApplyCns("Surface", light, constraintParent);
+	
+	if(sIBL_XSI_Arnold_objectExists("sIBL_Lights_Target")) 
+	{
+		var lightTarget = Application.ActiveSceneRoot.FindChild("sIBL_Lights_Target");
+	}
+	else 
+	{
+		var lightTarget = ActiveSceneRoot.AddPrimitive("Null", "sIBL_Lights_Target");
+	}
+	
+	parent.AddChild(lightTarget)
+	
+	var directionConstraint = ApplyCns("Direction", light, lightTarget);
+	
+	var constraints = light.Kinematics.Constraints;
+	for(var i = 0; i < constraints.Count; i++) 
+	{
+		var constraint = constraints(i);
+		if(constraint.Type == "surfcns") 
+		{
+			// U -> V & V -> U Because Of The Invert Normal.
+			constraint.Parameters("posu").Value = 0.5 + (0.5 - vCoordinate);
+			var vPosition = uCoordinate - 0.125;
+			if(vPosition < 0.0 )
+				vPosition = 1 + vPosition;
+			constraint.Parameters("posv").Value = vPosition;
+		}
+		if(constraint.Type == "dircns") 
+		{
+			constraint.Parameters("dirx").Value = 0;
+			constraint.Parameters("dirz").Value = -1;
+			constraint.Parameters("upvct_active").Value = 1;
+		}
+	}
+
+	sIBL_XSI_Arnold_addToDisplayLayer("sIBL_Lighting_Layer", lightTarget);
+	sIBL_XSI_Arnold_addToDisplayLayer("sIBL_Lighting_Layer", light);
+	
+	lightShader.Parameters("name").value = "sIBL_Arnold_" + shaderType + "_Light";
+}
+
+function sIBL_XSI_Arnold_getSun(sunLightType, sunU, sunV, sunColor, sunMultiplier, feedbackRadius)
+{
+	var sIBLGroup = sIBL_XSI_Arnold_getSIBLGroup();
+	var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
+
+	sIBL_XSI_Arnold_getLight(sIBLGroup, feedback, sunLightType, "sIBL_Sun", feedbackRadius / 15, sunMultiplier, sunColor, sunU, sunV)
+}
+
+function sIBL_XSI_Arnold_getDynamicLights(dynamicLightsType, dynamicLights, feedbackRadius)
+{
+	var sIBLGroup = sIBL_XSI_Arnold_getSIBLGroup();
+	var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
+	var dynamicLights = dynamicLights.split("|");
+	for(var i = 0; i < dynamicLights.length; i += 8) 
+		sIBL_XSI_Arnold_getLight(sIBLGroup, feedback, dynamicLightsType, "sIBL_DKL_" + dynamicLights[i + 1], feedbackRadius / 15, parseFloat(dynamicLights[i + 5]), [parseFloat(dynamicLights[i + 2]), parseFloat(dynamicLights[i + 3]), parseFloat(dynamicLights[i + 4])], parseFloat(dynamicLights[i + 6]), parseFloat(dynamicLights[i + 7]))
+}
+
+function sIBL_XSI_Arnold_bridgeControlsAndShaders(pass, slot)
+{
+	AddExpr(pass + ".sIBL_" + slot + "_Color_Boolean_Switch.switch", "1-(sIBL.Smart_IBL_Controls." + slot + "_Toggle)", true);
+	
+	var components = ["red", "green", "blue"];;
+	for(var i = 0; i < components.length; i++) 
+	{
+		AddExpr(pass + ".sIBL_" + slot + "_Color_Math_Basic.input2." + components[i], "sIBL.Smart_IBL_Controls." + slot + "_Gain", true);
+		AddExpr(pass + ".sIBL_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], "sIBL.Smart_IBL_Controls." + slot + "_Gamma", true);
+	}
+}
+
+function sIBL_XSI_Arnold_connectFeedbackToShaders(feedback, connectToBackground, connectToLighting, connectToReflection, passes)
+{
+	var pass = passes[0];
+	
+	if(connectToBackground || connectToLighting || connectToReflection) 
+	{
+		AddExpr(pass + ".sIBL_Sky.X_angle", "-" + feedback + ".kine.global.rotx", true);
+		AddExpr(pass + ".sIBL_Sky.Y_angle", feedback + ".kine.global.roty", true);
+		AddExpr(pass + ".sIBL_Sky.Z_angle", "-" + feedback + ".kine.global.rotz", true);
+	}
+		
+	if(connectToBackground) 
+	{
+		sIBL_XSI_Arnold_bridgeControlsAndShaders(pass, "Background");
+		AddExpr(pass + ".sIBL_Sky.opaque_alpha", "sIBL.Smart_IBL_Controls.Background_Toggle", true);
+	}
+	if(connectToLighting) 
+		sIBL_XSI_Arnold_bridgeControlsAndShaders(pass, "Lighting");
+	if(connectToReflection) 
+		sIBL_XSI_Arnold_bridgeControlsAndShaders(pass, "Reflection");
+}
+
+function sIBL_XSI_Arnold_arnoldRendererExists()
+{
+	var e = new Enumerator(Application.Renderers);
+	for(; !e.atEnd(); e.moveNext()) 
+		if(e.item().name == "Arnold Render") 
+			return true
+	return false
+}
+
+function sIBL_XSI_Arnold_activateArnoldRenderer()
+{
+	SetValue("Passes.RenderOptions.Renderer", "Arnold Render");
+	
+	var subComponents = ["red", "green", "blue"];
+	for(var i = 0; i < subComponents.length; i++) 
+		ActiveSceneRoot.Properties.Item("Ambient Lighting").Parameters("ambience").Parameters(subComponents[i]).value = 0;
+
+	SetValue("Views.ViewA.RenderRegion.UsePassOptions,Views.ViewB.RenderRegion.UsePassOptions,Views.ViewC.RenderRegion.UsePassOptions,Views.ViewD.RenderRegion.UsePassOptions", Array(true, true, true, true));
+}
+
+function sIBL_XSI_Arnold_activateColorManagement(createBackground, useArnoldGammaCorrection, passes)
+{
+	if(useArnoldGammaCorrection) 
+	{
+		var nativeColorManagement = false;
+		var gammaValue = 2.2;
+	}
+	else 
+	{
+		var nativeColorManagement = true;
+		var gammaValue = 1;
+	}
+	
+	Application.Preferences.SetPreferenceValue("Display.color_management_source", 0);
+	Application.Preferences.SetPreferenceValue("Display.color_management_render_region", nativeColorManagement);
+	Application.Preferences.SetPreferenceValue("Display.color_management_render_preview", nativeColorManagement);
+	Application.Preferences.SetPreferenceValue("Display.color_management_shader_balls", nativeColorManagement);
+	Application.Preferences.SetPreferenceValue("Display.color_management_ui_colors", nativeColorManagement);
+		
+	for(var i = 0; i < passes.length; i++) 
+	{
+		var pass = Dictionary.GetObject(passes[i]);
+		pass.Parameters("UseDisplayGammaCorrection").value = nativeColorManagement;
+		var parameters = ["output_driver_gamma", "texture_gamma", "light_gamma", "shader_gamma"];
+		for(var i = 0; i < parameters.length; i++) 
+			pass.Properties("Arnold Render Options").Parameters(parameters[i]).value = gammaValue;
+	}
+	
+	if(createBackground && !useArnoldGammaCorrection) 
+	{
+		var sIBL_GUI_Controls = sIBL_XSI_Arnold_getRequestedPropertiesAsCollection("Smart_IBL_Controls");
+		sIBL_GUI_Controls.item(0).Parameters("Background_Gamma").value = 1 / 2.2;
+	}
+
+}
+
+function sIBL_XSI_Arnold_getGround(feedbackRadius)
+{
+	var sIBLGroup = sIBL_XSI_Arnold_getSIBLGroup();
+	
+	var ground = ActiveSceneRoot.AddGeometry("Grid", "MeshSurface", "sIBL_Ground");
+	sIBLGroup.AddChild(ground)
+	
+	var globalKinematics = ground.Kinematics.Global.Parameters;
+	var subComponents = ["sclx", "scly", "sclz"];
+	for(var i = 0; i < subComponents.length; i++) 
+		globalKinematics(subComponents[i]).value = (feedbackRadius * Math.sqrt(2)) / 2;
+	
+	ResetTransform(ground, siCtr, siSRT, siXYZ);
+	
+	sIBL_XSI_Arnold_addToDisplayLayer("sIBL_Ground_Layer", ground);
+}
+
+function sIBL_XSI_Arnold_getPluginPath()
+{
+	var plugin = Application.plugins("Arnold Shaders");
+	return plugin.OriginPath.replace(/\\/g, "/");
+}
+
+function sIBL_XSI_Arnold_getShadersPath()
+{
+	return sIBL_XSI_Arnold_getPluginPath() + "../../Data/DSPresets/";
+}
+
+function sIBL_XSI_Arnold_objectExists(object)
+{
+	var seekedObject = Application.ActiveSceneRoot.FindChild(object);
+	if(seekedObject != null) 
+		return true
+	else 
+		return false
+}
+
+function  sIBL_XSI_Arnold_commandExists(command)
+{
+	var commands = Application.Commands;
+
+	var e = new Enumerator(commands)
+	for( ; !e.atEnd(); e.moveNext() )
+	{
+		if(e.item() == command)
+			return true
+	}
+
+	return false
+}
+
+function sIBL_XSI_Arnold_addToDisplayLayer(layerName, object)
+{
+	var sceneLayers = ActiveProject.ActiveScene.Layers;
+	var layerExists = false;
+	
+	for(var i = 0; i < sceneLayers.Count; i++) 
+	{
+		if(sceneLayers(i).name == layerName) 
+		{
+			layerExists = true;
+			break;
+		}
+	}
+	
+	if(!layerExists) 
+		CreateLayer(null, layerName, object);
+	else 
+		MoveToLayer("Layers." + layerName, object);
+}
+
+function sIBL_XSI_Arnold_getSceneExtent()
+{
+	var meshes = sIBL_XSI_Arnold_getMatchingObjectsByClassID("{400CCE36-4400-11D0-BDDD-00A0241981E2}", ".*", false)
+	var surfaces = sIBL_XSI_Arnold_getMatchingObjectsByClassID("{28DEC312-62B3-11D1-B79B-00A0243E3694}", ".*", false)
+	var pointClouds = sIBL_XSI_Arnold_getMatchingObjectsByClassID("{2194FFE3-A0B2-4CAB-A3E8-FC8EDC9F159A}", ".*", false)
+	
+	var objects = sIBL_XSI_Arnold_extendCollection(meshes, surfaces);
+	objects = sIBL_XSI_Arnold_extendCollection(objects, pointClouds);
+	
+	var parents = new ActiveXObject("XSI.Collection");
+	for(var i = 0; i < objects.Count; i++)
+		parents.add(objects(i).Parent);
+
+	var sceneBoundingBox = GetBBox(parents);
+	sceneBoundingBox = [sceneBoundingBox.value( "LowerBoundX" ), sceneBoundingBox.value( "LowerBoundY" ), sceneBoundingBox.value( "LowerBoundZ" ), sceneBoundingBox.value( "UpperBoundX" ), sceneBoundingBox.value( "UpperBoundY" ), sceneBoundingBox.value( "UpperBoundZ" )];
+	var sceneExtent = 0
+	for(var i = 0; i < sceneBoundingBox.length; i++) 
+		if(Math.abs(sceneBoundingBox[i]) > sceneExtent )
+			sceneExtent = Math.abs(sceneBoundingBox[i]);
+	return sceneExtent;
+}
+
+function sIBL_XSI_Arnold_truncFloatNumber(number, truncValue)
+{
+	if(truncValue != 0)
+		return Math.round(number / truncValue) * truncValue; 
+	else
+		return number;
+}
+
+function sIBL_XSI_Arnold_getExtendedFeedbackRadius(feedbackRadius)
+{
+	var sceneExtent = sIBL_XSI_Arnold_getSceneExtent();
+	sceneExtent = (sceneExtent + (sceneExtent*50/100))/4;
+	
+	if(sceneExtent < feedbackRadius)
+		return feedbackRadius;
+	else 
+		return sIBL_XSI_Arnold_truncFloatNumber(sceneExtent,10);
+}
+
+function sIBL_XSI_Arnold_scriptEditorVerbose(verboseState)
+{
+	Application.Preferences.SetPreferenceValue("scripting.cmdlog", verboseState);
+	Application.Preferences.SetPreferenceValue("scripting.msglog", verboseState);
+	Application.Preferences.SetPreferenceValue("scripting.msglogverbose", verboseState);
+}
+
+function sIBL_XSI_Arnold_autoInspectState(autoInspectState)
+{
+	Application.Preferences.SetPreferenceValue("Interaction.autoinspect", autoInspectState);
+}
+
+function sIBL_XSI_Arnold_getRequestedPropertiesAsCollection(propertyType)
+{
+	var properties = sIBL_XSI_Arnold_getByClassIDAsCollection("{76332571-D242-11d0-B69C-00AA003B3EA6}");
+	
+	if(properties.count != 0) 
+	{
+		var propertiesListAsStringArray = sIBL_XSI_Arnold_getCollectionAsStringArray(properties);
+		
+		var regexPattern = new RegExp(propertyType + "\\w*");
+		
+		var requestedProperties = new Array();
+		
+		for(var i = 0; i < propertiesListAsStringArray.length; i++) 
+		{
+			var propertyFound = propertiesListAsStringArray[i].match(regexPattern);
+			
+			if(propertyFound) 
+				requestedProperties[requestedProperties.length] = propertiesListAsStringArray[i];
+		}
+		
+		var requestedPropertiesAsCollection = new ActiveXObject("XSI.Collection");
+		
+		if(requestedProperties.length != 0) 
+			requestedPropertiesAsCollection = sIBL_XSI_Arnold_getStringArrayAsCollection(requestedProperties);
+		
+		return requestedPropertiesAsCollection;
+	}
+	else 
+	{
+		return 0;
+	}
+}
+
+function sIBL_XSI_Arnold_deleteRequestedProperties(propertyType)
+{
+	var requestedProperties = sIBL_XSI_Arnold_getRequestedPropertiesAsCollection(propertyType);
+	
+	for(var i = 0; i < requestedProperties.count; i++) 
+		DeleteObj(requestedProperties.item(i));
+}
+
+function sIBL_XSI_Arnold_getByClassIDAsCollection(currentClassID)
+{
+	var nodesByClassID = new ActiveXObject("XSI.Collection");
+	
+	nodesByClassID = FindObjects(null, currentClassID);
+	
+	return nodesByClassID;
+}
+
+function sIBL_XSI_Arnold_getCollectionAsStringArray(currentCollection)
+{
+	var collectionObjectsAsString = currentCollection.GetAsText();
+	var collectionObjects = collectionObjectsAsString.split(",");
+	
+	return collectionObjects;
+}
+
+function sIBL_XSI_Arnold_getStringArrayAsCollection(currentStringArray)
+{
+	var stringArrayAsCollection = new ActiveXObject("XSI.Collection");
+	stringArrayAsCollection.SetAsText(currentStringArray);
+	
+	return stringArrayAsCollection;
+}
+
+function sIBL_XSI_Arnold_extendCollection(initialCollection, extensionCollection)
+{
+	for(var i = 0; i < extensionCollection.Count; i++) 
+		initialCollection.Add(extensionCollection(i));
+	return initialCollection;
+}
+
+function sIBL_XSI_Arnold_getMatchingObjectsByClassID(classID, pattern, matchExact)
+{
+	var objectsByClassID = new ActiveXObject("XSI.Collection");
+	objectsByClassID = FindObjects(null, classID);
+	matchingObjects = new ActiveXObject("XSI.Collection");
+	for(var i = 0; i < objectsByClassID.Count; i++) 
+	{
+		if(matchExact) 
+		{
+			if(objectsByClassID(i).name == pattern) 
+				matchingObjects.Add(objectsByClassID(i));
+		}
+		else 
+		{
+			if(objectsByClassID(i).name.match(pattern)) 
+				matchingObjects.Add(objectsByClassID(i));
+		}
+	}
+	return matchingObjects;
+}
