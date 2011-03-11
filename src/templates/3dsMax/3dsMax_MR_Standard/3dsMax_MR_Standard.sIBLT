@@ -2,8 +2,8 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/3dsMax_MR_Standard Template Manual.html | String | Help File
-Release = @Release | 1.0.9 | String | Template Release
-Date = @Date | 28 February 2011 | String | Date
+Release = @Release | 1.1.0 | String | Template Release
+Date = @Date | 11 March 2011 | String | Date
 Author = @Author | Kel Solaar / Dschaga / Jeff Hanna / JHaywood  | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -492,4 +492,16 @@ fn sIBL_3dsmax_MR_setup  =
 		messageBox "sIBL_GUI | Mental Ray Renderer Is Not Available!" title:"sIBL_GUI Error"
 )
 
-sIBL_3dsmax_MR_setup()
+(
+	local sIBL_proceedSetup = 1
+	if(sIBL_DATAS.backgroundFilePath == "-1" or sIBL_DATAS.reflectionFilePath == "-1" or sIBL_DATAS.lightingFilePath == "-1") then
+	(
+		if not queryBox "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" beep:false then
+			sIBL_proceedSetup = 0
+	)
+
+	if(sIBL_proceedSetup == 1)	then	
+		sIBL_3dsmax_MR_setup()
+	else
+		print "sIBL_GUI | sIBL File Import Aborted!"
+)

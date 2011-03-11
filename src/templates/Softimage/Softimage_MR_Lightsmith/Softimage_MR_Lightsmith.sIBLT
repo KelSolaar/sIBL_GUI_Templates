@@ -2,8 +2,8 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_MR_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 0.9.0 | String | Template Release
-Date = @Date | 8 March 2011 | String | Date
+Release = @Release | 0.9.2 | String | Template Release
+Date = @Date | 11 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -36,6 +36,7 @@ connectToLights = @connectToLights | 0 | Boolean | Connect To Smart Ibl Lights
 
 [Additional Attributes]
 showPassesDialog = @showPassesDialog | 0 | Boolean | Passes Selection Dialog
+hideDefaultLight = @hideDefaultLight | 1 | Boolean | Hide Default Light
 activateFinalGather = @activateFinalGather | 1 | Boolean | Activate Final Gather
 activateColorManagement = @activateColorManagement | 1 | Boolean | Activate Color Management
 
@@ -72,27 +73,39 @@ var createLight = @createLight;
 var texturedLight = 0;
 var connectToLights = @connectToLights;
 var showPassesDialog = @showPassesDialog;
+var hideDefaultLight = @hideDefaultLight;
 var activateFinalGather = @activateFinalGather;
 var activateColorManagement = @activateColorManagement;
 
-sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
-						lightName,
-						lightFilePath,
-						lightMaskFilePath,
-						lightHeight,
-						lightWidth,
-						lightColor,
-						lightObjectPath,
-						lightObjectFramePath,
-						lightObjectFrameColor,
-						lightShape,
-						lightScale,
-						createLight,
-						texturedLight,
-						connectToLights,
-						showPassesDialog,
-						activateFinalGather,
-						activateColorManagement);
+var proceedSetup = true;
+if(lightName == "-1")
+{
+	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	if (result == siMsgNo )
+		proceedSetup = false;
+}
+if(proceedSetup)
+	sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
+							lightName,
+							lightFilePath,
+							lightMaskFilePath,
+							lightHeight,
+							lightWidth,
+							lightColor,
+							lightObjectPath,
+							lightObjectFramePath,
+							lightObjectFrameColor,
+							lightShape,
+							lightScale,
+							createLight,
+							texturedLight,
+							connectToLights,
+							showPassesDialog,
+							hideDefaultLight,
+							activateFinalGather,
+							activateColorManagement);
+else
+	LogMessage("sIBL_GUI | sIBL File Import Aborted!");
 
 function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 							lightName,
@@ -110,6 +123,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 							texturedLight,
 							connectToLights,
 							showPassesDialog,
+							hideDefaultLight,
 							activateFinalGather,
 							activateColorManagement)
 {
@@ -142,7 +156,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 		{
 			if(selectedPasses.length != 0) 
 			{
-				Application.LogMessage("sIBL_GUI | Starting sIBL File Import!");
+				LogMessage("sIBL_GUI | Starting sIBL File Import!");
 				
 				 sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(false);
 				 sIBL_XSI_MR_Lightsmith_autoInspectState(false);
@@ -153,11 +167,16 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 					
 				progressBar.Caption = "sIBL_GUI | Setting Up sIBL File!";
 					
-				progressBar.Step = 4;
+				progressBar.Step = 5;
 				progressBar.Visible = true;
 
 				// Activating Renderer.
 				 sIBL_XSI_MR_Lightsmith_activateMentalRayRenderer();
+				progressBar.Increment();
+
+				// Hide Default Light.
+				if(hideDefaultLight) 
+					sIBL_XSI_MR_Lightsmith_hideDefautLight();
 				progressBar.Increment();
 
 				// Final Gather Activation.
@@ -205,7 +224,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 				sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(true);
 				sIBL_XSI_MR_Lightsmith_autoInspectState(true);
 				
-				Application.LogMessage("sIBL_GUI | sIBL File Import Finished!");
+				LogMessage("sIBL_GUI | sIBL File Import Finished!");
 				
 				if(sIBL_XSI_MR_Lightsmith_commandExists("sIBL_XSI_postProcessCommand"))
 				{
@@ -227,7 +246,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 				sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(true);
 				sIBL_XSI_MR_Lightsmith_autoInspectState(true);
 				
-				Application.LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
+				LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
 			}
 		}
 	}
@@ -236,7 +255,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 		sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(true);
 		sIBL_XSI_MR_Lightsmith_autoInspectState(true);
 		
-		Application.LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
+		LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
 		throw (error)
 	}
 }
@@ -315,6 +334,17 @@ function UnToggleAll_OnClicked()
 	{
 		var boolean = "False";
 		PPG.Inspected.Item(0).Parameters(i).value = boolean;
+	}
+}
+
+function sIBL_XSI_MR_Lightsmith_hideDefautLight()
+{
+	var defaultLight = Application.ActiveSceneRoot.FindChild("light");
+	
+	if(defaultLight)
+	{
+		defaultLight.Properties("visibility").Parameters("viewvis").value = 0;
+		defaultLight.Properties("visibility").Parameters("rendvis").value = 0;
 	}
 }
 
@@ -588,8 +618,7 @@ function sIBL_XSI_MR_Lightsmith_connectToLights(lightClip, lightMaskClip, lightW
 			var proceedSetup = true;
 			if(lightSupport)
 			{
-				var result = XSIUIToolkit.Msgbox( "sIBL_GUI | '" + sIBLLight + "' Light Has Already An Lightsmith Setup! Would You Like To Replace It?", 
-				siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+				var result = XSIUIToolkit.Msgbox( "sIBL_GUI | '" + sIBLLight + "' Light Has Already An Lightsmith Setup! Would You Like To Replace It?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
 				if (result == siMsgNo )
 					proceedSetup = false;
 			}
@@ -687,9 +716,7 @@ function sIBL_XSI_MR_Lightsmith_connectToLights(lightClip, lightMaskClip, lightW
 		}		
 	}
 	else
-	{
-		LogMessage("sIBL_GUI | No 'sIBL' Group Found, Skipping HDRI Lights Creation!");
-	}
+		XSIUIToolkit.Msgbox( "sIBL_GUI | No 'sIBL' Group Found, Skipping Lightsmith Lights Creation!", siMsgOkOnly, "sIBL_GUI " );
 }
 
 function sIBL_XSI_MR_Lightsmith_getNonClashingName(name)

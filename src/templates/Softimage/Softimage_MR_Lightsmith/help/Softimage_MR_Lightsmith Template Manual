@@ -25,6 +25,7 @@ h3. Common Attributes
 h3. Additional Attributes
 
 * *Passes Selection Dialog*: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the Linear Workflow.
+* *Hide Default Light*: Hides current Scene Default Light.
 * *Activate Final Gather*: Ambiant Lighting ( Ambience ) of the scene is desactivated and Final Gathering is set for the current / selected Pass(es).
 * *Activate Color Management*: Activates Softimage Color Management ( Preferences > Display > Color Management ).
 

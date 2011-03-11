@@ -2,8 +2,8 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 0.9.0 | String | Template Release
-Date = @Date | 8 March 2011 | String | Date
+Release = @Release | 0.9.1 | String | Template Release
+Date = @Date | 11 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -78,25 +78,34 @@ int $activateLinearWorkflow = @activateLinearWorkflow;
 int $framebufferGamma = @framebufferGamma;
 int $photographicTonemapper = @photographicTonemapper;
 
-sIBL_Maya_MR_Lightsmith_setup($lightName,
-		$lightFilePath,
-		$lightMaskFilePath,
-		$lightHeight,
-		$lightWidth,
-		$lightColor,
-		$lightObjectPath,
-		$lightObjectFramePath,
-		$lightObjectFrameColor,
-		$lightShape,
-		$showCamerasDialog,
-		$createLight,
-		$texturedLight,
-		$connectToLights,
-		$lightScale,
-		$activateFinalGather,
-		$activateLinearWorkflow,
-		$framebufferGamma,
-		$photographicTonemapper);
+int $proceedSetup = 1;
+if($lightName == "-1")
+{
+	if(`confirmDialog -title "Confirm" -message ("sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?") -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "No")
+		$proceedSetup = 0;
+}
+if($proceedSetup)
+	sIBL_Maya_MR_Lightsmith_setup($lightName,
+			$lightFilePath,
+			$lightMaskFilePath,
+			$lightHeight,
+			$lightWidth,
+			$lightColor,
+			$lightObjectPath,
+			$lightObjectFramePath,
+			$lightObjectFrameColor,
+			$lightShape,
+			$showCamerasDialog,
+			$createLight,
+			$texturedLight,
+			$connectToLights,
+			$lightScale,
+			$activateFinalGather,
+			$activateLinearWorkflow,
+			$framebufferGamma,
+			$photographicTonemapper);
+else
+	print("sIBL_GUI | sIBL File Import Aborted!\n");
 
 global proc sIBL_Maya_MR_Lightsmith_setup(string $lightName,
 					string $lightFilePath,
@@ -546,7 +555,7 @@ global proc sIBL_Maya_MR_Lightsmith_connectToLights(string $lightFile, string $l
 		{
 			for($sIBLLight in $sIBLLights)
 			{
-				string $proceedSetup = 1;
+				int $proceedSetup = 1;
 				string $tokens[] = {};
 				string $sIBLLightTransform = sIBL_Maya_MR_Lightsmith_getTransform($sIBLLight);
 				tokenize $sIBLLightTransform "|" $tokens;
@@ -637,11 +646,11 @@ global proc sIBL_Maya_MR_Lightsmith_connectToLights(string $lightFile, string $l
 				}
 			}
 		}
+		else
+			confirmDialog -title "sIBL_GUI" -message "sIBL_GUI | No Appropriate Lights Types Found! Ligthsmith Can Only Connect On 'AreaLight' Lights Type!" -button "Ok" ;
 	}
 	else
-	{
-		print("sIBL_GUI | No 'sIBL' Group Found, Skipping Lightsmith Lights Creation!\n");
-	}
+		confirmDialog -title "sIBL_GUI" -message "sIBL_GUI | No 'sIBL' Group Found, Skipping Lightsmith Lights Creation!" -button "Ok" ;
 }
 
 global proc string sIBL_Maya_MR_Lightsmith_getNonClashingName(string $name)

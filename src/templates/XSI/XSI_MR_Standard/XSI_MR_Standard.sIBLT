@@ -2,8 +2,8 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_MR_Standard Template Manual.html | String | Help File
-Release = @Release | 1.7.0 | String | Template Release
-Date = @Date | 28 February 2011 | String | Date
+Release = @Release | 1.7.1 | String | Template Release
+Date = @Date | 11 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -97,38 +97,48 @@ var physicalSun = @physicalSun;
 var activateFinalGather = @activateFinalGather;
 var activateColorManagement = @activateColorManagement;
 
-sIBL_XSI_MR_setup(backgroundFilePath,
-			reflectionFilePath,
-			reflectionMultiplier,
-			reflectionGamma,
-			lightingFilePath,
-			lightingMultiplier,
-			lightingGamma,
-			sunU,
-			sunV,
-			sunColor,
-			sunMultiplier,
-			dynamicLights,
-			height,
-			north,
-			createBackground,
-			createReflection,
-			createLighting,
-			createSun,
-			createLights,
-			showPassesDialog,
-			updateScene,
-			overrideTweaks,
-			displayFeedback,
-			feedbackRadius,
-			sunLightType,
-			dynamicLightsType,
-			hideLights,
-			createGround,
-			shadowCatcher,
-			physicalSun,
-			activateFinalGather,
-			activateColorManagement);
+var proceedSetup = true;
+if(backgroundFilePath == "-1" || reflectionFilePath == "-1" || lightingFilePath == "-1")
+{
+	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	if (result == siMsgNo )
+		proceedSetup = false;
+}
+if(proceedSetup)
+	sIBL_XSI_MR_setup(backgroundFilePath,
+				reflectionFilePath,
+				reflectionMultiplier,
+				reflectionGamma,
+				lightingFilePath,
+				lightingMultiplier,
+				lightingGamma,
+				sunU,
+				sunV,
+				sunColor,
+				sunMultiplier,
+				dynamicLights,
+				height,
+				north,
+				createBackground,
+				createReflection,
+				createLighting,
+				createSun,
+				createLights,
+				showPassesDialog,
+				updateScene,
+				overrideTweaks,
+				displayFeedback,
+				feedbackRadius,
+				sunLightType,
+				dynamicLightsType,
+				hideLights,
+				createGround,
+				shadowCatcher,
+				physicalSun,
+				activateFinalGather,
+				activateColorManagement);
+else
+	LogMessage("sIBL_GUI | sIBL File Import Aborted!");
 
 function sIBL_XSI_MR_setup(backgroundFilePath,
 					reflectionFilePath,
@@ -209,7 +219,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath,
 				
 				if(updateScene) 
 				{
-					Application.LogMessage("sIBL_GUI | Starting sIBL Related Nodes Update!");
+					LogMessage("sIBL_GUI | Starting sIBL Related Nodes Update!");
 					progressBar.Caption = "sIBL_GUI | Updating Scene!";
 					
 					var sIBL_Group = sIBL_XSI_MR_getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL", true);
@@ -269,13 +279,13 @@ function sIBL_XSI_MR_setup(backgroundFilePath,
 					}
 					else 
 					{
-						Application.LogMessage("sIBL_GUI | No sIBL Group Found, Aborting Scene Update!", siWarning);
+						LogMessage("sIBL_GUI | No sIBL Group Found, Aborting Scene Update!", siWarning);
 					}
 					
 				}
 				else 
 				{
-					Application.LogMessage("sIBL_GUI | Starting sIBL File Import!");
+					LogMessage("sIBL_GUI | Starting sIBL File Import!");
 					progressBar.Caption = "sIBL_GUI | Setting Up sIBL File!";
 					
 					sIBL_XSI_MR_scriptEditorVerbose(false);
@@ -361,9 +371,9 @@ function sIBL_XSI_MR_setup(backgroundFilePath,
 				sIBL_XSI_MR_autoInspectState(true);
 				
 				if(updateScene) 
-					Application.LogMessage("sIBL_GUI | sIBL File Update Finished!");
+					LogMessage("sIBL_GUI | sIBL File Update Finished!");
 				else 
-					Application.LogMessage("sIBL_GUI | sIBL File Import Finished!");
+					LogMessage("sIBL_GUI | sIBL File Import Finished!");
 				
 				if(sIBL_XSI_MR_commandExists("sIBL_XSI_postProcessCommand"))
 				{
@@ -385,7 +395,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath,
 				sIBL_XSI_MR_scriptEditorVerbose(true);
 				sIBL_XSI_MR_autoInspectState(true);
 				
-				Application.LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
+				LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
 			}
 		}
 	} 
@@ -394,7 +404,7 @@ function sIBL_XSI_MR_setup(backgroundFilePath,
 		sIBL_XSI_MR_scriptEditorVerbose(true);
 		sIBL_XSI_MR_autoInspectState(true);
 		
-		Application.LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
+		LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
 		throw (error)
 	}
 }
@@ -719,13 +729,13 @@ function sIBL_XSI_MR_update_environmentShaders(createBackground, createLighting,
 		// Connecting The Raytype Shader To Passes.
 		for(var i = 0; i < passes.length; i++) 
 		{
-			Application.LogMessage(passes[i]) + +".EnvironmentShaderStack";
+			LogMessage(passes[i]) + +".EnvironmentShaderStack";
 			SIConnectShaderToCnxPoint(raytype, passes[i] + ".EnvironmentShaderStack", false);
 		}
 	}
 	else 
 	{
-		Application.LogMessage("sIBL_GUI | No sIBL_Raytype Found, Skipping Environment Related Shaders Updates!", siWarning);
+		LogMessage("sIBL_GUI | No sIBL_Raytype Found, Skipping Environment Related Shaders Updates!", siWarning);
 	}
 }
 
@@ -923,7 +933,7 @@ function sIBL_XSI_MR_update_feedback(feedbackRadius, createBackground, displayFe
 		}
 		else 
 		{
-			Application.LogMessage("sIBL_GUI | No Feedback Found, Skipping Feedback Related Updates!", siWarning);
+			LogMessage("sIBL_GUI | No Feedback Found, Skipping Feedback Related Updates!", siWarning);
 		}
 	}
 }
@@ -995,7 +1005,7 @@ function sIBL_XSI_MR_update_sun(sunLightType, sunU, sunV, sunColor, sunMultiplie
 		}
 		else 
 		{
-			Application.LogMessage("sIBL_GUI | No Sun Found, Skipping Sun Related Updates!", siWarning);
+			LogMessage("sIBL_GUI | No Sun Found, Skipping Sun Related Updates!", siWarning);
 		}
 	}
 }

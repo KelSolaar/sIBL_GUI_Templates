@@ -2,8 +2,8 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Standard Template Manual.html | String | Help File
-Release = @Release | 1.8.1 | String | Template Release
-Date = @Date | 28 February 2011 | String | Date
+Release = @Release | 1.8.2 | String | Template Release
+Date = @Date | 11 March 2011 | String | Date
 Author = @Author | Kel Solaar / Brainspoon | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -101,40 +101,49 @@ int $activateLinearWorkflow = @activateLinearWorkflow;
 int $framebufferGamma = @framebufferGamma;
 int $photographicTonemapper = @photographicTonemapper;
 
-sIBL_Maya_MR_setup($backgroundFilePath,
-				$backgroundWidth,
-				$reflectionFilePath,
-				$reflectionMultiplier,
-				$reflectionGamma,
-				$lightingFilePath,
-				$lightingMultiplier,
-				$lightingGamma,
-				$sunU,
-				$sunV,
-				$sunColor,
-				$sunMultiplier,
-				$dynamicLights,
-				$height,
-				$north,
-				$createBackground,
-				$createReflection,
-				$createLighting,
-				$createSun,
-				$createLights,
-				$showCamerasDialog,
-				$preserveSessionSettings,
-				$displayFeedback,
-				$feedbackRadius,
-				$sunLightType,
-				$dynamicLightsType,
-				$hideLights,
-				$createGround,
-				$shadowCatcher,
-				$physicalSun,
-				$activateFinalGather,
-				$activateLinearWorkflow,
-				$framebufferGamma,
-				$photographicTonemapper);
+int $proceedSetup = 1;
+if($backgroundFilePath == "-1" || $reflectionFilePath == "-1" || $lightingFilePath == "-1")
+{
+	if(`confirmDialog -title "Confirm" -message ("sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?") -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "No")
+		$proceedSetup = 0;
+}
+if($proceedSetup)
+	sIBL_Maya_MR_setup($backgroundFilePath,
+					$backgroundWidth,
+					$reflectionFilePath,
+					$reflectionMultiplier,
+					$reflectionGamma,
+					$lightingFilePath,
+					$lightingMultiplier,
+					$lightingGamma,
+					$sunU,
+					$sunV,
+					$sunColor,
+					$sunMultiplier,
+					$dynamicLights,
+					$height,
+					$north,
+					$createBackground,
+					$createReflection,
+					$createLighting,
+					$createSun,
+					$createLights,
+					$showCamerasDialog,
+					$preserveSessionSettings,
+					$displayFeedback,
+					$feedbackRadius,
+					$sunLightType,
+					$dynamicLightsType,
+					$hideLights,
+					$createGround,
+					$shadowCatcher,
+					$physicalSun,
+					$activateFinalGather,
+					$activateLinearWorkflow,
+					$framebufferGamma,
+					$photographicTonemapper);
+else
+	print("sIBL_GUI | sIBL File Import Aborted!\n");
 
 global proc sIBL_Maya_MR_setup(string $backgroundFilePath,
 						int $backgroundWidth,
