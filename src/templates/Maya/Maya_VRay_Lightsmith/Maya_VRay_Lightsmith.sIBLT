@@ -2,8 +2,8 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 0.9.1 | String | Template Release
-Date = @Date | 11 March 2011 | String | Date
+Release = @Release | 0.9.2 | String | Template Release
+Date = @Date | 12 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -202,7 +202,7 @@ global proc string sIBL_Maya_VRay_Lightsmith_getLight(string $file, string $name
 
 	setAttr ($light + ".sx") ($scaleX / 2);
 	setAttr ($light + ".sy") ($scaleY / 2);
-	sIBL_Maya_VRay_Lightsmith_lockAttributes($light, {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"});
+	sIBL_Maya_VRay_Lightsmith_lockAttributes($light, {"tx", "ty", "tz", "rx", "ry", "rz", "sz"});
 	
 	$light = `rename $light $name`;
 	return $light;
@@ -298,12 +298,15 @@ global proc string sIBL_Maya_VRay_Lightsmith_getLightsmithLight(string $name, st
 {
 	string $lightGroup = `createNode "transform"`;
 
-	float $lightRootRadius = sIBL_Maya_VRay_Lightsmith_truncFloatNumber(1.5 * (($lightWidth + $lightHeight)/2), 0.1);
+	float $lightRootRadius = sIBL_Maya_VRay_Lightsmith_truncFloatNumber(2 * (($lightWidth + $lightHeight)/2), 0.1);
 	string $lightRoot[] = `circle -nr 0 0 1 -ch 0 -r $lightRootRadius`;
 	
-	float $lightHookRadius = sIBL_Maya_VRay_Lightsmith_truncFloatNumber(1.0 * (($lightWidth + $lightHeight)/2), 0.1);
+	float $lightHookRadius = sIBL_Maya_VRay_Lightsmith_truncFloatNumber(1.5 * (($lightWidth + $lightHeight)/2), 0.1);
 	string $lightHook[] = `circle -nr 0 0 1 -ch 0 -r $lightHookRadius`;	
 	
+	float $lightGeometriesRadius = sIBL_Maya_VRay_Lightsmith_truncFloatNumber(1 * (($lightWidth + $lightHeight)/2), 0.1);
+	string $lightGeometries[] = `circle -nr 0 0 1 -ch 0 -r $lightGeometriesRadius`;
+
 	string $lightTarget[] = `spaceLocator`;
 
 	float $depthOffset = 0.01;
@@ -312,8 +315,9 @@ global proc string sIBL_Maya_VRay_Lightsmith_getLightsmithLight(string $name, st
 	setAttr ($lightSupport[0] + ".tz") $depthOffset;
 	setAttr ($lightFrame[0] + ".tz") $depthOffset;	
 
-	$lightSupport = `parent $lightSupport[0] $lightHook[0]`;
-	$lightFrame = `parent $lightFrame[0] $lightHook[0]`;
+	$lightSupport = `parent $lightSupport[0] $lightGeometries[0]`;
+	$lightFrame = `parent $lightFrame[0] $lightGeometries[0]`;
+	$lightGeometries = `parent $lightGeometries[0] $lightHook[0]`;
 	$lightHook = `parent $lightHook[0] $lightRoot[0]`;
 	$lightRoot = `parent $lightRoot[0] $lightGroup`;
 	$lightTarget = `parent $lightTarget[0] $lightGroup`;
@@ -404,6 +408,7 @@ global proc string sIBL_Maya_VRay_Lightsmith_getLightsmithLight(string $name, st
 
 	rename $lightSupport[0] ($name + "_Support");
 	rename $lightFrame[0] ($name + "_Frame");
+	rename $lightGeometries[0] ($name + "_Geometries");
 	rename $lightHook[0] ($name + "_Hook");
 	rename $lightRoot[0] ($name + "_Root");
 	rename $lightTarget[0] ($name + "_Target");	

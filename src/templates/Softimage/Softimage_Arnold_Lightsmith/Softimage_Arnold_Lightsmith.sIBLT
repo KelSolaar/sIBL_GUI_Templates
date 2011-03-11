@@ -2,8 +2,8 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 0.9.2 | String | Template Release
-Date = @Date | 11 March 2011 | String | Date
+Release = @Release | 0.9.3 | String | Template Release
+Date = @Date | 12 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -202,9 +202,9 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 					}
 					var clipName = lightName + "_" + sIBL_XSI_Arnold_Lightsmith_setPadding(clipsCount.toString(), 3);
 					var clipMaskName = lightName + "_" + sIBL_XSI_Arnold_Lightsmith_setPadding(clipsMaskCount.toString(), 3);
-					var lightFileClip = sIBL_XSI_Arnold_getClip(lightFilePath, clipName);
+					var lightFileClip = sIBL_XSI_Arnold_Lightsmith_getClip(lightFilePath, clipName);
 					if(lightMaskFilePath)
-						var lightFileMaskClip = sIBL_XSI_Arnold_getClip(lightMaskFilePath, clipMaskName + "_Mask");
+						var lightFileMaskClip = sIBL_XSI_Arnold_Lightsmith_getClip(lightMaskFilePath, clipMaskName + "_Mask");
 					else
 						var lightFileMaskClip = null;
 					if(connectToLights)
@@ -440,7 +440,7 @@ function sIBL_XSI_Arnold_Lightsmith_getLight(clip, name, shape, scaleX, scaleY)
 	var lightShader = CreateShaderFromPreset(sIBL_XSI_Arnold_Lightsmith_getShadersPath() + "Shaders/Light/arnold_quad_light", light);
 	SIConnectShaderToCnxPoint(lightShader, light + ".LightShader", false);
 	
-	var colorMathBasicIntensityShader = sIBL_XSI_Arnold_getLightShaderBranch(lightShader, clip, name);
+	var colorMathBasicIntensityShader = sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(lightShader, clip, name);
 	SIConnectShaderToCnxPoint(colorMathBasicIntensityShader, lightShader + ".color", false);
 
 	lightShader.Parameters("normalize").value = 0;	
@@ -450,7 +450,7 @@ function sIBL_XSI_Arnold_Lightsmith_getLight(clip, name, shape, scaleX, scaleY)
 	globalKinematics("sclx").value = scaleX;
 	globalKinematics("scly").value = scaleY;
 	
-	var parameters = ["sclx", "scly", "sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
+	var parameters = ["sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
 	sIBL_XSI_Arnold_Lightsmith_lockParameters(light, parameters)
 
 	var lightDecayFilterProperty = sIBL_XSI_Arnold_Lightsmith_getArnoldLightDecayFilterProperty(light);
@@ -461,13 +461,13 @@ function sIBL_XSI_Arnold_Lightsmith_getLight(clip, name, shape, scaleX, scaleY)
 	return light;
 }
 
-function sIBL_XSI_Arnold_getClip(file, name)
+function sIBL_XSI_Arnold_Lightsmith_getClip(file, name)
 {
 	var file = Application.CreateImageClip2(file, name + "_Clip");
 	return file;
 }
 
-function sIBL_XSI_Arnold_getClipShaderBranch(container, clip, name)
+function sIBL_XSI_Arnold_Lightsmith_getClipShaderBranch(container, clip, name)
 {	
 	var imageShader = CreateShaderFromProgID("Softimage.txt2d-image-explicit.1", container);
 	SIConnectShaderToCnxPoint(clip, imageShader + ".tex", false);
@@ -477,9 +477,9 @@ function sIBL_XSI_Arnold_getClipShaderBranch(container, clip, name)
 	return imageShader;
 }
 
-function sIBL_XSI_Arnold_getLightShaderBranch(container, clip, name)
+function sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(container, clip, name)
 {
-	var imageShader = sIBL_XSI_Arnold_getClipShaderBranch(container, clip, name);
+	var imageShader = sIBL_XSI_Arnold_Lightsmith_getClipShaderBranch(container, clip, name);
 
 	var colorMathBasicSpectrumShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1", container);
 	var subComponents = ["red", "green", "blue"];
@@ -507,9 +507,9 @@ function sIBL_XSI_Arnold_getLightShaderBranch(container, clip, name)
 	return colorMathBasicIntensityShader;
 }
 	
-function sIBL_XSI_Arnold_getSupportShaderBranch(container, inputShader, connectionPorts, clip, name)
+function sIBL_XSI_Arnold_Lightsmith_getSupportShaderBranch(container, inputShader, connectionPorts, clip, name)
 {
-	var colorMathBasicIntensityShader = sIBL_XSI_Arnold_getLightShaderBranch(container, clip, name);
+	var colorMathBasicIntensityShader = sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(container, clip, name);
 	
 	var colorMathBasicModulationShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1", container);
 	var subComponents = ["red", "green", "blue"];
@@ -567,9 +567,14 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 	lightRoot.Primitives("null").Parameters("primary_icon").value = 5;
 
 	var lightHook = ActiveSceneRoot.AddPrimitive("Null", name + "_Hook");
-	lightHook.Primitives("null").Parameters("size").value = sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(2 * ((lightWidth + lightHeight)/2), 0.1);
+	lightHook.Primitives("null").Parameters("size").value = sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(2.5 * ((lightWidth + lightHeight)/2), 0.1);
 	lightHook.Primitives("null").Parameters("primary_icon").value = 5;
 	lightRoot.addChild(lightHook)
+
+	var lightGeometries = ActiveSceneRoot.AddPrimitive("Null", name + "_Geometries");
+	lightGeometries.Primitives("null").Parameters("size").value = sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(2 * ((lightWidth + lightHeight)/2), 0.1);
+	lightGeometries.Primitives("null").Parameters("primary_icon").value = 5;
+	lightHook.addChild(lightGeometries)
 
 	var lightTarget = ActiveSceneRoot.AddPrimitive("Null", name + "_Target");
 	var lightGroup = Application.CreateTransformGroup(name, "B:" + lightRoot);
@@ -588,8 +593,8 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 	lightFrame.Kinematics.Local.Parameters("posz").value = depthOffset;
 	sIBL_XSI_Arnold_Lightsmith_getArnoldParametersProperty(lightFrame);
 	sIBL_XSI_Arnold_Lightsmith_getArnoldVisibilityProperty(lightFrame);
-	lightHook.addChild(lightSupport)
-	lightHook.addChild(lightFrame)
+	lightGeometries.addChild(lightSupport)
+	lightGeometries.addChild(lightFrame)
 	
 	var parameters = ["sclx", "scly", "sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
 	sIBL_XSI_Arnold_Lightsmith_lockParameters(lightSupport, parameters)
@@ -608,15 +613,14 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 		}
 	}
 	
-	var lightSupportMaterial = SICreateMaterial(sIBL_XSI_Arnold_Lightsmith_getShadersPath() + "Shaders/Material/standard.Preset", name + "_Material", "", lightSupport);
-	lightSupportMaterial.Shaders(0).Parameters("Kd").value = 0;
-	sIBL_XSI_Arnold_getSupportShaderBranch(lightSupportMaterial, lightSupportMaterial + "." + name + "_Material", ["emission_color"], lightClip, name);
+	var lightSupportMaterial = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", name + "_Material", "", lightSupport);
+	sIBL_XSI_Arnold_Lightsmith_getSupportShaderBranch(lightSupportMaterial, lightSupportMaterial + "." + name + "_Material", ["color"], lightClip, name);
 	if(lightMaskClip != null)
 	{
-		var lightMaskShader = sIBL_XSI_Arnold_getClipShaderBranch(lightSupportMaterial, lightMaskClip, name + "_Mask");
-		SIConnectShaderToCnxPoint(lightMaskShader, lightSupportMaterial + "." + name + "_Material.opacity", false);
+		var lightMaskShader = sIBL_XSI_MR_getClipShaderBranch(lightSupportMaterial, lightMaskClip, name + "_Mask");
+		SIConnectShaderToCnxPoint(lightMaskShader, lightSupportMaterial + "." + name + "_Material.transparency", false);
+		lightSupportMaterial.Parameters("inverttrans").value = 1;
 	}
-	lightSupportMaterial.Shaders(0).Parameters("emission").value = 1;
 	
 	var lightFrameMaterial = SICreateMaterial(sIBL_XSI_Arnold_Lightsmith_getShadersPath() + "Shaders/Material/standard.Preset", name + "_Frame_Material", "", lightFrame);
 	var subComponents = ["red", "green", "blue"];
@@ -731,7 +735,7 @@ function sIBL_XSI_Arnold_Lightsmith_connectToLights(lightClip, lightMaskClip, li
 				for(var j = 0; j < subComponents.length; j++) 
 					sIBLLight.Primitives("light").Parameters("LightAreaXform" + subComponents[j]).value = 1;
 
-				var colorMathBasicIntensityShader = sIBL_XSI_Arnold_getLightShaderBranch(lightShaderRoot, lightClip, sIBLLight.FullName);
+				var colorMathBasicIntensityShader = sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(lightShaderRoot, lightClip, sIBLLight.FullName);
 				SIConnectShaderToCnxPoint(colorMathBasicIntensityShader, lightShader + ".color", false);
 				lightShader.Parameters("name").value = sIBLLight.FullName + "_" + lightShader.ProgId.split(".")[1];
 				if(!texturedLights)
