@@ -2,8 +2,8 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_MR_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 0.9.3 | String | Template Release
-Date = @Date | 12 March 2011 | String | Date
+Release = @Release | 0.9.4 | String | Template Release
+Date = @Date | 31 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -557,7 +557,7 @@ function sIBL_XSI_MR_Lightsmith_getLightsmithLight(name, lightClip, lightMaskCli
 	{
 		var lightMaskShader = sIBL_XSI_MR_Lightsmith_getClipShaderBranch(lightSupportMaterial, lightMaskClip, name + "_Mask");
 		SIConnectShaderToCnxPoint(lightMaskShader, lightSupportMaterial + "." + name + "_Material.transparency", false);
-		lightSupportMaterial.Parameters("inverttrans").value = 1;
+		lightSupportMaterial.Shaders(0).Parameters("inverttrans").value = 1;
 	}
 	
 	var lightFrameMaterial = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Lambert.Preset", name + "_Frame_Material", "", lightFrame);
