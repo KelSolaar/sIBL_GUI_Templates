@@ -5,7 +5,7 @@ echo ----------------------------------------------------------------
 
 export TEMPLATES=../src/templates
 
-alias python=/Library/Frameworks/Python.framework/Versions/2.6/bin/python
+alias python=/Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
 #! 3dsMax_MR_Standard Template Documentation Building.
 python sIBL_GUI_Templates_textileToHtml.py "$TEMPLATES/3dsMax/3dsMax_MR_Standard/help/3dsMax_MR_Standard Template Manual" "$TEMPLATES/3dsMax/3dsMax_MR_Standard/help/3dsMax_MR_Standard Template Manual.html"  "3dsMax MR Standard - Template - Manual - Help File"
