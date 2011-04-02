@@ -65,10 +65,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Dome Light Template: Initial Public Release."
 
 [Softimage_Arnold_Lightsmith]
-Release = 0.9.4
+Release = 0.9.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Lightsmith/Nightly/Softimage_Arnold_Lightsmith.zip"
-Comment = "Softimage Arnold Ligthsmith Template: Fix Broken Transparency Support."
+Comment = "Softimage Arnold Ligthsmith Template: Fix Broken Release."
 
 [Softimage_Arnold_Standard]
 Release = 1.0.6
@@ -77,10 +77,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Standard Template: Initial Public Release."
 
 [Softimage_MR_Lightsmith]
-Release = 0.9.4
+Release = 0.9.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Lightsmith/Nightly/Softimage_MR_Lightsmith.zip"
-Comment = "Softimage Mental Ray Ligthsmith Template: Fix Broken Transparency Support."
+Comment = "Softimage Mental Ray Ligthsmith Template: Fix Broken Release."
 
 [Softimage_MR_Standard]
 Release = 1.1.3
