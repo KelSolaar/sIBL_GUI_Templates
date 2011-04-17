@@ -6,7 +6,7 @@ h3. 1.0.5 - Stable
 
 * Fixed broken transparency support in Softimage Lightsmith templates.
 * Hide scene default light in "Softimage_MR_Lightsmith" and "Softimage_Arnold_Lightsmith" templates.
-* Implement ibl sets compatibility guard.
+* Implemented ibl sets compatibility guard.
 * Arnold Renderer templates are now public.
 * Added additional geometries hierarchical control.
 
@@ -18,15 +18,15 @@ h3. 1.0.4 - Stable
 
 h3. 1.0.3 - Stable
 
-* Implement lights types support in each template, it's now possible to choose between different light types : "Area", "Directional", "Point", "Spot", etc ...
+* Implemented lights types support in each template, it's now possible to choose between different light types : "Area", "Directional", "Point", "Spot", etc ...
 
 h3. 1.0.2 - Stable
 
-* Add new "sIBL_GUI_Templates_gatherFiles.sh" and "sIBL_GUI_Templates_recursiveRemove.py" utilities.
+* Added new "sIBL_GUI_Templates_gatherFiles.sh" and "sIBL_GUI_Templates_recursiveRemove.py" utilities.
 
 h3. 1.0.1 - Stable
 
-* Update release utilities.
+* Updated release utilities.
 
 h3. 1.0.0 - Stable
 
