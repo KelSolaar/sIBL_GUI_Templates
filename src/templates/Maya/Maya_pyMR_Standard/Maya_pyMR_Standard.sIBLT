@@ -1,0 +1,123 @@
+[Template]
+Name = @Name | Standard | String | Template Name
+Path = @Path | | String | Template Path
+HelpFile = @HelpFile | help/Maya_pyMR_Standard Template Manual.html | String | Help File
+Release = @Release | 0.9.0 | String | Template Release
+Date = @Date | 17 April 2011 | String | Date
+Author = @Author | Kel Solaar | String | Author
+Email = @Email | thomas.mansencal@gmail.com | String | Email
+Url = @Url | http://thomasmansencal.com/ | String | Url
+Software = @Software | Maya | String | Software
+Version = @Version | 2011 | String | Version
+Renderer = @Renderer | Mental Ray | String | Renderer
+OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
+Comment = @Comment | This is Maya 2011 Mental Ray Template. | String | Comment
+
+[Ibl Set Attributes]
+Background|BGfile = @BGfile
+Background|BGheight = @BGheight
+Enviroment|EVfile = @EVfile
+Enviroment|EVmulti = @EVmulti
+Enviroment|EVgamma = @EVgamma
+Reflection|REFfile = @REFfile
+Reflection|REFmulti = @REFmulti
+Reflection|REFgamma = @REFgamma
+Sun|SUNu = @SUNu
+Sun|SUNv = @SUNv
+Sun|SUNcolor = @SUNcolor
+Sun|SUNmulti = @SUNmulti
+Header|Height = @Height
+Header|North = @North
+Lights|DynamicLights = @dynamicLights
+
+[Common Attributes]
+createBackground = @createBackground | 1 | Boolean | Create Background
+createReflection = @createReflection | 1 | Boolean | Create Reflection
+createLighting = @createLighting | 1 | Boolean | Create Lighting
+createSun = @createSun | 1 | Boolean | Create Sun
+createLights = @createLights | 1 | Boolean | Create Dynamic Lights
+
+[Additional Attributes]
+showCamerasDialog = @showCamerasDialog | 0 | Boolean | Cameras Selection Dialog
+preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
+displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
+sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
+hideLights = @hideLights | 1 | Boolean | Hide Lights
+createGround = @createGround | 1 | Boolean | Create Ground
+shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
+physicalSun = @physicalSun | 1 | Boolean | Physical Sun
+activateFinalGather = @activateFinalGather | 1 | Boolean | Activate Final Gather
+activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
+framebufferGamma = @framebufferGamma | 0 | Boolean | Use Framebuffer Gamma
+photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographic Tonemapper
+
+[Remote Connection]
+ConnectionType = @ConnectionType | Socket | String | Connection Type
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);"); | String | ExecutionCommand
+DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
+DefaultPort = @DefaultPort | 2048 | Integer | Default Port
+
+[Script]
+# @OutputScript - @Release For @Software @Version
+# Author: @Author
+# EMail: @Email
+# Homepage: @Url
+# Template Path: @Path
+# Template Last Modified: @Date
+# sIBL_GUI
+class Structure(object):
+	def __init__(self, **kwargs):
+		self.__dict__.update(kwargs)
+
+class Light(Structure):
+	pass
+
+class sIBL_datas(object):
+	backgroundFilePath = "@BGfile"
+	backgroundWidth = @BGheight * 2
+	reflectionFilePath = "@REFfile"
+	reflectionMultiplier = @REFmulti
+	reflectionGamma = @REFgamma
+	lightingFilePath = "@EVfile"
+	lightingMultiplier = @EVmulti
+	lightingGamma = @EVgamma
+	sunU = @SUNu
+	sunV = @SUNv
+	sunColor = (@SUNcolor)
+	sunMultiplier = @SUNmulti
+	dynamicLights = "@dynamicLights"
+	height = @Height
+	north = @North
+		
+	def getDynamicLights(self):
+		tokens = self.dynamicLights.split("|")
+		dynamicLights = {}
+		for i in range(0, len(tokens), 8):
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1], color=(tokens[i+2], tokens[i+3], tokens[i+4]), multiplier=tokens[i+5], uCoordinate=tokens[i+6], vCoordinate=tokens[i+7] )
+			
+		self.dynamicLights = dynamicLights
+
+class sIBL_options(object):
+	createBackground = @createBackground
+	createReflection = @createReflection
+	createLighting = @createLighting
+	createSun = @createSun
+	createLights = @createLights
+	showCamerasDialog = @showCamerasDialog
+	preserveSessionSettings = @preserveSessionSettings
+	displayFeedback = @displayFeedback
+	feedbackRadius = 100
+	sunLightType = "@sunLightType"
+	dynamicLightsType = "@dynamicLightsType"
+	hideLights = @hideLights
+	createGround = @createGround
+	shadowCatcher = @shadowCatcher
+	physicalSun = @physicalSun
+	activateFinalGather = @activateFinalGather
+	activateLinearWorkflow = @activateLinearWorkflow
+	framebufferGamma = @framebufferGamma
+	photographicTonemapper = @photographicTonemapper
+
+print sIBL_datas.__dict__.values()
+print sIBL_options.__dict__.values()
