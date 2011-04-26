@@ -54,7 +54,7 @@ photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographi
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);"); | String | ExecutionCommand
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);sIBL_Setup = import_.Setup(); sIBL_Setup.execute()"); | String | ExecutionCommand
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
@@ -66,6 +66,11 @@ DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 # Template Path: @Path
 # Template Last Modified: @Date
 # sIBL_GUI
+import maya.cmds as cmds
+import maya.mel as mel
+import os
+import sys
+
 class Structure(object):
 	def __init__(self, **kwargs):
 		self.__dict__.update(kwargs)
@@ -73,7 +78,26 @@ class Structure(object):
 class Light(Structure):
 	pass
 
-class sIBL_datas(object):
+class Constants(object):
+	module = os.path.splitext(os.path.basename(__file__))[0]
+	applicationName = "sIBL_GUI"
+	prefix = "sIBL"
+	package = "@Software".replace(" ", "_")
+	renderer = "@Renderer".replace(" ", "_")
+	packagePrefix = "%s_%s" % (prefix, package)
+	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+
+def getDynamicLights(datas):
+	tokens = datas.split("|")
+	dynamicLights = {}
+	try:
+		for i in range(0, len(tokens), 8):
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1], color=(tokens[i+2], tokens[i+3], tokens[i+4]), multiplier=tokens[i+5], uCoordinate=tokens[i+6], vCoordinate=tokens[i+7] )
+	except:
+		pass
+	return dynamicLights
+
+class Datas(object):
 	backgroundFilePath = "@BGfile"
 	backgroundWidth = @BGheight * 2
 	reflectionFilePath = "@REFfile"
@@ -84,21 +108,13 @@ class sIBL_datas(object):
 	lightingGamma = @EVgamma
 	sunU = @SUNu
 	sunV = @SUNv
-	sunColor = (@SUNcolor)
+	sunColor = [@SUNcolor]
 	sunMultiplier = @SUNmulti
-	dynamicLights = "@dynamicLights"
+	dynamicLights = getDynamicLights("@dynamicLights")
 	height = @Height
 	north = @North
-		
-	def getDynamicLights(self):
-		tokens = self.dynamicLights.split("|")
-		dynamicLights = {}
-		for i in range(0, len(tokens), 8):
-			dynamicLights[tokens[i]] = Light(name=tokens[i+1], color=(tokens[i+2], tokens[i+3], tokens[i+4]), multiplier=tokens[i+5], uCoordinate=tokens[i+6], vCoordinate=tokens[i+7] )
-			
-		self.dynamicLights = dynamicLights
 
-class sIBL_options(object):
+class Options(object):
 	createBackground = @createBackground
 	createReflection = @createReflection
 	createLighting = @createLighting
@@ -119,5 +135,89 @@ class sIBL_options(object):
 	framebufferGamma = @framebufferGamma
 	photographicTonemapper = @photographicTonemapper
 
-print sIBL_datas.__dict__.values()
-print sIBL_options.__dict__.values()
+class Setup(object):
+	def __init__(self):
+		if Datas.backgroundFilePath == "-1" or Datas.reflectionFilePath == "-1" or Datas.lightingFilePath == "-1":
+			if cmds.confirmDialog(title="Confirm", message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
+				self.__exit__()
+		cmds.optionVar(sv=("%s_camerasCandidates" % Constants.prefix, ""))
+
+	def	__exit__(self):
+		cmds.optionVar(remove=("%s_camerasCandidates" % Constants.prefix))
+		sys.exit()
+
+	def execute(self):
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing Overall Preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packagePrefix)
+
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template Specific Preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packageRendererPrefix)
+
+		print("%s | Starting sIBL File Import!" % Constants.applicationName)
+		
+		cameras = cmds.ls(l=True, type="camera")
+		if Options.showCamerasDialog:
+			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
+				self.__exit__()
+			cameras= cmds.optionVar(q="%s_camerasCandidates" % Constants.prefix) != "" and cmds.optionVar(q="%s_camerasCandidates" % Constants.prefix).split(",") or None
+			if not cameras:
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Cameras Selected, %s File Import Canceled!" % Constants.prefix))
+				self.__exit__()
+
+		print Datas.__dict__.values()
+		print Options.__dict__.values()
+		
+		print("%s | %s File Import Finished!" % (Constants.applicationName, Constants.prefix))
+		self.__exit__()
+
+def camerasChooser_formLayout():
+	camerasChooser_formLayout = cmds.setParent(q=True)
+	cmds.formLayout(camerasChooser_formLayout, e=True, height=300)
+	selectAll_button = cmds.button("%s_selectAll_button" % Constants.applicationName, label="Select All", command=selectAll_button_OnClicked)
+	selectNone_button = cmds.button("%s_selectNone_button" % Constants.applicationName, label="Select None", command=selectNone_button_OnClicked)
+
+	cameras_textScrollList = cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, allowMultiSelection=True, fn="smallFixedWidthFont",sc=cameras_textScrollList_OnSelectionChanged)
+
+	for camera in cmds.ls(l=True, type="camera"):
+		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, append=camera)
+
+	buttons_rowlayout = cmds.rowLayout(numberOfColumns=2, cl2=("center", "center"), ct2=("both", "both"))
+	ok_button = cmds.button("%s_ok_button" % Constants.applicationName, label="Ok", command="cmds.layoutDialog(dismiss='Ok')")
+	cancel_button = cmds.button("%s_cancel_button" % Constants.applicationName, label="Cancel", command="cmds.layoutDialog(dismiss='Cancel')")
+
+	spacer = margin = 4
+	cmds.formLayout(camerasChooser_formLayout, edit=True,
+					attachForm = [(selectAll_button, "top", margin),
+					(selectAll_button, "left", margin),
+ 					(selectAll_button, "right", margin),
+					(selectNone_button, "left", margin),
+ 					(selectNone_button, "right", margin),
+					(cameras_textScrollList, "right", margin),
+ 					(cameras_textScrollList, "left", margin),
+					(buttons_rowlayout, "left", margin),
+ 					(buttons_rowlayout, "right", margin),
+					(buttons_rowlayout, "bottom", margin)],
+					attachControl=[(cameras_textScrollList, "top", spacer, selectNone_button),
+					(selectNone_button, "top", spacer, selectAll_button),
+					(cameras_textScrollList, "bottom", 	spacer, buttons_rowlayout)])
+
+def selectAll_button_OnClicked(value):
+	for i in range(1,cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, ni=True) + 1):
+		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, sii=i)
+
+def selectNone_button_OnClicked(value):
+	cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, da=True)
+
+def cameras_textScrollList_OnSelectionChanged():
+	cmds.optionVar(sv=("%s_camerasCandidates" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
+
+def getTransform(shape, fullPath=True):
+	transform = ""
+	if cmds.nodeType(shape) != "transform":
+		parents = cmds.listRelatives(shape, fullPath=fullPath, parent=True)
+		transform = parents[0]
+	return transform
