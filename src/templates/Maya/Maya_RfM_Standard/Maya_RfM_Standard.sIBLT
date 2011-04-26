@@ -271,8 +271,7 @@ global proc string[] sIBL_Maya_RfM_getSessionPreservedAttributes()
 						"sIBL_Ground.rotateZ",
 						"sIBL_Ground.scaleX",
 						"sIBL_Ground.scaleY",
-						"sIBL_Ground.scaleZ",
-						"sIBL_Ground.scaleE"
+						"sIBL_Ground.scaleZ"
 						};
 	return $sessionPreservedAttributes;
 }
