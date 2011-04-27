@@ -66,9 +66,11 @@ DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 # Template Path: @Path
 # Template Last Modified: @Date
 # sIBL_GUI
+import math
 import maya.cmds as cmds
 import maya.mel as mel
 import os
+import re
 import sys
 
 class Structure(object):
@@ -79,13 +81,31 @@ class Light(Structure):
 	pass
 
 class Constants(object):
-	module = os.path.splitext(os.path.basename(__file__))[0]
 	applicationName = "sIBL_GUI"
 	prefix = "sIBL"
+	splitter = "_" 
 	package = "@Software".replace(" ", "_")
 	renderer = "@Renderer".replace(" ", "_")
 	packagePrefix = "%s_%s" % (prefix, package)
 	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+	title = "Smart IBL"
+	controlsTitle = "[ %s Controls ]" % title
+	sessionNodeTypes =  ("condition", 
+						"displayLayer", 
+						"expression", 
+						"file", 
+						"lambert", 
+						"mentalrayTexture", 
+						"mia_exposure_photographic", 
+						"mia_exposure_simple", 
+						"mia_physicalsun", 
+						"mib_color_alpha", 
+						"mib_lookup_spherical", 
+						"mip_gamma_gain", 
+						"mip_matteshadow", 
+						"mip_rayswitch", 
+						"place2dTexture", 
+						"shadingEngine")
 
 def getDynamicLights(datas):
 	tokens = datas.split("|")
@@ -141,10 +161,26 @@ class Setup(object):
 			if cmds.confirmDialog(title="Confirm", message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
-		cmds.optionVar(sv=("%s_camerasCandidates" % Constants.prefix, ""))
+
+		cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ""))
+		self.outputCameras = cmds.ls(l=True, type="camera")
+		self.feedbackRadius = Options.feedbackRadius
+		self.storedSessionAttributes = {"%s%sfeedback.rotateX" % (Constants.prefix, Constants.splitter):0,
+										"%s%sfeedback.scaleX" % (Constants.prefix, Constants.splitter):1,
+										"%s%sfeedback.scaleY" % (Constants.prefix, Constants.splitter):1,
+										"%s%sfeedback.scaleZ" % (Constants.prefix, Constants.splitter):1,
+										"%s%sground.translateX" % (Constants.prefix, Constants.splitter):0,
+										"%s%sground.translateY" % (Constants.prefix, Constants.splitter):0,
+										"%s%sground.translateZ" % (Constants.prefix, Constants.splitter):0,
+										"%s%sground.rotateX" % (Constants.prefix, Constants.splitter):0,
+										"%s%sground.rotateY" % (Constants.prefix, Constants.splitter):0,
+										"%s%sground.rotateZ" % (Constants.prefix, Constants.splitter):0,
+										"%s%sground.scaleX" % (Constants.prefix, Constants.splitter):1,
+										"%s%sground.scaleY" % (Constants.prefix, Constants.splitter):1,
+										"%s%sground.scaleZ" % (Constants.prefix, Constants.splitter):1}
 
 	def	__exit__(self):
-		cmds.optionVar(remove=("%s_camerasCandidates" % Constants.prefix))
+		cmds.optionVar(remove=("%s_outputCameras" % Constants.prefix))
 		sys.exit()
 
 	def execute(self):
@@ -158,21 +194,97 @@ class Setup(object):
 
 		print("%s | Starting sIBL File Import!" % Constants.applicationName)
 		
-		cameras = cmds.ls(l=True, type="camera")
 		if Options.showCamerasDialog:
 			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
-			cameras= cmds.optionVar(q="%s_camerasCandidates" % Constants.prefix) != "" and cmds.optionVar(q="%s_camerasCandidates" % Constants.prefix).split(",") or None
-			if not cameras:
+			self.outputCameras = cmds.optionVar(q="%s_outputCameras" % Constants.prefix) != "" and cmds.optionVar(q="%s_outputCameras" % Constants.prefix).split(",") or None
+			if not self.outputCameras:
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Cameras Selected, %s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
+
+		Options.preserveSessionSettings and self.storeSessionAttributes()
+		
+		self.setRenderer()
+		self.deleteSession()
+		self.getExtendedFeedbackRadius()
+		
+		self.outputCameras = filterNonExistingNodes(self.outputCameras)
+		
+		self.getControlsLocator()
 
 		print Datas.__dict__.values()
 		print Options.__dict__.values()
 		
 		print("%s | %s File Import Finished!" % (Constants.applicationName, Constants.prefix))
+		
 		self.__exit__()
+	
+	def storeSessionAttributes(self):
+		for attribute in self.storedSessionAttributes.keys():
+			if len(cmds.ls(attribute)):
+				self.storedSessionAttributes[attribute]= cmds.getAttr(attribute)
+	
+	def restoreSessionAttributes(self):
+		for attribute in self.storedSessionAttributes.keys():
+			if len(cmds.ls(attribute)):
+				cmds.setAttr(self.storedSessionAttributes[attribute])
+
+	def deleteSession(self):
+		if cmds.objExists(Constants.prefix):
+			cmds.delete(Constants.prefix)
+		
+		for type in Constants.sessionNodeTypes:
+			deleteType(type, "\\b%s*" % Constants.prefix)
+
+	def getControlsGroup(self):
+		controlsGroup = cmds.ls(Constants.prefix, fl=True)
+		if not controlsGroup:
+			controlsGroup = cmds.createNode("transform", n=Constants.prefix)
+			lockAttributes(controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
+		return controlsGroup
+
+	def getControlsLocator(self):
+		controlsGroup = self.getControlsGroup()
+
+		annotation = cmds.createNode("annotationShape")
+		cmds.setAttr("%s.displayArrow" % annotation, 0)
+		cmds.setAttr("%s.displayArrow" % annotation, lock=True, keyable=False)
+		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
+
+		annotationTransform = getTransform(annotation)
+		cmds.setAttr("%s.ty" % annotationTransform, 5)
+		lockAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
+		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
+
+		components = ("Background", "Reflection", "Lighting")
+		for component in components:
+			cmds.addAttr(annotationTransform, ln="toggle%s" % component, nn=component, at="bool")
+			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
+		
+		controls = ("Gamma", "Gain")
+		for component in components:
+			cmds.addAttr(annotationTransform, ln="cc%s" % component, nn="[ %s CC ]" % component, at="enum", en=Constants.title)
+			cmds.setAttr("%s.cc%s" % (annotationTransform, component), e=True, keyable=True, lock=True)
+			for control in controls:
+				cmds.addAttr(annotationTransform, ln="%s%s" % (component.lower(), control), nn="%s" % control, at="double")
+				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), e=True, keyable=True, lock=False)
+				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), 1.0)
+	
+		cmds.parent(cmds.rename(annotationTransform, "%s%scontrols" % (Constants.prefix, Constants.splitter)), controlsGroup)
+
+	def getExtendedFeedbackRadius(self):
+		sceneExtent = getSceneExtent() * math.sqrt(2)
+		sceneExtent = sceneExtent + (sceneExtent * 10 / 100)
+		
+		if sceneExtent > self.feedbackRadius:
+			self.feedbackRadius = truncFloat(sceneExtent, 10)
+
+	def setRenderer(self):
+		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
+		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
+		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
 
 def camerasChooser_formLayout():
 	camerasChooser_formLayout = cmds.setParent(q=True)
@@ -213,7 +325,32 @@ def selectNone_button_OnClicked(value):
 	cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, da=True)
 
 def cameras_textScrollList_OnSelectionChanged():
-	cmds.optionVar(sv=("%s_camerasCandidates" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
+	cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
+
+def lockAttributes(node, attributes):
+	for attribute in attributes:
+		cmds.setAttr("%s.%s" % (node, attribute), lock=True, keyable=False)
+
+def getSceneExtent():
+	geometries = cmds.ls(l=True, geometry=True)
+	transforms = []
+	for geometry in geometries:
+		transforms.append(getTransform(geometry))
+
+	sceneExtent = 0
+	for transform in transforms:
+		boundingBox = cmds.xform(transform, q=True, bb=True)
+		for value in boundingBox:
+			if math.fabs(value) > sceneExtent:
+				sceneExtent = math.fabs(value)
+
+	return sceneExtent
+
+def	truncFloat(number, truncValue):
+	if truncValue != 0:
+		return math.trunc(number / truncValue) * truncValue
+	else:
+		return number
 
 def getTransform(shape, fullPath=True):
 	transform = ""
@@ -221,3 +358,12 @@ def getTransform(shape, fullPath=True):
 		parents = cmds.listRelatives(shape, fullPath=fullPath, parent=True)
 		transform = parents[0]
 	return transform
+	
+def deleteType(type, pattern):
+	nodes=cmds.ls(l=True, type=type)
+	for node in nodes:
+		if re.search(pattern, node):
+			cmds.delete(node)
+			
+def filterNonExistingNodes(nodes):
+	return [node for node in nodes if cmds.objExists(node)]
