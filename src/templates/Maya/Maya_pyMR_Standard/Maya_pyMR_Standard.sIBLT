@@ -90,6 +90,7 @@ class Constants(object):
 	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
 	title = "Smart IBL"
 	controlsTitle = "[ %s Controls ]" % title
+	maximumViewportTextureSize = 8192
 	sessionNodeTypes =  ("condition", 
 						"displayLayer", 
 						"expression", 
@@ -118,12 +119,12 @@ def getDynamicLights(datas):
 	return dynamicLights
 
 class Datas(object):
-	backgroundFilePath = "@BGfile"
+	backgroundFile = "@BGfile"
 	backgroundWidth = @BGheight * 2
-	reflectionFilePath = "@REFfile"
+	reflectionFile = "@REFfile"
 	reflectionMultiplier = @REFmulti
 	reflectionGamma = @REFgamma
-	lightingFilePath = "@EVfile"
+	lightingFile = "@EVfile"
 	lightingMultiplier = @EVmulti
 	lightingGamma = @EVgamma
 	sunU = @SUNu
@@ -157,7 +158,7 @@ class Options(object):
 
 class Setup(object):
 	def __init__(self):
-		if Datas.backgroundFilePath == "-1" or Datas.reflectionFilePath == "-1" or Datas.lightingFilePath == "-1":
+		if Datas.backgroundFile == "-1" or Datas.reflectionFile == "-1" or Datas.lightingFile == "-1":
 			if cmds.confirmDialog(title="Confirm", message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
@@ -207,12 +208,15 @@ class Setup(object):
 		
 		self.setRenderer()
 		self.deleteSession()
-		self.getExtendedFeedbackRadius()
-		
+
 		self.outputCameras = filterNonExistingNodes(self.outputCameras)
+		self.getExtendedFeedbackRadius()		
 		
 		self.getControlsLocator()
-
+		Options.hideLights and self.hideLights()
+		self.getEnvironmentShaders()
+		self.getFeedback()			
+			
 		print Datas.__dict__.values()
 		print Options.__dict__.values()
 		
@@ -281,6 +285,116 @@ class Setup(object):
 		if sceneExtent > self.feedbackRadius:
 			self.feedbackRadius = truncFloat(sceneExtent, 10)
 
+	def hideLights(self):
+		lights = cmds.ls(lights=True)
+		lights and cmds.hide(lights)
+
+	def getEnvironmentShadersBranch(self, raySwitch, ports, file, prefix, useOverride):
+		gammaGain = cmds.shadingNode("mip_gamma_gain", asUtility=True)
+
+		if useOverride:
+			condition = cmds.shadingNode("condition", asUtility=True)
+			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
+			cmds.connectAttr("%s.outValue" % gammaGain, "%s.colorIfTrue" % condition, f=True)
+
+			colorAlpha = cmds.shadingNode("mib_color_alpha", asUtility=True)
+			cmds.setAttr("%s.factor" % colorAlpha, 0) 			
+			cmds.connectAttr("%s.outValue" % colorAlpha, "%s.colorIfFalse" % condition, f=True)
+
+			for port in ports:
+				cmds.connectAttr("%s.outColor" % condition, "%s.%s" % (raySwitch, port), f=True)
+
+			cmds.rename(condition, "%s%s%s" % (prefix, Constants.splitter, cmds.nodeType(condition)))
+			cmds.rename(colorAlpha, "%s%s%s" % (prefix, Constants.splitter, cmds.nodeType(colorAlpha)))
+		else:
+			for port in ports:
+				cmds.connectAttr("%s.outValue" % gammaGain, "%s.%s" % (raySwitch, port), f=True)
+				cmds.connectAttr("%s.outValueA" % gammaGain, "%s.%sA" % (raySwitch, port), f=True)
+
+		lookupSpherical = cmds.shadingNode("mib_lookup_spherical", asShader=True)
+
+		cmds.connectAttr("%s.outValue" % lookupSpherical, "%s.input" % gammaGain, f=True)
+		cmds.connectAttr("%s.outValueA" % lookupSpherical, "%s.inputA" % gammaGain, f=True)
+
+		mentalrayTexture = cmds.shadingNode("mentalrayTexture", asTexture=True)
+		cmds.connectAttr("%s.message" % mentalrayTexture, "%s.tex" % lookupSpherical, f=True)
+		cmds.setAttr("%s.fileTextureName" % mentalrayTexture, file, type="string")
+
+		for node in (gammaGain, lookupSpherical, mentalrayTexture):
+			cmds.rename(node, "%s%s%s" % (prefix, Constants.splitter, cmds.nodeType(node)))
+
+	def getEnvironmentShaders(self):
+		raySwitch = cmds.shadingNode("mip_rayswitch", asUtility=True)
+		
+		if Options.createBackground:
+			ports = ("eye", "transparent", "refraction")
+			self.getEnvironmentShadersBranch(raySwitch, ports, Datas.backgroundFile,"%s%sbackground" % (Constants.prefix, Constants.splitter), 1)
+
+		if Options.createLighting:
+			ports = ("finalgather",)
+			self.getEnvironmentShadersBranch(raySwitch, ports, Datas.lightingFile,"%s%slighting" % (Constants.prefix, Constants.splitter), 1)
+	
+		if Options.createReflection:
+			ports = ("reflection", "environment")
+			self.getEnvironmentShadersBranch(raySwitch, ports, Datas.reflectionFile,"%s%sreflection" % (Constants.prefix, Constants.splitter), 1)
+
+		for camera in self.outputCameras:
+			cmds.connectAttr("%s.message" % raySwitch, "%s.miEnvironmentShader" % camera, f=True)
+		
+		cmds.rename(raySwitch, "%s%s%s" % (Constants.prefix, Constants.splitter, cmds.nodeType(raySwitch)))
+
+	def getDisplayLocator(self, name, radius, visibility):
+		locator = cmds.sphere(name=name, ch=0)[0]
+		cmds.rebuildSurface(locator, su=4, sv=8, ch=0)
+		setAttributes({"%s.miDeriveFromMaya" % locator:0,
+						"%s.visibility" % locator:visibility,
+						"%s.miHide" % locator:1,
+						"%s.scaleZ" % locator:-1})
+		cmds.makeIdentity(locator, apply=True, t=0, r=0, s=1, n=0)
+		setAttributes({"%s.rotateZ" % locator:90,
+						"%s.scaleX" % locator:radius,
+						"%s.scaleY" % locator:radius,
+						"%s.scaleZ" % locator:radius})
+		lockAttributes(locator, ("tx", "ty", "tz", "ry", "rz"))
+		locatorShape = getShapes(locator)[0]
+		setAttributes({"%s.doubleSided" % locatorShape:False,
+						"%s.opposite" % locatorShape:False})	
+		return locator
+
+	def getFeedback(self):
+		feedback = self.getDisplayLocator("%s%sfeedback" % (Constants.prefix, Constants.splitter), self.feedbackRadius, Options.displayFeedback)
+		cmds.parent(feedback, self.getControlsGroup())
+		addToDisplayLayer(feedback, "%s%sfeedback_layer" % (Constants.prefix, Constants.splitter))
+		
+		lambert = cmds.shadingNode("lambert", asShader=True)
+		cmds.setAttr("%s.transparency" % lambert, 0.5, 0.5, 0.5, type="double3")
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+		cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % shadingEngine, f=True)
+		
+		file = cmds.shadingNode("file", asTexture=True)
+		not cmds.ls("%s.resolution" % file) and cmds.addAttr(file, ln="resolution", at="long")
+		cmds.setAttr("%s.resolution" % file, 2048)
+		
+		fileTextureName = Datas.backgroundFile
+		if Datas.backgroundWidth > Constants.maximumViewportTextureSize:
+			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: %s Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead." % Datas.backgroundWidth, button=("Ok",), defaultButton="Ok")
+			fileTextureName = Datas.reflectionFile
+		cmds.setAttr("%s.fileTextureName" % file, fileTextureName, type="string")
+		cmds.connectAttr("%s.outColor" % file, "%s.color" % lambert, f=True)
+		
+		place2dTexture = cmds.shadingNode("place2dTexture", asUtility=True)
+		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % file, f=True)
+		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % file, f=True)
+		attributes = ("coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV")
+		for attribute in attributes:
+			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)		
+		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
+
+		cmds.sets(feedback, e=True, forceElement=shadingEngine)
+
+		for node in (lambert, shadingEngine, file, place2dTexture):
+			cmds.rename(node, "%s%sfeedback_%s" % (Constants.prefix, Constants.splitter, cmds.nodeType(node)))
+
 	def setRenderer(self):
 		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
 		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
@@ -327,6 +441,10 @@ def selectNone_button_OnClicked(value):
 def cameras_textScrollList_OnSelectionChanged():
 	cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
 
+def setAttributes(attributes):
+	for attribute, value in attributes.items():
+		cmds.setAttr(attribute, value)
+
 def lockAttributes(node, attributes):
 	for attribute in attributes:
 		cmds.setAttr("%s.%s" % (node, attribute), lock=True, keyable=False)
@@ -352,6 +470,10 @@ def	truncFloat(number, truncValue):
 	else:
 		return number
 
+def getShapes(object, fullPath=False, noIntermediate=True):
+	shapes = cmds.listRelatives(object, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
+	return shapes != None and shapes or []
+
 def getTransform(shape, fullPath=True):
 	transform = ""
 	if cmds.nodeType(shape) != "transform":
@@ -364,6 +486,17 @@ def deleteType(type, pattern):
 	for node in nodes:
 		if re.search(pattern, node):
 			cmds.delete(node)
-			
+
+def getObject(object):
+	try:
+		return cmds.ls(object, fl=True)[0]
+	except:
+		pass
+
+def addToDisplayLayer(object, displayLayer):
+	layer = getObject(displayLayer)
+	layer = not layer and cmds.createDisplayLayer(name=displayLayer) or layer
+	cmds.editDisplayLayerMembers(layer, object, noRecurse=True)
+		
 def filterNonExistingNodes(nodes):
 	return [node for node in nodes if cmds.objExists(node)]
