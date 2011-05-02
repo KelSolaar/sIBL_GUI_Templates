@@ -82,8 +82,7 @@ class Light(Structure):
 
 class Constants(object):
 	applicationName = "sIBL_GUI"
-	prefix = "sIBL"
-	splitter = "_" 
+	prefix = "IBL"
 	package = "@Software".replace(" ", "_")
 	renderer = "@Renderer".replace(" ", "_")
 	packagePrefix = "%s_%s" % (prefix, package)
@@ -107,13 +106,18 @@ class Constants(object):
 						"mip_rayswitch", 
 						"place2dTexture", 
 						"shadingEngine")
+	lightTypes = { "Area":"areaLight",
+					"Directional":"directionalLight",
+					"Point":"pointLight",
+					"Spot":"spotLight"
+	}
 
 def getDynamicLights(datas):
 	tokens = datas.split("|")
 	dynamicLights = {}
 	try:
 		for i in range(0, len(tokens), 8):
-			dynamicLights[tokens[i]] = Light(name=tokens[i+1], color=(tokens[i+2], tokens[i+3], tokens[i+4]), multiplier=tokens[i+5], uCoordinate=tokens[i+6], vCoordinate=tokens[i+7] )
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2]), float(tokens[i+3]), float(tokens[i+4])), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
 	except:
 		pass
 	return dynamicLights
@@ -163,25 +167,26 @@ class Setup(object):
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
 
-		cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ""))
 		self.outputCameras = cmds.ls(l=True, type="camera")
+		self.controlsGroup = None
+		self.feedback = None
+		self.lightsTarget = None
 		self.feedbackRadius = Options.feedbackRadius
-		self.storedSessionAttributes = {"%s%sfeedback.rotateX" % (Constants.prefix, Constants.splitter):0,
-										"%s%sfeedback.scaleX" % (Constants.prefix, Constants.splitter):1,
-										"%s%sfeedback.scaleY" % (Constants.prefix, Constants.splitter):1,
-										"%s%sfeedback.scaleZ" % (Constants.prefix, Constants.splitter):1,
-										"%s%sground.translateX" % (Constants.prefix, Constants.splitter):0,
-										"%s%sground.translateY" % (Constants.prefix, Constants.splitter):0,
-										"%s%sground.translateZ" % (Constants.prefix, Constants.splitter):0,
-										"%s%sground.rotateX" % (Constants.prefix, Constants.splitter):0,
-										"%s%sground.rotateY" % (Constants.prefix, Constants.splitter):0,
-										"%s%sground.rotateZ" % (Constants.prefix, Constants.splitter):0,
-										"%s%sground.scaleX" % (Constants.prefix, Constants.splitter):1,
-										"%s%sground.scaleY" % (Constants.prefix, Constants.splitter):1,
-										"%s%sground.scaleZ" % (Constants.prefix, Constants.splitter):1}
+		self.storedSessionAttributes = {"%s_feedback.rotateY" % Constants.prefix:0,
+										"%s_feedback.scaleX" % Constants.prefix:1,
+										"%s_feedback.scaleY" % Constants.prefix:1,
+										"%s_feedback.scaleZ" % Constants.prefix:1,
+										"%s_ground.translateX" % Constants.prefix:0,
+										"%s_ground.translateY" % Constants.prefix:0,
+										"%s_ground.translateZ" % Constants.prefix:0,
+										"%s_ground.rotateX" % Constants.prefix:0,
+										"%s_ground.rotateY" % Constants.prefix:0,
+										"%s_ground.rotateZ" % Constants.prefix:0,
+										"%s_ground.scaleX" % Constants.prefix:1,
+										"%s_ground.scaleY" % Constants.prefix:1,
+										"%s_ground.scaleZ" % Constants.prefix:1}
 
 	def	__exit__(self):
-		cmds.optionVar(remove=("%s_outputCameras" % Constants.prefix))
 		sys.exit()
 
 	def execute(self):
@@ -212,17 +217,19 @@ class Setup(object):
 		self.outputCameras = filterNonExistingNodes(self.outputCameras)
 		self.getExtendedFeedbackRadius()		
 		
+		self.getControlsGroup()
 		self.getControlsLocator()
 		Options.hideLights and self.hideLights()
 		self.getEnvironmentShaders()
-		self.getFeedback()			
-			
-		print Datas.__dict__.values()
-		print Options.__dict__.values()
-		
+		self.getFeedback()
+		self.getLigthsTarget()
+		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
+			self.getSun()
+		if Options.createLights and Datas.dynamicLights:
+			self.getDynamicLights()
+		self.connectFeedbackToShaders()
+
 		print("%s | %s File Import Finished!" % (Constants.applicationName, Constants.prefix))
-		
-		self.__exit__()
 	
 	def storeSessionAttributes(self):
 		for attribute in self.storedSessionAttributes.keys():
@@ -234,6 +241,11 @@ class Setup(object):
 			if len(cmds.ls(attribute)):
 				cmds.setAttr(self.storedSessionAttributes[attribute])
 
+	def setRenderer(self):
+		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
+		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
+		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
+
 	def deleteSession(self):
 		if cmds.objExists(Constants.prefix):
 			cmds.delete(Constants.prefix)
@@ -241,16 +253,19 @@ class Setup(object):
 		for type in Constants.sessionNodeTypes:
 			deleteType(type, "\\b%s*" % Constants.prefix)
 
+	def getExtendedFeedbackRadius(self):
+		sceneExtent = getSceneExtent() * math.sqrt(2)
+		sceneExtent = sceneExtent + (sceneExtent * 10 / 100)
+		
+		if sceneExtent > self.feedbackRadius:
+			self.feedbackRadius = truncFloat(sceneExtent, 10)
+
 	def getControlsGroup(self):
-		controlsGroup = cmds.ls(Constants.prefix, fl=True)
-		if not controlsGroup:
-			controlsGroup = cmds.createNode("transform", n=Constants.prefix)
-			lockAttributes(controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
-		return controlsGroup
+		if not self.controlsGroup:
+			self.controlsGroup = cmds.createNode("transform", n=Constants.prefix)
+			lockAttributes(self.controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
 
 	def getControlsLocator(self):
-		controlsGroup = self.getControlsGroup()
-
 		annotation = cmds.createNode("annotationShape")
 		cmds.setAttr("%s.displayArrow" % annotation, 0)
 		cmds.setAttr("%s.displayArrow" % annotation, lock=True, keyable=False)
@@ -266,6 +281,7 @@ class Setup(object):
 		for component in components:
 			cmds.addAttr(annotationTransform, ln="toggle%s" % component, nn=component, at="bool")
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
+			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), True)
 		
 		controls = ("Gamma", "Gain")
 		for component in components:
@@ -276,95 +292,89 @@ class Setup(object):
 				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), e=True, keyable=True, lock=False)
 				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), 1.0)
 	
-		cmds.parent(cmds.rename(annotationTransform, "%s%scontrols" % (Constants.prefix, Constants.splitter)), controlsGroup)
-
-	def getExtendedFeedbackRadius(self):
-		sceneExtent = getSceneExtent() * math.sqrt(2)
-		sceneExtent = sceneExtent + (sceneExtent * 10 / 100)
-		
-		if sceneExtent > self.feedbackRadius:
-			self.feedbackRadius = truncFloat(sceneExtent, 10)
+		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
 
 	def hideLights(self):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentShadersBranch(self, raySwitch, ports, file, prefix, useOverride):
-		gammaGain = cmds.shadingNode("mip_gamma_gain", asUtility=True)
+	def getEnvironmentShadersBranch(self, mipRayswitch, ports, file, prefix, useOverride):
+		mipGammaGain = cmds.shadingNode("mip_gamma_gain", asUtility=True)
 
 		if useOverride:
 			condition = cmds.shadingNode("condition", asUtility=True)
 			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
-			cmds.connectAttr("%s.outValue" % gammaGain, "%s.colorIfTrue" % condition, f=True)
+			cmds.connectAttr("%s.outValue" % mipGammaGain, "%s.colorIfTrue" % condition, f=True)
 
-			colorAlpha = cmds.shadingNode("mib_color_alpha", asUtility=True)
-			cmds.setAttr("%s.factor" % colorAlpha, 0) 			
-			cmds.connectAttr("%s.outValue" % colorAlpha, "%s.colorIfFalse" % condition, f=True)
+			mibColorAlpha = cmds.shadingNode("mib_color_alpha", asUtility=True)
+			cmds.setAttr("%s.factor" % mibColorAlpha, 0) 			
+			cmds.connectAttr("%s.outValue" % mibColorAlpha, "%s.colorIfFalse" % condition, f=True)
 
 			for port in ports:
-				cmds.connectAttr("%s.outColor" % condition, "%s.%s" % (raySwitch, port), f=True)
+				cmds.connectAttr("%s.outColor" % condition, "%s.%s" % (mipRayswitch, port), f=True)
 
-			cmds.rename(condition, "%s%s%s" % (prefix, Constants.splitter, cmds.nodeType(condition)))
-			cmds.rename(colorAlpha, "%s%s%s" % (prefix, Constants.splitter, cmds.nodeType(colorAlpha)))
+			cmds.rename(condition, "%s_%s" % (prefix, cmds.nodeType(condition)))
+			cmds.rename(mibColorAlpha, "%s_%s" % (prefix, cmds.nodeType(mibColorAlpha)))
 		else:
 			for port in ports:
-				cmds.connectAttr("%s.outValue" % gammaGain, "%s.%s" % (raySwitch, port), f=True)
-				cmds.connectAttr("%s.outValueA" % gammaGain, "%s.%sA" % (raySwitch, port), f=True)
+				cmds.connectAttr("%s.outValue" % mipGammaGain, "%s.%s" % (mipRayswitch, port), f=True)
+				cmds.connectAttr("%s.outValueA" % mipGammaGain, "%s.%sA" % (mipRayswitch, port), f=True)
 
-		lookupSpherical = cmds.shadingNode("mib_lookup_spherical", asShader=True)
+		mibLookupSpherical = cmds.shadingNode("mib_lookup_spherical", asShader=True)
 
-		cmds.connectAttr("%s.outValue" % lookupSpherical, "%s.input" % gammaGain, f=True)
-		cmds.connectAttr("%s.outValueA" % lookupSpherical, "%s.inputA" % gammaGain, f=True)
+		cmds.connectAttr("%s.outValue" % mibLookupSpherical, "%s.input" % mipGammaGain, f=True)
+		cmds.connectAttr("%s.outValueA" % mibLookupSpherical, "%s.inputA" % mipGammaGain, f=True)
 
 		mentalrayTexture = cmds.shadingNode("mentalrayTexture", asTexture=True)
-		cmds.connectAttr("%s.message" % mentalrayTexture, "%s.tex" % lookupSpherical, f=True)
+		cmds.connectAttr("%s.message" % mentalrayTexture, "%s.tex" % mibLookupSpherical, f=True)
 		cmds.setAttr("%s.fileTextureName" % mentalrayTexture, file, type="string")
 
-		for node in (gammaGain, lookupSpherical, mentalrayTexture):
-			cmds.rename(node, "%s%s%s" % (prefix, Constants.splitter, cmds.nodeType(node)))
+		for node in (mipGammaGain, mibLookupSpherical, mentalrayTexture):
+			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 
 	def getEnvironmentShaders(self):
-		raySwitch = cmds.shadingNode("mip_rayswitch", asUtility=True)
+		mipRayswitch = cmds.shadingNode("mip_rayswitch", asUtility=True)
 		
 		if Options.createBackground:
 			ports = ("eye", "transparent", "refraction")
-			self.getEnvironmentShadersBranch(raySwitch, ports, Datas.backgroundFile,"%s%sbackground" % (Constants.prefix, Constants.splitter), 1)
+			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.backgroundFile,"%s_background" % Constants.prefix, 1)
 
 		if Options.createLighting:
 			ports = ("finalgather",)
-			self.getEnvironmentShadersBranch(raySwitch, ports, Datas.lightingFile,"%s%slighting" % (Constants.prefix, Constants.splitter), 1)
+			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.lightingFile,"%s_lighting" % Constants.prefix, 1)
 	
 		if Options.createReflection:
 			ports = ("reflection", "environment")
-			self.getEnvironmentShadersBranch(raySwitch, ports, Datas.reflectionFile,"%s%sreflection" % (Constants.prefix, Constants.splitter), 1)
+			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.reflectionFile,"%s_reflection" % Constants.prefix, 1)
 
 		for camera in self.outputCameras:
-			cmds.connectAttr("%s.message" % raySwitch, "%s.miEnvironmentShader" % camera, f=True)
+			cmds.connectAttr("%s.message" % mipRayswitch, "%s.miEnvironmentShader" % camera, f=True)
 		
-		cmds.rename(raySwitch, "%s%s%s" % (Constants.prefix, Constants.splitter, cmds.nodeType(raySwitch)))
+		cmds.rename(mipRayswitch, "%s_%s" % (Constants.prefix, cmds.nodeType(mipRayswitch)))
 
 	def getDisplayLocator(self, name, radius, visibility):
-		locator = cmds.sphere(name=name, ch=0)[0]
-		cmds.rebuildSurface(locator, su=4, sv=8, ch=0)
+		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=0)[0]
+		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=1)
 		setAttributes({"%s.miDeriveFromMaya" % locator:0,
 						"%s.visibility" % locator:visibility,
 						"%s.miHide" % locator:1,
+						"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
-		cmds.makeIdentity(locator, apply=True, t=0, r=0, s=1, n=0)
-		setAttributes({"%s.rotateZ" % locator:90,
-						"%s.scaleX" % locator:radius,
+		# Force UI Refresh.
+		cmds.refresh(force=True)
+		cmds.makeIdentity(locator, apply=True, t=0, r=1, s=1, n=0)
+		setAttributes({	"%s.scaleX" % locator:radius,
 						"%s.scaleY" % locator:radius,
 						"%s.scaleZ" % locator:radius})
-		lockAttributes(locator, ("tx", "ty", "tz", "ry", "rz"))
-		locatorShape = getShapes(locator)[0]
-		setAttributes({"%s.doubleSided" % locatorShape:False,
-						"%s.opposite" % locatorShape:False})	
+		lockAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
+		setAttributes({"%s.doubleSided" % locator:False,
+						"%s.opposite" % locator:False})	
 		return locator
 
 	def getFeedback(self):
-		feedback = self.getDisplayLocator("%s%sfeedback" % (Constants.prefix, Constants.splitter), self.feedbackRadius, Options.displayFeedback)
-		cmds.parent(feedback, self.getControlsGroup())
-		addToDisplayLayer(feedback, "%s%sfeedback_layer" % (Constants.prefix, Constants.splitter))
+		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius, Options.displayFeedback)
+		cmds.parent(self.feedback, self.controlsGroup)
+		addToDisplayLayer(self.feedback, "%s_feedback_layer" % Constants.prefix)
 		
 		lambert = cmds.shadingNode("lambert", asShader=True)
 		cmds.setAttr("%s.transparency" % lambert, 0.5, 0.5, 0.5, type="double3")
@@ -390,15 +400,88 @@ class Setup(object):
 			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)		
 		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
 
-		cmds.sets(feedback, e=True, forceElement=shadingEngine)
+		cmds.sets(self.feedback, e=True, forceElement=shadingEngine)
 
 		for node in (lambert, shadingEngine, file, place2dTexture):
-			cmds.rename(node, "%s%sfeedback_%s" % (Constants.prefix, Constants.splitter, cmds.nodeType(node)))
+			cmds.rename(node, "%s_feedback_%s" % (Constants.prefix, cmds.nodeType(node)))
 
-	def setRenderer(self):
-		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
-		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
-		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
+	def getLigthsTarget(self):
+		self.lightsTarget = cmds.spaceLocator()
+		addToDisplayLayer(self.lightsTarget, "%s_lighting_layer" % Constants.prefix)
+		cmds.parent(self.lightsTarget, self.controlsGroup)
+		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target_%s" % (Constants.prefix, cmds.nodeType(self.lightsTarget)))
+		
+	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale, usePhysicalSun):
+		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
+
+		if usePhysicalSun and Constants.lightTypes[type] == "directionalLight":
+			miaPhysicalSun = cmds.shadingNode("mia_physicalsun", asLight=True)
+			setAttributes({"%s.y_is_up" % miaPhysicalSun:1,
+							"%s.multiplier" % miaPhysicalSun:multiplier/10})
+			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miLightShader" % light, f=True)
+			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miPhotonEmitter" % light, f=True)
+			cmds.rename(miaPhysicalSun, "%s_%s" % (name, cmds.nodeType(miaPhysicalSun)))
+
+		cmds.setAttr("%s.color" % light, color[0] / 255, color[1] / 255, color[2] / 255, type="double3")
+		setAttributes({"%s.intensity" % light:multiplier,
+						"%s.useRayTraceShadows" % light:1})
+		
+		if type == "Area":
+			cmds.setAttr("%s.areaLight" % light, 1)
+			scale = scale / 2
+		elif type == "Directional":
+			pass
+		elif type == "Point":
+			pass
+		elif type == "Spot":
+			setAttributes({"%s.coneAngle" % light:96,
+							"%s.penumbraAngle" % light:16})
+		
+		setAttributes({"%s.sx" % light:scale,
+						"%s.sy" % light:scale,
+						"%s.sz" % light:scale})
+							
+		cmds.parent(light, self.controlsGroup)
+		
+		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
+		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
+		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo:0.5 + (0.5 - vCoordinate),
+						"%s.parameterV" % pointOnSurfaceInfo:0.5 + (0.5 - uCoordinate)})
+		
+		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
+
+		addToDisplayLayer(light, "%s_lighting_layer" % Constants.prefix)
+		
+		cmds.rename(light, name)
+		cmds.rename(pointOnSurfaceInfo, "%s_%s" % (name, cmds.nodeType(pointOnSurfaceInfo)))
+		cmds.rename(aimConstraint, "%s_%s" % (name, cmds.nodeType(aimConstraint)))
+
+	def getSun(self):
+		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10, Options.physicalSun)
+
+	def getDynamicLights(self):
+		for light in Datas.dynamicLights.values():
+			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15, False)	
+
+	def bridgeFeedbackControlsAndShaders(self, components, target):
+		lowerCaseTarget = target.lower()
+		cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, target), "%s_%s_condition.firstTerm" % (Constants.prefix, lowerCaseTarget), f=True)
+		for component in components:
+			cmds.connectAttr("%s_controls.%s%s" % (Constants.prefix, lowerCaseTarget, component), "%s_%s_mip_gamma_gain.%s" % (Constants.prefix, lowerCaseTarget, component.lower()), f=True)
+
+	def connectFeedbackToShaders(self):
+		components = ("Gamma", "Gain")	
+		if Options.createBackground:
+			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
+			self.bridgeFeedbackControlsAndShaders(components, "Background")
+		if Options.createLighting:
+			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
+			self.bridgeFeedbackControlsAndShaders(components, "Lighting")
+
+		if Options.createReflection:
+			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
+			self.bridgeFeedbackControlsAndShaders(components, "Reflection")
 
 def camerasChooser_formLayout():
 	camerasChooser_formLayout = cmds.setParent(q=True)
