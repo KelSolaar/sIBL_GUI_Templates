@@ -49,7 +49,6 @@ shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 physicalSun = @physicalSun | 1 | Boolean | Physical Sun
 activateFinalGather = @activateFinalGather | 1 | Boolean | Activate Final Gather
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
-framebufferGamma = @framebufferGamma | 0 | Boolean | Use Framebuffer Gamma
 photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographic Tonemapper
 
 [Remote Connection]
@@ -82,7 +81,7 @@ class Light(Structure):
 
 class Constants(object):
 	applicationName = "sIBL_GUI"
-	prefix = "IBL"
+	prefix = "sIBL"
 	package = "@Software".replace(" ", "_")
 	renderer = "@Renderer".replace(" ", "_")
 	packagePrefix = "%s_%s" % (prefix, package)
@@ -90,6 +89,7 @@ class Constants(object):
 	title = "Smart IBL"
 	controlsTitle = "[ %s Controls ]" % title
 	maximumViewportTextureSize = 8192
+	defaultGamma = 2.2
 	sessionNodeTypes =  ("condition", 
 						"displayLayer", 
 						"expression", 
@@ -113,9 +113,9 @@ class Constants(object):
 	}
 
 def getDynamicLights(datas):
-	tokens = datas.split("|")
 	dynamicLights = {}
 	try:
+		tokens = datas.split("|")
 		for i in range(0, len(tokens), 8):
 			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2]), float(tokens[i+3]), float(tokens[i+4])), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
 	except:
@@ -157,7 +157,6 @@ class Options(object):
 	physicalSun = @physicalSun
 	activateFinalGather = @activateFinalGather
 	activateLinearWorkflow = @activateLinearWorkflow
-	framebufferGamma = @framebufferGamma
 	photographicTonemapper = @photographicTonemapper
 
 class Setup(object):
@@ -213,10 +212,8 @@ class Setup(object):
 		
 		self.setRenderer()
 		self.deleteSession()
-
 		self.outputCameras = filterNonExistingNodes(self.outputCameras)
 		self.getExtendedFeedbackRadius()		
-		
 		self.getControlsGroup()
 		self.getControlsLocator()
 		Options.hideLights and self.hideLights()
@@ -228,6 +225,19 @@ class Setup(object):
 		if Options.createLights and Datas.dynamicLights:
 			self.getDynamicLights()
 		self.connectFeedbackToShaders()
+		Options.createGround and self.getGround()
+		Options.activateFinalGather and self.setFinalGather()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
+
+		Options.preserveSessionSettings and self.restoreSessionAttributes()
+
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing Overall Postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packagePrefix)
+
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template Specific Postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packageRendererPrefix)
 
 		print("%s | %s File Import Finished!" % (Constants.applicationName, Constants.prefix))
 	
@@ -239,7 +249,7 @@ class Setup(object):
 	def restoreSessionAttributes(self):
 		for attribute in self.storedSessionAttributes.keys():
 			if len(cmds.ls(attribute)):
-				cmds.setAttr(self.storedSessionAttributes[attribute])
+				cmds.setAttr(attribute, self.storedSessionAttributes[attribute])
 
 	def setRenderer(self):
 		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
@@ -290,7 +300,7 @@ class Setup(object):
 			for control in controls:
 				cmds.addAttr(annotationTransform, ln="%s%s" % (component.lower(), control), nn="%s" % control, at="double")
 				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), e=True, keyable=True, lock=False)
-				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), 1.0)
+				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), 1)
 	
 		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
 
@@ -337,15 +347,15 @@ class Setup(object):
 		
 		if Options.createBackground:
 			ports = ("eye", "transparent", "refraction")
-			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.backgroundFile,"%s_background" % Constants.prefix, 1)
+			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.backgroundFile,"%s_background" % Constants.prefix, True)
 
 		if Options.createLighting:
 			ports = ("finalgather",)
-			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.lightingFile,"%s_lighting" % Constants.prefix, 1)
+			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.lightingFile,"%s_lighting" % Constants.prefix, True)
 	
 		if Options.createReflection:
 			ports = ("reflection", "environment")
-			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.reflectionFile,"%s_reflection" % Constants.prefix, 1)
+			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.reflectionFile,"%s_reflection" % Constants.prefix, True)
 
 		for camera in self.outputCameras:
 			cmds.connectAttr("%s.message" % mipRayswitch, "%s.miEnvironmentShader" % camera, f=True)
@@ -353,16 +363,16 @@ class Setup(object):
 		cmds.rename(mipRayswitch, "%s_%s" % (Constants.prefix, cmds.nodeType(mipRayswitch)))
 
 	def getDisplayLocator(self, name, radius, visibility):
-		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=0)[0]
-		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=1)
-		setAttributes({"%s.miDeriveFromMaya" % locator:0,
+		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
+		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
+		setAttributes({"%s.miDeriveFromMaya" % locator:False,
 						"%s.visibility" % locator:visibility,
-						"%s.miHide" % locator:1,
+						"%s.miHide" % locator:True,
 						"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
 		cmds.refresh(force=True)
-		cmds.makeIdentity(locator, apply=True, t=0, r=1, s=1, n=0)
+		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
 		setAttributes({	"%s.scaleX" % locator:radius,
 						"%s.scaleY" % locator:radius,
 						"%s.scaleZ" % locator:radius})
@@ -409,25 +419,25 @@ class Setup(object):
 		self.lightsTarget = cmds.spaceLocator()
 		addToDisplayLayer(self.lightsTarget, "%s_lighting_layer" % Constants.prefix)
 		cmds.parent(self.lightsTarget, self.controlsGroup)
-		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target_%s" % (Constants.prefix, cmds.nodeType(self.lightsTarget)))
+		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target" % Constants.prefix)
 		
 	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale, usePhysicalSun):
 		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
 
 		if usePhysicalSun and Constants.lightTypes[type] == "directionalLight":
 			miaPhysicalSun = cmds.shadingNode("mia_physicalsun", asLight=True)
-			setAttributes({"%s.y_is_up" % miaPhysicalSun:1,
-							"%s.multiplier" % miaPhysicalSun:multiplier/10})
+			setAttributes({"%s.y_is_up" % miaPhysicalSun:True,
+							"%s.multiplier" % miaPhysicalSun:multiplier / 10})
 			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miLightShader" % light, f=True)
 			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miPhotonEmitter" % light, f=True)
 			cmds.rename(miaPhysicalSun, "%s_%s" % (name, cmds.nodeType(miaPhysicalSun)))
 
 		cmds.setAttr("%s.color" % light, color[0] / 255, color[1] / 255, color[2] / 255, type="double3")
 		setAttributes({"%s.intensity" % light:multiplier,
-						"%s.useRayTraceShadows" % light:1})
+						"%s.useRayTraceShadows" % light:True})
 		
 		if type == "Area":
-			cmds.setAttr("%s.areaLight" % light, 1)
+			cmds.setAttr("%s.areaLight" % light, True)
 			scale = scale / 2
 		elif type == "Directional":
 			pass
@@ -482,6 +492,59 @@ class Setup(object):
 		if Options.createReflection:
 			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders(components, "Reflection")
+
+	def getGround(self):
+		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
+		setAttributes({"%s.overrideEnabled" % ground:True,
+						"%s.overrideShading" % ground:False,
+						"%s.scaleX" % ground:self.feedbackRadius * math.sqrt(2),
+						"%s.scaleY" % ground:self.feedbackRadius * math.sqrt(2),
+						"%s.scaleZ" % ground:self.feedbackRadius * math.sqrt(2)})
+		cmds.parent(ground, self.controlsGroup)
+
+		if Options.shadowCatcher:
+			if cmds.objExists("%s_background_mip_gamma_gain" % Constants.prefix):
+				mipMatteshadow = cmds.shadingNode("mip_matteshadow", asUtility=True)
+				cmds.connectAttr("%s_mip_rayswitch.outValue" % Constants.prefix, "%s.background" % mipMatteshadow, f=True)
+				cmds.setAttr("%s.catch_indirect" % mipMatteshadow, True)
+		
+				lambert = cmds.shadingNode("lambert", asShader=True)
+				shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+				cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % shadingEngine, f=True)
+
+				cmds.connectAttr("%s.message" % mipMatteshadow, "%s.miMaterialShader" % shadingEngine, f=True)
+				
+				cmds.sets(ground, e=True, forceElement=shadingEngine)
+
+				for node in (mipMatteshadow, lambert, shadingEngine):
+					cmds.rename(node, "%s_matteShadow_%s" % (Constants.prefix, cmds.nodeType(node)))
+			else:
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Background Shaders Detected, Matte Shadow Shader Will Not Be Set!"))
+
+		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
+
+	def setFinalGather(self):
+		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
+						"miDefaultOptions.finalGather":True,
+						"miDefaultOptions.finalGatherTraceDiffuse":True,
+						"miDefaultOptions.finalGatherTraceDepth":3})
+
+	def setLinearWorkflow(self):
+		if Options.photographicTonemapper:
+			tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
+			setAttributes({"%s.film_iso" % tonemapper:False,
+						"%s.burn_highlights" % tonemapper:0.25})
+		else:
+			tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
+		
+		cmds.setAttr("%s.gamma" % tonemapper, Constants.defaultGamma)
+		if Options.createBackground:
+			cmds.setAttr("%s_controls.backgroundGamma" % Constants.prefix, 1 / Constants.defaultGamma)
+
+		for camera in self.outputCameras:
+			cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
+		
+		cmds.rename(tonemapper, "%s_%s" % (Constants.prefix, cmds.nodeType(tonemapper)))
 
 def camerasChooser_formLayout():
 	camerasChooser_formLayout = cmds.setParent(q=True)
