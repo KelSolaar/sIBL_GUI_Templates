@@ -1,6 +1,10 @@
-h1=. sIBL_GUI_Templates - 1.0.5 - Stable
+h1=. sIBL_GUI_Templates - 1.0.6 - Stable
 
 h2=. Change Log
+
+h3. 1.0.6 - Stable
+
+* Port "Maya_MR_Standard" template code to Python.
 
 h3. 1.0.5 - Stable
 
