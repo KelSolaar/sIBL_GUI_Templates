@@ -9,9 +9,9 @@ Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | Maya | String | Software
 Version = @Version | 2011 | String | Version
-Renderer = @Renderer | Mental Ray | String | Renderer
+Renderer = @Renderer | VRay | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
-Comment = @Comment | This is Maya 2K Mental Ray Template. | String | Comment
+Comment = @Comment | This is Maya 2K VRay Template. | String | Comment
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile
@@ -38,18 +38,15 @@ createSun = @createSun | 1 | Boolean | Create Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
-showCamerasDialog = @showCamerasDialog | 0 | Boolean | Cameras Selection Dialog
 preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
 displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
-sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
-dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
+sunLightType = @sunLightType | VRaySun;Directional;Area;Spot;Point;VRaySphere;VRayRect;VRayIES | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point;VRaySun;VRaySphere;VRayRect;VRayIES; | Enum | Dynamic Lights Type
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
-physicalSun = @physicalSun | 1 | Boolean | Physical Sun
-activateIndirectLighting = @activateIndirectLighting | 1 | Boolean | Activate Indirect Lighting
+activateIndirectIllumination = @activateIndirectIllumination | 1 | Boolean | Activate Indirect Illumination
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
-photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographic Tonemapper
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
@@ -83,23 +80,18 @@ class Constants(object):
 	controlsTitle = "[ %s Controls ]" % title
 	maximumViewportTextureSize = 8192
 	defaultGamma = 2.2
-	sessionNodeTypes =  ("condition", 
+	sessionNodeTypes =  ("blendColors",
+						"condition", 
 						"displayLayer", 
 						"expression", 
 						"file", 
 						"gammaCorrect",
-						"lambert", 
-						"mentalrayTexture", 
-						"mia_exposure_photographic", 
-						"mia_exposure_simple", 
-						"mia_physicalsun", 
-						"mib_color_alpha", 
-						"mib_lookup_spherical", 
-						"mip_matteshadow", 
-						"mip_rayswitch",
+						"lambert",
 						"multiplyDivide", 
 						"place2dTexture", 
-						"shadingEngine")
+						"shadingEngine",
+						"VRayObjectProperties",
+						"VRayPlaceEnvTex")
 	lightTypes = { "Area":"areaLight",
 					"Directional":"directionalLight",
 					"Point":"pointLight",
@@ -146,7 +138,6 @@ class Options(object):
 	createLighting = @createLighting
 	createSun = @createSun
 	createLights = @createLights
-	showCamerasDialog = @showCamerasDialog
 	preserveSessionSettings = @preserveSessionSettings
 	displayFeedback = @displayFeedback
 	feedbackRadius = 100
@@ -155,11 +146,8 @@ class Options(object):
 	hideLights = @hideLights
 	createGround = @createGround
 	shadowCatcher = @shadowCatcher
-	physicalSun = @physicalSun
-	activateIndirectLighting = @activateIndirectLighting
-	indirectLightingEngine = "Final Gathering"
+	activateIndirectIllumination = @activateIndirectIllumination
 	activateLinearWorkflow = @activateLinearWorkflow
-	photographicTonemapper = @photographicTonemapper
 
 class Setup(object):
 	def __init__(self):
@@ -168,7 +156,6 @@ class Setup(object):
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
 
-		self.outputCameras = cmds.ls(l=True, type="camera")
 		self.controlsGroup = None
 		self.feedback = None
 		self.lightsTarget = None
@@ -200,36 +187,26 @@ class Setup(object):
 			mel.eval("%s_preProcessCallback();" % Constants.packageRendererPrefix)
 
 		print("%s | Starting %s File Import!" % (Constants.applicationName, Constants.title))
-		
-		if Options.showCamerasDialog:
-			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.title))
-				self.__exit__()
-			self.outputCameras = cmds.optionVar(q="%s_outputCameras" % Constants.prefix) != "" and cmds.optionVar(q="%s_outputCameras" % Constants.prefix).split(",") or None
-			if not self.outputCameras:
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Cameras Selected, %s File Import Canceled!" % Constants.title))
-				self.__exit__()
 
 		Options.preserveSessionSettings and self.storeSessionAttributes()
 
 		self.setRenderer()
 		self.deleteSession()
-		self.outputCameras = filterNonExistingNodes(self.outputCameras)
 		self.getExtendedFeedbackRadius()		
 		self.getControlsGroup()
 		self.getControlsLocator()
 		Options.hideLights and self.hideLights()
 		self.getEnvironmentShaders()
-		self.getFeedback()
-		self.getLigthsTarget()
-		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
-			self.getSun()
-		if Options.createLights and Datas.dynamicLights:
-			self.getDynamicLights()
-		self.connectFeedbackToShaders()
-		Options.createGround and self.getGround()
-		Options.activateIndirectLighting and self.setIndirectLighting()
-		Options.activateLinearWorkflow and self.setLinearWorkflow()
+#		self.getFeedback()
+#		self.getLigthsTarget()
+#		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
+#			self.getSun()
+#		if Options.createLights and Datas.dynamicLights:
+#			self.getDynamicLights()
+#		self.connectFeedbackToShaders()
+#		Options.createGround and self.getGround()
+#		Options.activateIndirectIllumination and self.setIndirectLighting()
+#		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
 		Options.preserveSessionSettings and self.restoreSessionAttributes()
 
@@ -254,9 +231,9 @@ class Setup(object):
 				cmds.setAttr(attribute, value)
 
 	def setRenderer(self):
-		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
-		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
-		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
+		not cmds.pluginInfo("vrayformaya", q=True, loaded=True) and cmds.loadPlugin("vrayformaya")
+		cmds.setAttr("defaultRenderGlobals.currentRenderer", "vray", type="string")
+		mel.eval("vrayCreateVRaySettingsNode();")
 
 	def deleteSession(self):
 		if cmds.objExists(Constants.prefix):
@@ -308,15 +285,16 @@ class Setup(object):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentShadersBranch(self, mipRayswitch, ports, file, prefix, useOverride):
-		mentalrayTexture = cmds.shadingNode("mentalrayTexture", asTexture=True)
-		cmds.setAttr("%s.fileTextureName" % mentalrayTexture, file, type="string")
+	def getEnvironmentShadersBranch(self, slot, file, prefix, useOverride):
+		vrayPlaceEnvTex = cmds.shadingNode("VRayPlaceEnvTex", asShader=True)
+		cmds.setAttr("%s.mappingType" % vrayPlaceEnvTex, 2)
 
-		mibLookupSpherical = cmds.shadingNode("mib_lookup_spherical", asShader=True)
-		cmds.connectAttr("%s.message" % mentalrayTexture, "%s.tex" % mibLookupSpherical, f=True)
+		_file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
+		cmds.connectAttr("%s.outUV" % vrayPlaceEnvTex, "%s.uvCoord" % _file, f=True)
 		
 		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)		
-		cmds.connectAttr("%s.outValue" % mibLookupSpherical, "%s.value" % gammaCorrect, f=True)
+		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
 
 		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
 		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)		
@@ -326,41 +304,33 @@ class Setup(object):
 			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
 			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)		
 			
-			mibColorAlpha = cmds.shadingNode("mib_color_alpha", asUtility=True)
-			cmds.setAttr("%s.factor" % mibColorAlpha, 0) 			
-			cmds.connectAttr("%s.outValue" % mibColorAlpha, "%s.colorIfFalse" % condition, f=True)
+			blendColors = cmds.shadingNode("blendColors", asUtility=True)
+			for color in ("color1", "color2"):
+				cmds.setAttr("%s.%s" % (blendColors, color), 0, 0, 0, type="double3")
+			cmds.setAttr("%s.blender" % blendColors, 0) 			
+			cmds.connectAttr("%s.output" % blendColors, "%s.colorIfFalse" % condition, f=True)
 
-			for port in ports:
-				cmds.connectAttr("%s.outColor" % condition, "%s.%s" % (mipRayswitch, port), f=True)
+			cmds.connectAttr("%s.outColor" % condition, slot, f=True)
 
-			for node in (mibColorAlpha, condition):
+			for node in (blendColors, condition):
 				cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 		else:
-			for port in ports:
-				cmds.connectAttr("%s.output" % multiplyDivide, "%s.%s" % (mipRayswitch, port), f=True)
+			cmds.connectAttr("%s.output" % multiplyDivide, slot, f=True)
 
-		for node in (gammaCorrect, multiplyDivide, mibLookupSpherical, mentalrayTexture):
+		for node in (gammaCorrect, multiplyDivide, vrayPlaceEnvTex, _file):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 
 	def getEnvironmentShaders(self):
-		mipRayswitch = cmds.shadingNode("mip_rayswitch", asUtility=True)
+		cmds.setAttr("vraySettings.cam_overrideEnvtex", True) 			
 		
 		if Options.createBackground:
-			ports = ("eye", "transparent", "refraction")
-			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.backgroundFile, "%s_background" % Constants.prefix, True)
+			self.getEnvironmentShadersBranch("vraySettings.cam_envtexBg", Datas.backgroundFile, "%s_background" % Constants.prefix, True)
 
 		if Options.createLighting:
-			ports = ("finalgather",)
-			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.lightingFile, "%s_lighting" % Constants.prefix, True)
+			self.getEnvironmentShadersBranch("vraySettings.cam_envtexGi", Datas.lightingFile, "%s_lighting" % Constants.prefix, True)
 	
 		if Options.createReflection:
-			ports = ("reflection", "environment")
-			self.getEnvironmentShadersBranch(mipRayswitch, ports, Datas.reflectionFile, "%s_reflection" % Constants.prefix, True)
-
-		for camera in self.outputCameras:
-			cmds.connectAttr("%s.message" % mipRayswitch, "%s.miEnvironmentShader" % camera, f=True)
-		
-		cmds.rename(mipRayswitch, "%s_%s" % (Constants.prefix, cmds.nodeType(mipRayswitch)))
+			self.getEnvironmentShadersBranch("vraySettings.cam_envtexReflect", Datas.reflectionFile, "%s_reflection" % Constants.prefix, True)
 
 	def getDisplayLocator(self, name, radius, visibility):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
@@ -556,47 +526,6 @@ class Setup(object):
 			cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
 		
 		cmds.rename(tonemapper, "%s_%s" % (Constants.prefix, cmds.nodeType(tonemapper)))
-
-def camerasChooser_formLayout():
-	camerasChooser_formLayout = cmds.setParent(q=True)
-	cmds.formLayout(camerasChooser_formLayout, e=True, height=300)
-	selectAll_button = cmds.button("%s_selectAll_button" % Constants.applicationName, label="Select All", command=selectAll_button_OnClicked)
-	selectNone_button = cmds.button("%s_selectNone_button" % Constants.applicationName, label="Select None", command=selectNone_button_OnClicked)
-
-	cameras_textScrollList = cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, allowMultiSelection=True, fn="smallFixedWidthFont",sc=cameras_textScrollList_OnSelectionChanged)
-
-	for camera in cmds.ls(l=True, type="camera"):
-		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, append=camera)
-
-	buttons_rowlayout = cmds.rowLayout(numberOfColumns=2, cl2=("center", "center"), ct2=("both", "both"))
-	ok_button = cmds.button("%s_ok_button" % Constants.applicationName, label="Ok", command="cmds.layoutDialog(dismiss='Ok')")
-	cancel_button = cmds.button("%s_cancel_button" % Constants.applicationName, label="Cancel", command="cmds.layoutDialog(dismiss='Cancel')")
-
-	spacer = margin = 4
-	cmds.formLayout(camerasChooser_formLayout, edit=True,
-					attachForm = [(selectAll_button, "top", margin),
-					(selectAll_button, "left", margin),
- 					(selectAll_button, "right", margin),
-					(selectNone_button, "left", margin),
- 					(selectNone_button, "right", margin),
-					(cameras_textScrollList, "right", margin),
- 					(cameras_textScrollList, "left", margin),
-					(buttons_rowlayout, "left", margin),
- 					(buttons_rowlayout, "right", margin),
-					(buttons_rowlayout, "bottom", margin)],
-					attachControl=[(cameras_textScrollList, "top", spacer, selectNone_button),
-					(selectNone_button, "top", spacer, selectAll_button),
-					(cameras_textScrollList, "bottom", 	spacer, buttons_rowlayout)])
-
-def selectAll_button_OnClicked(value):
-	for i in range(1,cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, ni=True) + 1):
-		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, sii=i)
-
-def selectNone_button_OnClicked(value):
-	cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, da=True)
-
-def cameras_textScrollList_OnSelectionChanged():
-	cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
 
 def setAttributes(attributes):
 	for attribute, value in attributes.items():
