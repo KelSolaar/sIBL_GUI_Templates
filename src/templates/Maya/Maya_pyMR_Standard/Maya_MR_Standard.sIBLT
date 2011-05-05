@@ -3,7 +3,7 @@ Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Standard Template Manual.html | String | Help File
 Release = @Release | 2.0.0 | String | Template Release
-Date = @Date | 4 May 2011 | String | Date
+Date = @Date | 5 May 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -11,7 +11,7 @@ Software = @Software | Maya | String | Software
 Version = @Version | 2011 | String | Version
 Renderer = @Renderer | Mental Ray | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
-Comment = @Comment | This is Maya 2011 Mental Ray Template. | String | Comment
+Comment = @Comment | This is Maya 2K Mental Ray Template. | String | Comment
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile
@@ -47,7 +47,7 @@ hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 physicalSun = @physicalSun | 1 | Boolean | Physical Sun
-activateFinalGather = @activateFinalGather | 1 | Boolean | Activate Final Gather
+activateIndirectLighting = @activateIndirectLighting | 1 | Boolean | Activate Indirect Lighting
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographic Tonemapper
 
@@ -156,7 +156,8 @@ class Options(object):
 	createGround = @createGround
 	shadowCatcher = @shadowCatcher
 	physicalSun = @physicalSun
-	activateFinalGather = @activateFinalGather
+	activateIndirectLighting = @activateIndirectLighting
+	indirectLightingEngine = "Final Gathering"
 	activateLinearWorkflow = @activateLinearWorkflow
 	photographicTonemapper = @photographicTonemapper
 
@@ -227,7 +228,7 @@ class Setup(object):
 			self.getDynamicLights()
 		self.connectFeedbackToShaders()
 		Options.createGround and self.getGround()
-		Options.activateFinalGather and self.setFinalGather()
+		Options.activateIndirectLighting and self.setIndirectLighting()
 		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
 		Options.preserveSessionSettings and self.restoreSessionAttributes()
@@ -522,12 +523,23 @@ class Setup(object):
 
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 
-	def setFinalGather(self):
+	def setIrradianceParticlesEngine(self):
+		# Implementation Produces Errors.
+		cmds.checkBoxGrp("miIPCtrl", e=True, value1=True)
+		mel.eval("miSetIPStateValue;mentalRayOptionsCheckIP;")
+
+	def setFinalGatheringEngine(self):
 		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
 						"miDefaultOptions.finalGather":True,
 						"miDefaultOptions.finalGatherTraceDiffuse":True,
 						"miDefaultOptions.finalGatherTraceDepth":3})
 
+	def setIndirectLighting(self):
+		if Options.indirectLightingEngine == "Final Gathering":
+			self.setFinalGatheringEngine()
+		elif Options.indirectLightingEngine == "Irradiance Particles":
+			self.setIrradianceParticlesEngine()
+		
 	def setLinearWorkflow(self):
 		if Options.photographicTonemapper:
 			tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)

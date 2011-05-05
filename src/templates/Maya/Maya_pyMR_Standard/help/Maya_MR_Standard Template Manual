@@ -35,7 +35,7 @@ h3. Additional Attributes
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A mip_matteshadow Shader is assigned to the Ground.
 * *Physical Sun*: The Sun is created with a mia_physicalsun shader.
-* *Activate Final Gather*: Final Gathering is activated in the current Scene.
+* *Activate Indirect Lighting*: Indirect Lighting is activated in the current Scene.
 * *Activate Linear Workflow*: Connect a mia_exposure_simple shader in current / selected Camera(s).
 * *Use Photographic Tonemapper*: A "mia_exposure_photographic" lens shader is used instead of the "mia_exposure_simple".
 
