@@ -103,8 +103,7 @@ class Constants(object):
 	lightTypes = { "Area":"areaLight",
 					"Directional":"directionalLight",
 					"Point":"pointLight",
-					"Spot":"spotLight"
-	}
+					"Spot":"spotLight"}
 
 class Structure(object):
 	def __init__(self, **kwargs):
