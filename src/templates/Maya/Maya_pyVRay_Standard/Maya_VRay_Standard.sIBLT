@@ -95,8 +95,11 @@ class Constants(object):
 	lightTypes = { "Area":"areaLight",
 					"Directional":"directionalLight",
 					"Point":"pointLight",
-					"Spot":"spotLight"
-	}
+					"Spot":"spotLight",
+					"VRaySun":"VRaySunShape",
+					"VRaySphere":"VRayLightSphereShape",
+					"VRayRect":"VRayLightRectShape",
+					"VRayIES":"VRayLightIESShape"}
 
 class Structure(object):
 	def __init__(self, **kwargs):
@@ -110,7 +113,7 @@ def getDynamicLights(datas):
 	try:
 		tokens = datas.split("|")
 		for i in range(0, len(tokens), 8):
-			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2]), float(tokens[i+3]), float(tokens[i+4])), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2] / 255.0), float(tokens[i+3] / 255.0), float(tokens[i+4] / 255.0)), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
 	except:
 		pass
 	return dynamicLights
@@ -126,7 +129,7 @@ class Datas(object):
 	lightingGamma = @EVgamma
 	sunU = @SUNu
 	sunV = @SUNv
-	sunColor = [@SUNcolor]
+	sunColor = [value / 255.0 for value in [@SUNcolor]]
 	sunMultiplier = @SUNmulti
 	dynamicLights = getDynamicLights("@dynamicLights")
 	height = @Height
@@ -197,12 +200,12 @@ class Setup(object):
 		self.getControlsLocator()
 		Options.hideLights and self.hideLights()
 		self.getEnvironmentShaders()
-#		self.getFeedback()
-#		self.getLigthsTarget()
-#		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
-#			self.getSun()
-#		if Options.createLights and Datas.dynamicLights:
-#			self.getDynamicLights()
+		self.getFeedback()
+		self.getLigthsTarget()
+		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
+			self.getSun()
+		if Options.createLights and Datas.dynamicLights:
+			self.getDynamicLights()
 #		self.connectFeedbackToShaders()
 #		Options.createGround and self.getGround()
 #		Options.activateIndirectIllumination and self.setIndirectLighting()
@@ -335,9 +338,7 @@ class Setup(object):
 	def getDisplayLocator(self, name, radius, visibility):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({"%s.miDeriveFromMaya" % locator:False,
-						"%s.visibility" % locator:visibility,
-						"%s.miHide" % locator:True,
+		setAttributes({	"%s.visibility" % locator:visibility,
 						"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
@@ -382,7 +383,24 @@ class Setup(object):
 
 		cmds.sets(self.feedback, e=True, forceElement=shadingEngine)
 
-		for node in (lambert, shadingEngine, file, place2dTexture):
+		vrayObjectProperties = cmds.createNode("VRayObjectProperties")
+		cmds.connectAttr("%s.instObjGroups[0]" % self.feedback, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
+		setAttributes({"%s.generateGI" % vrayObjectProperties:False,
+						"%s.receiveGI" % vrayObjectProperties:False,
+						"%s.generateCaustics" % vrayObjectProperties:False,
+						"%s.receiveCaustics" % vrayObjectProperties:False,
+						"%s.giVisibility" % vrayObjectProperties:False,
+						"%s.reflectionVisibility" % vrayObjectProperties:False,
+						"%s.refractionVisibility" % vrayObjectProperties:False,
+						"%s.castsShadows" % self.feedback:False,
+						"%s.receiveShadows" % self.feedback:False,
+						"%s.motionBlur" % self.feedback:False,
+						"%s.primaryVisibility" % self.feedback:False,
+						"%s.smoothShading" % self.feedback:False,
+						"%s.visibleInReflections" % self.feedback:False,
+						"%s.visibleInRefractions" % self.feedback:False})
+
+		for node in (lambert, shadingEngine, file, place2dTexture, vrayObjectProperties):
 			cmds.rename(node, "%s_feedback_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 	def getLigthsTarget(self):
@@ -391,21 +409,16 @@ class Setup(object):
 		cmds.parent(self.lightsTarget, self.controlsGroup)
 		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target" % Constants.prefix)
 		
-	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale, usePhysicalSun):
+	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale):
 		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
 
-		if usePhysicalSun and Constants.lightTypes[type] == "directionalLight":
-			miaPhysicalSun = cmds.shadingNode("mia_physicalsun", asLight=True)
-			setAttributes({"%s.y_is_up" % miaPhysicalSun:True,
-							"%s.multiplier" % miaPhysicalSun:multiplier / 10})
-			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miLightShader" % light, f=True)
-			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miPhotonEmitter" % light, f=True)
-			cmds.rename(miaPhysicalSun, "%s_%s" % (name, cmds.nodeType(miaPhysicalSun)))
-
-		cmds.setAttr("%s.color" % light, color[0] / 255, color[1] / 255, color[2] / 255, type="double3")
-		setAttributes({"%s.intensity" % light:multiplier,
-						"%s.useRayTraceShadows" % light:True})
-		
+		if type == "Area" or type == "Directional" or type == "Point" or type == "Spot":
+			cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
+			setAttributes({"%s.intensity" % light:multiplier,
+							"%s.useRayTraceShadows" % light:True})
+		elif type == "VRaySphere" or type == "VRayRect" or type == "VRayIES":
+			cmds.setAttr("%s.lightColor" % light, color[0], color[1], color[2], type="double3")			
+			
 		if type == "Area":
 			cmds.setAttr("%s.areaLight" % light, True)
 			scale = scale / 2
@@ -416,7 +429,21 @@ class Setup(object):
 		elif type == "Spot":
 			setAttributes({"%s.coneAngle" % light:96,
 							"%s.penumbraAngle" % light:16})
-		
+		elif type == "VRaySun":		
+			setAttributes({"%s.intensityMult" % light:0.350 * multiplier,
+							"%s.sizeMultiplier" % light:1 * (scale / 20)})
+		elif type == "VRaySphere":		
+			setAttributes({"%s.intensityMult" % light:10000 * multiplier,
+							"%s.radius" % light:1 * (scale / 10),
+							"%s.subdivs" % light:24})		
+		elif type == "VRayRect":		
+			setAttributes({"%s.intensityMult" % light:7500 * multiplier,
+							"%s.uSize" % light:1 * (scale / 10),
+							"%s.vSize" % light:1 * (scale / 10),
+							"%s.subdivs" % light:24})		
+		elif type == "VRayRect":		
+			cmds.setAttr("%s.intensityMult" % light, multiplier)		
+	
 		setAttributes({"%s.sx" % light:scale,
 						"%s.sy" % light:scale,
 						"%s.sz" % light:scale})
@@ -438,11 +465,11 @@ class Setup(object):
 			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 	def getSun(self):
-		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10, Options.physicalSun)
+		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10)
 
 	def getDynamicLights(self):
 		for light in Datas.dynamicLights.values():
-			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15, False)	
+			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15)	
 
 	def bridgeFeedbackControlsAndShaders(self, target):
 		lowerCaseTarget = target.lower()
