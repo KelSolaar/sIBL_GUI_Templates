@@ -117,7 +117,7 @@ def getDynamicLights(datas):
 	try:
 		tokens = datas.split("|")
 		for i in range(0, len(tokens), 8):
-			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2]), float(tokens[i+3]), float(tokens[i+4])), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2] / 255.0), float(tokens[i+3] / 255.0), float(tokens[i+4] / 255.0)), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
 	except:
 		pass
 	return dynamicLights
@@ -133,7 +133,7 @@ class Datas(object):
 	lightingGamma = @EVgamma
 	sunU = @SUNu
 	sunV = @SUNv
-	sunColor = [@SUNcolor]
+	sunColor = [value / 255.0 for value in [@SUNcolor]]
 	sunMultiplier = @SUNmulti
 	dynamicLights = getDynamicLights("@dynamicLights")
 	height = @Height
@@ -431,7 +431,7 @@ class Setup(object):
 			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miPhotonEmitter" % light, f=True)
 			cmds.rename(miaPhysicalSun, "%s_%s" % (name, cmds.nodeType(miaPhysicalSun)))
 
-		cmds.setAttr("%s.color" % light, color[0] / 255, color[1] / 255, color[2] / 255, type="double3")
+		cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
 		setAttributes({"%s.intensity" % light:multiplier,
 						"%s.useRayTraceShadows" % light:True})
 		
