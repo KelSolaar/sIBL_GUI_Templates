@@ -516,7 +516,7 @@ class Setup(object):
 				cmds.sets(ground, e=True, forceElement=shadingEngine)
 
 				for node in (mipMatteshadow, lambert, shadingEngine):
-					cmds.rename(node, "%s_matteShadow_%s" % (Constants.prefix, cmds.nodeType(node)))
+					cmds.rename(node, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(node)))
 			else:
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Background Shaders Detected, Matte Shadow Shader Will Not Be Set!"))
 
