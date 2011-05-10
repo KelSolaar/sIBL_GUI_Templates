@@ -206,10 +206,10 @@ class Setup(object):
 			self.getSun()
 		if Options.createLights and Datas.dynamicLights:
 			self.getDynamicLights()
-#		self.connectFeedbackToShaders()
-#		Options.createGround and self.getGround()
-#		Options.activateIndirectIllumination and self.setIndirectLighting()
-#		Options.activateLinearWorkflow and self.setLinearWorkflow()
+		self.connectFeedbackToShaders()
+		Options.createGround and self.getGround()
+		Options.activateIndirectIllumination and self.setIndirectLighting()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
 		Options.preserveSessionSettings and self.restoreSessionAttributes()
 
@@ -480,14 +480,14 @@ class Setup(object):
 	def connectFeedbackToShaders(self):
 		components = ("Gamma", "Gain")	
 		if Options.createBackground:
-			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
+			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Background")
 		if Options.createLighting:
-			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
+			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Lighting")
 
 		if Options.createReflection:
-			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
+			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Reflection")
 
 	def getGround(self):
@@ -500,59 +500,24 @@ class Setup(object):
 		cmds.parent(ground, self.controlsGroup)
 
 		if Options.shadowCatcher:
-			if not cmds.objExists("%s_background_mip_gamma_gain" % Constants.prefix):
-				mipMatteshadow = cmds.shadingNode("mip_matteshadow", asUtility=True)
-				cmds.connectAttr("%s_mip_rayswitch.outValue" % Constants.prefix, "%s.background" % mipMatteshadow, f=True)
-				cmds.setAttr("%s.catch_indirect" % mipMatteshadow, True)
-		
-				lambert = cmds.shadingNode("lambert", asShader=True)
-				shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
-				cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % shadingEngine, f=True)
-
-				cmds.connectAttr("%s.message" % mipMatteshadow, "%s.miMaterialShader" % shadingEngine, f=True)
-				
-				cmds.sets(ground, e=True, forceElement=shadingEngine)
-
-				for node in (mipMatteshadow, lambert, shadingEngine):
-					cmds.rename(node, "%s_matteShadow_%s" % (Constants.prefix, cmds.nodeType(node)))
-			else:
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Background Shaders Detected, Matte Shadow Shader Will Not Be Set!"))
+			vrayObjectProperties = cmds.createNode("VRayObjectProperties")
+			cmds.connectAttr("%s.instObjGroups[0]" % ground, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
+			setAttributes({"%s.giVisibility" % vrayObjectProperties:False,
+							"%s.matteSurface" % vrayObjectProperties:True,
+							"%s.shadows" % vrayObjectProperties:True,
+							"%s.shadowBrightness" % vrayObjectProperties:0.5,
+							"%s.giAmount" % vrayObjectProperties:0.5})
+			cmds.rename(vrayObjectProperties, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(vrayObjectProperties)))
 
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 
-	def setIrradianceParticlesEngine(self):
-		# Implementation Produces Errors.
-		cmds.checkBoxGrp("miIPCtrl", e=True, value1=True)
-		mel.eval("miSetIPStateValue;mentalRayOptionsCheckIP;")
-
-	def setFinalGatheringEngine(self):
-		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
-						"miDefaultOptions.finalGather":True,
-						"miDefaultOptions.finalGatherTraceDiffuse":True,
-						"miDefaultOptions.finalGatherTraceDepth":3})
-
 	def setIndirectLighting(self):
-		if Options.indirectLightingEngine == "Final Gathering":
-			self.setFinalGatheringEngine()
-		elif Options.indirectLightingEngine == "Irradiance Particles":
-			self.setIrradianceParticlesEngine()
-		
-	def setLinearWorkflow(self):
-		if Options.photographicTonemapper:
-			tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
-			setAttributes({"%s.film_iso" % tonemapper:False,
-						"%s.burn_highlights" % tonemapper:0.25})
-		else:
-			tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
-		
-		cmds.setAttr("%s.gamma" % tonemapper, Constants.defaultGamma)
-		if Options.createBackground:
-			cmds.setAttr("%s_controls.backgroundGamma" % Constants.prefix, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, type="double3")
+		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
+						"vraySettings.giOn":True})
 
-		for camera in self.outputCameras:
-			cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
-		
-		cmds.rename(tonemapper, "%s_%s" % (Constants.prefix, cmds.nodeType(tonemapper)))
+	def setLinearWorkflow(self):
+		setAttributes({"vraySettings.cmap_gamma":Constants.defaultGamma,
+						"vraySettings.cmap_affectBackground":False})
 
 def setAttributes(attributes):
 	for attribute, value in attributes.items():
