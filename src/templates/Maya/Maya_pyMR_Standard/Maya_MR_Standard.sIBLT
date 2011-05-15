@@ -100,7 +100,7 @@ class Constants(object):
 						"multiplyDivide", 
 						"place2dTexture", 
 						"shadingEngine")
-	lightTypes = { "Area":"areaLight",
+	lightTypes = {"Area":"areaLight",
 					"Directional":"directionalLight",
 					"Point":"pointLight",
 					"Spot":"spotLight"}
@@ -274,7 +274,7 @@ class Setup(object):
 	def getControlsGroup(self):
 		if not self.controlsGroup:
 			self.controlsGroup = cmds.createNode("transform", n=Constants.prefix)
-			lockAttributes(self.controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
+			lockHideAttributes(self.controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
 
 	def getControlsLocator(self):
 		annotation = cmds.createNode("annotationShape")
@@ -284,7 +284,7 @@ class Setup(object):
 
 		annotationTransform = getTransform(annotation)
 		cmds.setAttr("%s.ty" % annotationTransform, 5)
-		lockAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		lockHideAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
 		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
 		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
 
@@ -372,10 +372,10 @@ class Setup(object):
 		# Force UI Refresh.
 		cmds.refresh(force=True)
 		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
-		setAttributes({	"%s.scaleX" % locator:radius,
+		setAttributes({"%s.scaleX" % locator:radius,
 						"%s.scaleY" % locator:radius,
 						"%s.scaleZ" % locator:radius})
-		lockAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
+		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
 		setAttributes({"%s.doubleSided" % locator:False,
 						"%s.opposite" % locator:False})	
 		return locator
@@ -601,9 +601,9 @@ def setAttributes(attributes):
 	for attribute, value in attributes.items():
 		cmds.setAttr(attribute, value)
 
-def lockAttributes(node, attributes):
+def lockHideAttributes(node, attributes, lock=True, keyable=False):
 	for attribute in attributes:
-		cmds.setAttr("%s.%s" % (node, attribute), lock=True, keyable=False)
+		cmds.setAttr("%s.%s" % (node, attribute), lock=lock, keyable=keyable)
 
 def addColorAttributes(node, name):
 	subComponents = ("red", "green", "blue")
