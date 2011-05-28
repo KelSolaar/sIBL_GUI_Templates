@@ -505,6 +505,8 @@ class Setup(object):
 			setAttributes({"%s.giVisibility" % vrayObjectProperties:False,
 							"%s.matteSurface" % vrayObjectProperties:True,
 							"%s.shadows" % vrayObjectProperties:True,
+							"%s.affectAlpha" % vrayObjectProperties:True,
+							"%s.alphaContribution" % vrayObjectProperties:-1,
 							"%s.shadowBrightness" % vrayObjectProperties:0.5,
 							"%s.giAmount" % vrayObjectProperties:0.5})
 			cmds.rename(vrayObjectProperties, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(vrayObjectProperties)))
