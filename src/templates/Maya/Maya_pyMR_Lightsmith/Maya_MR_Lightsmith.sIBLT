@@ -1,0 +1,373 @@
+[Template]
+Name = @Name | Lightsmith | String | Template Name
+Path = @Path | | String | Template Path
+HelpFile = @HelpFile | help/Maya_MR_Lightsmith Template Manual.html | String | Help File
+Release = @Release | 0.9.3 | String | Template Release
+Date = @Date | 28 May 2011 | String | Date
+Author = @Author | Kel Solaar | String | Author
+Email = @Email | thomas.mansencal@gmail.com | String | Email
+Url = @Url | http://thomasmansencal.com/ | String | Url
+Software = @Software | Maya | String | Software
+Version = @Version | 2008 To 2011 | String | Version
+Renderer = @Renderer | Mental Ray | String | Renderer
+OutputScript = @OutputScript | sIBL_Maya_Import.py	 | String | Output Script
+Comment = @Comment | This is Maya 2008 To 2011 Mental Ray Lightsmith Template. | String | Comment
+
+[Ibl Set]
+Path = @iblPath | | String | sIBL File Path
+
+[Ibl Set Attributes]
+Lightsmith|LightsmithName = @LightsmithName
+Lightsmith|LightsmithFile = @LightsmithFile
+Lightsmith|LightsmithMaskFile = @LightsmithMaskFile
+Lightsmith|LightsmithWidth = @LightsmithWidth
+Lightsmith|LightsmithHeight = @LightsmithHeight
+Lightsmith|LightsmithColor = @LightsmithColor
+Lightsmith|LightsmithObjectFile = @LightsmithObjectFile
+Lightsmith|LightsmithObjectFrameFile = @LightsmithObjectFrameFile
+Lightsmith|LightsmithObjectFrameColor = @LightsmithObjectFrameColor
+Lightsmith|LightsmithScale = @LightsmithScale
+Lightsmith|LightsmithShape = @LightsmithShape
+
+[Common Attributes]
+lightScale = @lightScale | 1 | Float | Light Scale
+createLight = @createLight | 1 | Boolean | Create Light
+connectToLights = @connectToLights | 0 | Boolean | Connect To Smart Ibl Lights
+
+[Additional Attributes]
+showCamerasDialog = @showCamerasDialog | 0 | Boolean | Cameras Selection Dialog
+activateIndirectLighting = @activateIndirectLighting | 1 | Boolean | Activate Indirect Lighting
+activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
+framebufferGamma = @framebufferGamma | 0 | Boolean | Use Framebuffer Gamma
+photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographic Tonemapper
+
+[Remote Connection]
+ConnectionType = @ConnectionType | Socket | String | Connection Type
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | ExecutionCommand
+DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
+DefaultPort = @DefaultPort | 2048 | Integer | Default Port
+
+[Script]
+# @OutputScript - @Release For @Software @Version
+# Author: @Author
+# EMail: @Email
+# Homepage: @Url
+# Template Path: @Path
+# Template Last Modified: @Date
+# sIBL_GUI
+import math
+import maya.cmds as cmds
+import maya.mel as mel
+import os
+import re
+import sys
+
+class Constants(object):
+	applicationName = "sIBL_GUI"
+	prefix = "sIBL"
+	package = "@Software".replace(" ", "_")
+	renderer = "@Renderer".replace(" ", "_")
+	packagePrefix = "%s_%s" % (prefix, package)
+	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+	title = "Lightsmith"
+	defaultGamma = 2.2
+	geometriesOffset = 0.01
+
+class Structure(object):
+	def __init__(self, **kwargs):
+		self.__dict__.update(kwargs)
+
+class Datas(object):
+	resourcesDirectory = os.path.dirname("@iblPath")
+	lightName= "@LightsmithName"
+	lightFilePath = os.path.join(resourcesDirectory, "@LightsmithFile")
+	lightMaskFilePath =  "@LightsmithMaskFile" != "-1" and os.path.join(resourcesDirectory, "@LightsmithMaskFile") or None
+	lightHeight = @LightsmithHeight
+	lightWidth = @LightsmithWidth
+	lightColor = [@LightsmithColor]
+	lightObjectPath = os.path.join(resourcesDirectory, "@LightsmithObjectFile")
+	lightObjectFramePath = os.path.join(resourcesDirectory, "@LightsmithObjectFrameFile")
+	lightObjectFrameColor = [@LightsmithObjectFrameColor]
+	lightShape = "@LightsmithShape"
+
+class Options(object):
+	lightScale = @lightScale
+	createLight = @createLight
+	connectToLights = @connectToLights
+	showCamerasDialog = @showCamerasDialog
+	activateIndirectLighting = @activateIndirectLighting
+	indirectLightingEngine = "Final Gathering"
+	activateLinearWorkflow = @activateLinearWorkflow
+	framebufferGamma = @framebufferGamma
+	photographicTonemapper = @photographicTonemapper
+
+class Setup(object):
+	def __init__(self):
+		if Datas.lightName == "-1":
+			if cmds.confirmDialog(title="Confirm", message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
+				self.__exit__()
+
+		self.outputCameras = cmds.ls(l=True, type="camera")
+		self.lightName = self.getUniqueLightName(Datas.lightName)
+
+	def	__exit__(self):
+		sys.exit()
+
+	def execute(self):
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing Overall Preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packagePrefix)
+
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template Specific Preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_%s_preProcessCallback();" % (Constants.packageRendererPrefix, Constants.title))
+
+		print("%s | Starting %s File Import!" % (Constants.applicationName, Constants.title))
+		
+		if Options.showCamerasDialog:
+			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.title))
+				self.__exit__()
+			self.outputCameras = cmds.optionVar(q="%s_outputCameras" % Constants.prefix) != "" and cmds.optionVar(q="%s_outputCameras" % Constants.prefix).split(",") or None
+			if not self.outputCameras:
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Cameras Selected, %s File Import Canceled!" % Constants.title))
+				self.__exit__()
+
+		self.setRenderer()
+		self.outputCameras = filterNonExistingNodes(self.outputCameras)
+		if Options.connectToLights:
+			self.connectToLights()
+		else:
+			self.getLightsmithLight()
+		Options.activateIndirectLighting and self.setIndirectLighting()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
+
+		print("%s | %s File Import Done!" % (Constants.applicationName, Constants.title))
+
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing Overall Postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packagePrefix)
+
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template Specific Postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_%s_postProcessCallback();" % (Constants.packageRendererPrefix, Constants.title))
+
+	def getUniqueLightName(self, name):
+		existingNames = cmds.ls("*%s_*_Support" % name)
+		existingCount = len(existingNames) + 1
+		return "%s_%s" % (name, setPadding(str(existingCount), 3))
+
+	def setRenderer(self):
+		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
+		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
+		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
+
+	def getFileShaderBranch(self, filePath, name):
+		file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % file, filePath, type="string")
+		file = cmds.rename(file, "%s_%s" % (name, cmds.nodeType(file)))
+		return file
+	
+	def getLightShaderBranch(self, filePath, name):
+		file = self.getFileShaderBranch(filePath, name)
+		
+		colorMultiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
+		for component in ("X", "Y", "Z"):
+			cmds.setAttr("%s.input1%s" % (colorMultiplyDivide, component), 1)
+		cmds.connectAttr("%s.outColor" % file, "%s.input1" % colorMultiplyDivide, f=True)		
+
+		intensityMultiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
+		for component in ("X", "Y", "Z"):
+			cmds.setAttr("%s.input1%s" % (intensityMultiplyDivide, component), 1)
+		cmds.connectAttr("%s.output" % colorMultiplyDivide, "%s.input1" % intensityMultiplyDivide, f=True)	
+
+		cmds.rename(colorMultiplyDivide, "%s_color_%s" % (name, cmds.nodeType(colorMultiplyDivide)))
+		intensityMultiplyDivide = cmds.rename(intensityMultiplyDivide, "%s_intensity_%s" % (name, cmds.nodeType(intensityMultiplyDivide)))
+		return intensityMultiplyDivide
+
+	def getSupportShaderBranch(self, inputShader, slots, filePath, name):
+		intensityMultiplyDivide = self.getLightShaderBranch(filePath, name)
+	
+		modulationMultiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
+		for component in ("X", "Y", "Z"):
+			cmds.setAttr("%s.input1%s" % (modulationMultiplyDivide, component), 1)
+		cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.input1" % modulationMultiplyDivide, f=True)		
+
+		userMultiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
+		for component in ("X", "Y", "Z"):
+			cmds.setAttr("%s.input1%s" % (userMultiplyDivide, component), 1)
+		cmds.connectAttr("%s.output" % modulationMultiplyDivide, "%s.input1" % userMultiplyDivide, f=True)		
+		
+		for slot in slots:
+			cmds.connectAttr("%s.output" % userMultiplyDivide, "%s.%s" % (inputShader, slot), f=True)		
+
+		cmds.rename(modulationMultiplyDivide, "%s_modulation_%s" % (name, cmds.nodeType(modulationMultiplyDivide)))
+		userMultiplyDivide = cmds.rename(userMultiplyDivide, "%s_user_%s" % (name, cmds.nodeType(userMultiplyDivide)))
+		return userMultiplyDivide
+
+	def connectToLights(self):
+		pass
+
+	def getLightsmithLight(self):
+		lightGroup = cmds.createNode("transform")
+		
+		lightRootRadius = truncFloat(2 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		lightRoot = cmds.circle(nr=(0, 0, 1), ch=0, r=lightRootRadius)[0]
+
+		lightHookRadius = truncFloat(1.5 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		lightHook = cmds.circle(nr=(0, 0, 1), ch=0, r=lightHookRadius)[0]
+
+		lightGeometriesRadius = truncFloat(1 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		lightGeometries = cmds.circle(nr=(0, 0, 1), ch=0, r=lightGeometriesRadius)[0]
+
+		lightTarget = cmds.spaceLocator()
+		lightSupport = importObjFile(Datas.lightObjectPath)[0]
+		lightFrame = importObjFile(Datas.lightObjectFramePath)[0]
+		setAttributes({"%s.tz" % lightSupport:Constants.geometriesOffset,
+				"%s.tz" % lightFrame:Constants.geometriesOffset})
+		
+		lightSupport = cmds.parent(lightSupport, lightGeometries)
+		lightFrame = cmds.parent(lightFrame, lightGeometries)
+		lightGeometries = cmds.parent(lightGeometries, lightHook)
+		lightHook = cmds.parent(lightHook, lightRoot)
+		lightRoot = cmds.parent(lightRoot, lightGroup)
+		lightTarget = cmds.parent(lightTarget, lightGroup)
+		
+		attributes = ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz")
+		lockHideAttributes(lightSupport[0], attributes)
+		lockHideAttributes(lightFrame[0], attributes)
+
+		aimConstraint = cmds.aimConstraint(lightTarget, lightRoot, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
+	
+		surfaceShader = cmds.shadingNode("surfaceShader", asShader=True)
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+		cmds.connectAttr("%s.outColor" % surfaceShader, "%s.surfaceShader" % shadingEngine, f=True)
+		
+		self.getSupportShaderBranch(surfaceShader, ("outColor",), Datas.lightFilePath, self.lightName)
+
+	def setIrradianceParticlesEngine(self):
+		# Implementation Produces Errors.
+		cmds.checkBoxGrp("miIPCtrl", e=True, value1=True)
+		mel.eval("miSetIPStateValue;mentalRayOptionsCheckIP;")
+
+	def setFinalGatheringEngine(self):
+		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
+						"miDefaultOptions.finalGather":True,
+						"miDefaultOptions.finalGatherTraceDiffuse":True,
+						"miDefaultOptions.finalGatherTraceDepth":3})
+
+	def setIndirectLighting(self):
+		if Options.indirectLightingEngine == "Final Gathering":
+			self.setFinalGatheringEngine()
+		elif Options.indirectLightingEngine == "Irradiance Particles":
+			self.setIrradianceParticlesEngine()
+
+	def setLinearWorkflow(self):
+		if Options.photographicTonemapper:
+			tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
+			setAttributes({"%s.film_iso" % tonemapper:False,
+						"%s.burn_highlights" % tonemapper:0.25})
+		else:
+			tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
+		
+		cmds.setAttr("%s.gamma" % tonemapper, Constants.defaultGamma)
+
+		for camera in self.outputCameras:
+			cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
+		
+		cmds.rename(tonemapper, "%s_%s" % (Constants.prefix, cmds.nodeType(tonemapper)))
+
+def camerasChooser_formLayout():
+	camerasChooser_formLayout = cmds.setParent(q=True)
+	cmds.formLayout(camerasChooser_formLayout, e=True, height=300)
+	selectAll_button = cmds.button("%s_selectAll_button" % Constants.applicationName, label="Select All", command=selectAll_button_OnClicked)
+	selectNone_button = cmds.button("%s_selectNone_button" % Constants.applicationName, label="Select None", command=selectNone_button_OnClicked)
+
+	cameras_textScrollList = cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, allowMultiSelection=True, fn="smallFixedWidthFont",sc=cameras_textScrollList_OnSelectionChanged)
+
+	for camera in cmds.ls(l=True, type="camera"):
+		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, append=camera)
+
+	buttons_rowlayout = cmds.rowLayout(numberOfColumns=2, cl2=("center", "center"), ct2=("both", "both"))
+	ok_button = cmds.button("%s_ok_button" % Constants.applicationName, label="Ok", command="cmds.layoutDialog(dismiss='Ok')")
+	cancel_button = cmds.button("%s_cancel_button" % Constants.applicationName, label="Cancel", command="cmds.layoutDialog(dismiss='Cancel')")
+
+	spacer = margin = 4
+	cmds.formLayout(camerasChooser_formLayout, edit=True,
+					attachForm = [(selectAll_button, "top", margin),
+					(selectAll_button, "left", margin),
+ 					(selectAll_button, "right", margin),
+					(selectNone_button, "left", margin),
+ 					(selectNone_button, "right", margin),
+					(cameras_textScrollList, "right", margin),
+ 					(cameras_textScrollList, "left", margin),
+					(buttons_rowlayout, "left", margin),
+ 					(buttons_rowlayout, "right", margin),
+					(buttons_rowlayout, "bottom", margin)],
+					attachControl=[(cameras_textScrollList, "top", spacer, selectNone_button),
+					(selectNone_button, "top", spacer, selectAll_button),
+					(cameras_textScrollList, "bottom", spacer, buttons_rowlayout)])
+
+def selectAll_button_OnClicked(value):
+	for i in range(1,cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, ni=True) + 1):
+		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, sii=i)
+
+def selectNone_button_OnClicked(value):
+	cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, da=True)
+
+def cameras_textScrollList_OnSelectionChanged():
+	cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
+
+def importFile(file, type, options):
+	nodesBefore = cmds.ls()
+	cmds.file(file, i=True, typ=type, options=options)
+	return list(set(cmds.ls()).difference(set(nodesBefore)))
+
+def importObjFile(file):
+	objects = importFile(file, "OBJ", "mo=0")
+	
+	for object in objects:
+		setAttributes({"%s.visibleInReflections" % object:True,
+				"%s.visibleInRefractions" % object:True})
+	return objects
+
+def setAttributes(attributes):
+	for attribute, value in attributes.items():
+		cmds.setAttr(attribute, value)
+
+def lockHideAttributes(node, attributes, lock=True, keyable=False):
+	for attribute in attributes:
+		cmds.setAttr("%s.%s" % (node, attribute), lock=lock, keyable=keyable)
+
+def addColorAttributes(node, name):
+	subComponents = ("red", "green", "blue")
+	cmds.addAttr(node, ln=name, at="float3", uac=True)
+	for subComponent in subComponents:
+		cmds.addAttr(node, ln="%s%s" % (subComponent, name.capitalize()), at="float", p=name)
+	cmds.setAttr("%s.%s" % (node, name), 1, 1, 1, type="float3")
+	cmds.setAttr("%s.%s" % (node, name), e=True, keyable=True)
+	for subComponent in subComponents:
+		cmds.setAttr("%s.%s%s" % (node, subComponent, name.capitalize()), e=True, keyable=True)
+
+def setPadding(data, padding, affix="0"):
+	while len(data) < padding:
+		data = affix + data
+	return data
+
+def truncFloat(number, truncValue):
+	if truncValue != 0:
+		return math.trunc(number / truncValue) * truncValue
+	else:
+		return number
+
+def getShapes(object, fullPath=False, noIntermediate=True):
+	shapes = cmds.listRelatives(object, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
+	return shapes != None and shapes or []
+
+def getTransform(shape, fullPath=True):
+	transform = ""
+	if cmds.nodeType(shape) != "transform":
+		parents = cmds.listRelatives(shape, fullPath=fullPath, parent=True)
+		transform = parents[0]
+	return transform
