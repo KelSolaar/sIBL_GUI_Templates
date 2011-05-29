@@ -554,7 +554,7 @@ def getSceneExtent():
 
 	return sceneExtent
 
-def	truncFloat(number, truncValue):
+def truncFloat(number, truncValue):
 	if truncValue != 0:
 		return math.trunc(number / truncValue) * truncValue
 	else:

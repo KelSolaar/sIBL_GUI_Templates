@@ -585,7 +585,7 @@ def camerasChooser_formLayout():
 					(buttons_rowlayout, "bottom", margin)],
 					attachControl=[(cameras_textScrollList, "top", spacer, selectNone_button),
 					(selectNone_button, "top", spacer, selectAll_button),
-					(cameras_textScrollList, "bottom", 	spacer, buttons_rowlayout)])
+					(cameras_textScrollList, "bottom", spacer, buttons_rowlayout)])
 
 def selectAll_button_OnClicked(value):
 	for i in range(1,cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, ni=True) + 1):
@@ -630,7 +630,7 @@ def getSceneExtent():
 
 	return sceneExtent
 
-def	truncFloat(number, truncValue):
+def truncFloat(number, truncValue):
 	if truncValue != 0:
 		return math.trunc(number / truncValue) * truncValue
 	else:
