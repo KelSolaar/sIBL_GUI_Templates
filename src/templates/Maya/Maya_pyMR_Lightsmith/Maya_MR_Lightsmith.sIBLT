@@ -70,6 +70,7 @@ class Constants(object):
 	packagePrefix = "%s_%s" % (prefix, package)
 	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
 	title = "Lightsmith"
+	controlsTitle = "[ %s Controls ]" % title
 	defaultGamma = 2.2
 	geometriesOffset = 0.01
 
@@ -93,6 +94,7 @@ class Datas(object):
 class Options(object):
 	lightScale = @lightScale
 	createLight = @createLight
+	texturedLight = False
 	connectToLights = @connectToLights
 	showCamerasDialog = @showCamerasDialog
 	activateIndirectLighting = @activateIndirectLighting
@@ -163,11 +165,63 @@ class Setup(object):
 		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
 		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
 
+	def connectDriverToMaterialShaders(self, driver, name):
+		for key, value in {"color" : "color", "intensity" : "intensity", "override" : "user"}.items():
+			cmds.connectAttr("%s.%s" % (driver, key), "%s_%s_multiplyDivide.input2" % (name, value), f=True)	
+	
+	def connectDriverToLightShaders(self, driver, name):
+		for key, value in {"color" : "color", "intensity" : "intensity"}.items():
+			cmds.connectAttr("%s.%s" % (driver, key), "%s_light_%s_multiplyDivide.input2" % (name, value), f=True)	
+	
+	def getControlsLocator(self, name):
+		annotation = cmds.createNode("annotationShape")
+		cmds.setAttr("%s.displayArrow" % annotation, 0)
+		cmds.setAttr("%s.displayArrow" % annotation, lock=True, keyable=False)
+		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
+
+		annotationTransform = getTransform(annotation)
+		cmds.setAttr("%s.ty" % annotationTransform, 5)
+		lockHideAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		cmds.addAttr(annotationTransform, ln="generalControls", nn="[ General Controls ]", at="enum", en=Constants.title)
+		cmds.setAttr("%s.generalControls" % annotationTransform, e=True, keyable=True, lock=True)
+
+		addColorAttributes(annotationTransform, "color")
+		addColorAttributes(annotationTransform, "intensity")
+	
+		cmds.addAttr(annotationTransform, ln="othersControls", nn="[ Others Controls ]", at="enum", en=Constants.title)
+		cmds.setAttr("%s.othersControls" % annotationTransform, e=True, keyable=True, lock=True)
+		
+		addColorAttributes(annotationTransform, "override")
+		return cmds.rename(annotationTransform, "%s_controls" % name)
+
+	def getPortalLightShader(self, light, name):
+		miaPortalLight = cmds.shadingNode("mia_portal_light", asLight=True)
+		cmds.connectAttr("%s.message" % miaPortalLight, "%s.miLightShader" % light, f=True)		
+		cmds.connectAttr("%s.color" % light, "%s.tint_color" % miaPortalLight, f=True)		
+		cmds.connectAttr("%s.intensity" % light, "%s.multiplier" % miaPortalLight, f=True)		
+		return cmds.rename(miaPortalLight, "%s_%s" % (name, cmds.nodeType(miaPortalLight)))
+
+	def getLight(self, file, name, shape, scaleX, scaleY):
+		light = cmds.shadingNode("areaLight", asLight=True)
+		intensityMultiplyDivide = self.getLightShaderBranch(file, name)
+		cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.color" % light, f=True)		
+		
+		self.getPortalLightShader(light, name)
+
+		setAttributes({"%s.emitSpecular" % light:False,
+				"%s.useRayTraceShadows" % light:True,
+				"%s.areaLight" % light:True,
+				"%s.areaHiSamples" % light:24,
+				"%s.sx" % light:scaleX / 2,
+				"%s.sy" % light:scaleY / 2})
+		
+		lockHideAttributes(light, ("tx", "ty", "tz", "rx", "ry", "rz", "sz"))
+		return cmds.rename(light, name)
+	
 	def getFileShaderBranch(self, filePath, name):
 		file = cmds.shadingNode("file", asTexture=True)
 		cmds.setAttr("%s.fileTextureName" % file, filePath, type="string")
-		file = cmds.rename(file, "%s_%s" % (name, cmds.nodeType(file)))
-		return file
+		return cmds.rename(file, "%s_%s" % (name, cmds.nodeType(file)))
 	
 	def getLightShaderBranch(self, filePath, name):
 		file = self.getFileShaderBranch(filePath, name)
@@ -183,8 +237,7 @@ class Setup(object):
 		cmds.connectAttr("%s.output" % colorMultiplyDivide, "%s.input1" % intensityMultiplyDivide, f=True)	
 
 		cmds.rename(colorMultiplyDivide, "%s_color_%s" % (name, cmds.nodeType(colorMultiplyDivide)))
-		intensityMultiplyDivide = cmds.rename(intensityMultiplyDivide, "%s_intensity_%s" % (name, cmds.nodeType(intensityMultiplyDivide)))
-		return intensityMultiplyDivide
+		return cmds.rename(intensityMultiplyDivide, "%s_intensity_%s" % (name, cmds.nodeType(intensityMultiplyDivide)))
 
 	def getSupportShaderBranch(self, inputShader, slots, filePath, name):
 		intensityMultiplyDivide = self.getLightShaderBranch(filePath, name)
@@ -203,8 +256,7 @@ class Setup(object):
 			cmds.connectAttr("%s.output" % userMultiplyDivide, "%s.%s" % (inputShader, slot), f=True)		
 
 		cmds.rename(modulationMultiplyDivide, "%s_modulation_%s" % (name, cmds.nodeType(modulationMultiplyDivide)))
-		userMultiplyDivide = cmds.rename(userMultiplyDivide, "%s_user_%s" % (name, cmds.nodeType(userMultiplyDivide)))
-		return userMultiplyDivide
+		return cmds.rename(userMultiplyDivide, "%s_user_%s" % (name, cmds.nodeType(userMultiplyDivide)))
 
 	def connectToLights(self):
 		pass
@@ -222,21 +274,21 @@ class Setup(object):
 		lightGeometries = cmds.circle(nr=(0, 0, 1), ch=0, r=lightGeometriesRadius)[0]
 
 		lightTarget = cmds.spaceLocator()
-		lightSupport = importObjFile(Datas.lightObjectPath)[0]
-		lightFrame = importObjFile(Datas.lightObjectFramePath)[0]
+		lightSupport = getTransform(importObjFile(Datas.lightObjectPath)[0])
+		lightFrame = getTransform(importObjFile(Datas.lightObjectFramePath)[0])
 		setAttributes({"%s.tz" % lightSupport:Constants.geometriesOffset,
 				"%s.tz" % lightFrame:Constants.geometriesOffset})
 		
-		lightSupport = cmds.parent(lightSupport, lightGeometries)
-		lightFrame = cmds.parent(lightFrame, lightGeometries)
-		lightGeometries = cmds.parent(lightGeometries, lightHook)
-		lightHook = cmds.parent(lightHook, lightRoot)
-		lightRoot = cmds.parent(lightRoot, lightGroup)
-		lightTarget = cmds.parent(lightTarget, lightGroup)
+		lightSupport = cmds.parent(lightSupport, lightGeometries)[0]
+		lightFrame = cmds.parent(lightFrame, lightGeometries)[0]
+		lightGeometries = cmds.parent(lightGeometries, lightHook)[0]
+		lightHook = cmds.parent(lightHook, lightRoot)[0]
+		lightRoot = cmds.parent(lightRoot, lightGroup)[0]
+		lightTarget = cmds.parent(lightTarget, lightGroup)[0]
 		
 		attributes = ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz")
-		lockHideAttributes(lightSupport[0], attributes)
-		lockHideAttributes(lightFrame[0], attributes)
+		lockHideAttributes(lightSupport, attributes)
+		lockHideAttributes(lightFrame, attributes)
 
 		aimConstraint = cmds.aimConstraint(lightTarget, lightRoot, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 	
@@ -245,6 +297,53 @@ class Setup(object):
 		cmds.connectAttr("%s.outColor" % surfaceShader, "%s.surfaceShader" % shadingEngine, f=True)
 		
 		self.getSupportShaderBranch(surfaceShader, ("outColor",), Datas.lightFilePath, self.lightName)
+		
+		if Datas.lightMaskFilePath:
+			lightMaskFile = self.getFileShaderBranch(Datas.lightMaskFilePath,   "%s_mask" % self.lightName)
+			cmds.connectAttr("%s.outColor" % lightMaskFile, "%s.outMatteOpacity" % surfaceShader, f=True)		
+			reverse = cmds.shadingNode("reverse", asUtility=True)
+			cmds.connectAttr("%s.outColor" % lightMaskFile, "%s.input" % reverse, f=True)		
+			cmds.connectAttr("%s.output" % reverse, "%s.outTransparency" % surfaceShader, f=True)
+			cmds.rename(reverse, "%s_%s" % (self.lightName, cmds.nodeType(reverse)))
+		cmds.sets(lightSupport, e=True, forceElement=shadingEngine)
+		
+		lambert = cmds.shadingNode("lambert", asShader=True)
+		cmds.setAttr("%s.color" % lambert, Datas.lightObjectFrameColor[0], Datas.lightObjectFrameColor[1], Datas.lightObjectFrameColor[2], type="double3")
+		frameShadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+		cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % frameShadingEngine, f=True)
+		cmds.sets(lightFrame, e=True, forceElement=frameShadingEngine)
+		
+		controlsLocator = cmds.parent(self.getControlsLocator(self.lightName), lightHook)[0]
+		controlsLocatorOffset = truncFloat(1.25 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		cmds.setAttr("%s.ty" % controlsLocator, controlsLocatorOffset)
+		lockHideAttributes(controlsLocator, attributes)
+		self.connectDriverToMaterialShaders(controlsLocator, self.lightName)
+
+		if Options.createLight:
+			light = self.getLight(Datas.lightFilePath, "%s_light" % self.lightName, Datas.lightShape, Datas.lightWidth, Datas.lightHeight)
+			light = cmds.parent(light, lightHook)[0]
+			cmds.setAttr("%s.miFinalGatherCast" % lightSupport, False)
+			if not Options.texturedLight:
+				cmds.delete("%s_light_file" % self.lightName)
+				for component in ("X", "Y", "Z"): 
+					cmds.setAttr("%s_light_color_multiplyDivide.input1%s" % (self.lightName, component), 1)
+				
+				normalizationFactor = getNormalizationFactor(Datas.lightColor)
+				lightColor = normalizeArray(Datas.lightColor)
+				for i, component in enumerate(("red", "green", "blue")): 
+					setAttributes({"%s.%sIntensity" % (controlsLocator, component):normalizationFactor,
+							"%s.%sColor" % (controlsLocator, component):lightColor[i]})
+				for component in ("X", "Y", "Z"): 
+					cmds.setAttr("%s_modulation_multiplyDivide.input2%s" % (self.lightName, component), (1 / normalizationFactor) * (1 / lightColor[i]))
+				cmds.setAttr("%s.emitSpecular" % light, False)
+			self.connectDriverToLightShaders(controlsLocator, self.lightName)
+		
+		setAttributes({"%s.sx" % lightRoot:Options.lightScale,
+				"%s.sy" % lightRoot:Options.lightScale,
+				"%s.sz" % lightRoot:Options.lightScale,
+				"%s.tx" % lightRoot:Options.lightScale*5,
+				"%s.ty" % lightRoot:Options.lightScale*5,
+				"%s.tz" % lightRoot:Options.lightScale*5})
 
 	def setIrradianceParticlesEngine(self):
 		# Implementation Produces Errors.
@@ -355,19 +454,33 @@ def setPadding(data, padding, affix="0"):
 		data = affix + data
 	return data
 
+def getNormalizationFactor(array):
+	normalizationFactor = max(array)
+	return normalizationFactor > 0 and normalizationFactor or None
+
+def normalizeArray(array):
+	normalizationFactor = getNormalizationFactor(array)
+	if normalizationFactor:
+		return [i/normalizationFactor for i in array]
+	else:
+		return array
+
 def truncFloat(number, truncValue):
 	if truncValue != 0:
 		return math.trunc(number / truncValue) * truncValue
 	else:
 		return number
 
-def getShapes(object, fullPath=False, noIntermediate=True):
-	shapes = cmds.listRelatives(object, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
-	return shapes != None and shapes or []
+def getShapes(node, fullPath=False, noIntermediate=True):
+	nodes = cmds.listRelatives(node, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
+	return nodes != None and nodes or []
 
-def getTransform(shape, fullPath=True):
-	transform = ""
-	if cmds.nodeType(shape) != "transform":
-		parents = cmds.listRelatives(shape, fullPath=fullPath, parent=True)
+def getTransform(node, fullPath=True):
+	transform = node
+	if cmds.nodeType(node) != "transform":
+		parents = cmds.listRelatives(node, fullPath=fullPath, parent=True)
 		transform = parents[0]
 	return transform
+	
+def filterNonExistingNodes(nodes):
+	return [node for node in nodes if cmds.objExists(node)]
