@@ -3,7 +3,7 @@ Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Standard Template Manual.html | String | Help File
 Release = @Release | 2.0.0 | String | Template Release
-Date = @Date | 15 May 2011 | String | Date
+Date = @Date | 29 May 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -560,14 +560,14 @@ def truncFloat(number, truncValue):
 	else:
 		return number
 
-def getShapes(object, fullPath=False, noIntermediate=True):
-	shapes = cmds.listRelatives(object, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
-	return shapes != None and shapes or []
+def getShapes(node, fullPath=False, noIntermediate=True):
+	nodes = cmds.listRelatives(node, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
+	return nodes != None and nodes or []
 
-def getTransform(shape, fullPath=True):
-	transform = ""
-	if cmds.nodeType(shape) != "transform":
-		parents = cmds.listRelatives(shape, fullPath=fullPath, parent=True)
+def getTransform(node, fullPath=True):
+	transform = node
+	if cmds.nodeType(node) != "transform":
+		parents = cmds.listRelatives(node, fullPath=fullPath, parent=True)
 		transform = parents[0]
 	return transform
 	
