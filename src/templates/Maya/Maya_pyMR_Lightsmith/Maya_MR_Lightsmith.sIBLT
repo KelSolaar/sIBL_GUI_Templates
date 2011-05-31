@@ -156,7 +156,7 @@ class Setup(object):
 			mel.eval("%s_%s_postProcessCallback();" % (Constants.packageRendererPrefix, Constants.title))
 
 	def getUniqueLightName(self, name):
-		existingNames = cmds.ls("*%s_*_Support" % name)
+		existingNames = cmds.ls("*%s_*_support" % name)
 		existingCount = len(existingNames) + 1
 		return "%s_%s" % (name, setPadding(str(existingCount), 3))
 
@@ -344,6 +344,14 @@ class Setup(object):
 				"%s.tx" % lightRoot:Options.lightScale*5,
 				"%s.ty" % lightRoot:Options.lightScale*5,
 				"%s.tz" % lightRoot:Options.lightScale*5})
+		
+		for node in (aimConstraint, surfaceShader, shadingEngine):
+			cmds.rename(node, "%s_%s" % (self.lightName, cmds.nodeType(node)))
+		for node in (lambert, frameShadingEngine):
+			cmds.rename(node, "%s_frame_%s" % (self.lightName, cmds.nodeType(node)))
+		for node, type in {lightSupport : "support", lightFrame : "frame", lightGeometries : "geometries", lightHook : "hook", lightRoot : "root", lightTarget : "target"}.items():
+			cmds.rename(node, "%s_%s" % (self.lightName, type))
+		return cmds.rename(lightGroup, self.lightName)
 
 	def setIrradianceParticlesEngine(self):
 		# Implementation Produces Errors.
@@ -363,19 +371,22 @@ class Setup(object):
 			self.setIrradianceParticlesEngine()
 
 	def setLinearWorkflow(self):
-		if Options.photographicTonemapper:
-			tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
-			setAttributes({"%s.film_iso" % tonemapper:False,
-						"%s.burn_highlights" % tonemapper:0.25})
-		else:
-			tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
+		filteredCameras = [camera for camera in self.outputCameras if not cmds.listConnections("%s.miLensShader" % camera)]
 		
-		cmds.setAttr("%s.gamma" % tonemapper, Constants.defaultGamma)
+		if filteredCameras:
+			if Options.photographicTonemapper:
+				tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
+				setAttributes({"%s.film_iso" % tonemapper:False,
+							"%s.burn_highlights" % tonemapper:0.25})
+			else:
+				tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
+			
+			cmds.setAttr("%s.gamma" % tonemapper, Constants.defaultGamma)
 
-		for camera in self.outputCameras:
-			cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
-		
-		cmds.rename(tonemapper, "%s_%s" % (Constants.prefix, cmds.nodeType(tonemapper)))
+			for camera in filteredCameras:
+				cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
+			
+			cmds.rename(tonemapper, "%s_%s" % (Constants.prefix, cmds.nodeType(tonemapper)))
 
 def camerasChooser_formLayout():
 	camerasChooser_formLayout = cmds.setParent(q=True)
