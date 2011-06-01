@@ -153,7 +153,7 @@ class Options(object):
 class Setup(object):
 	def __init__(self):
 		if Datas.backgroundFile == "-1" or Datas.reflectionFile == "-1" or Datas.lightingFile == "-1":
-			if cmds.confirmDialog(title=Constants.applicationName, message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
 
