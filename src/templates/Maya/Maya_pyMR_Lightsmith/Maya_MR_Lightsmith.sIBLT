@@ -83,8 +83,8 @@ class Datas(object):
 	lightName= "@LightsmithName"
 	lightFilePath = os.path.join(resourcesDirectory, "@LightsmithFile")
 	lightMaskFilePath =  "@LightsmithMaskFile" != "-1" and os.path.join(resourcesDirectory, "@LightsmithMaskFile") or None
-	lightHeight = @LightsmithHeight
-	lightWidth = @LightsmithWidth
+	lightHeight = float(@LightsmithHeight)
+	lightWidth = float(@LightsmithWidth)
 	lightColor = [@LightsmithColor]
 	lightObjectPath = os.path.join(resourcesDirectory, "@LightsmithObjectFile")
 	lightObjectFramePath = os.path.join(resourcesDirectory, "@LightsmithObjectFrameFile")
@@ -92,7 +92,7 @@ class Datas(object):
 	lightShape = "@LightsmithShape"
 
 class Options(object):
-	lightScale = @lightScale
+	lightScale = float(@lightScale)
 	createLight = @createLight
 	texturedLight = False
 	connectToLights = @connectToLights
@@ -106,12 +106,11 @@ class Options(object):
 class Setup(object):
 	def __init__(self):
 		if Datas.lightName == "-1":
-			if cmds.confirmDialog(title="Confirm", message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+			if cmds.confirmDialog(title=Constants.applicationName, message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
 				self.__exit__()
 
 		self.outputCameras = cmds.ls(l=True, type="camera")
-		self.lightName = self.getUniqueLightName(Datas.lightName)
 
 	def	__exit__(self):
 		sys.exit()
@@ -139,9 +138,9 @@ class Setup(object):
 		self.setRenderer()
 		self.outputCameras = filterNonExistingNodes(self.outputCameras)
 		if Options.connectToLights:
-			self.connectToLights()
+			self.connectToLights(Datas.lightFilePath, Datas.lightMaskFilePath, Datas.lightObjectPath, Datas.lightObjectFramePath, Datas.lightWidth, Datas.lightHeight, Datas.lightObjectFrameColor, Options.texturedLight)
 		else:
-			self.getLightsmithLight()
+			self.getLightsmithLight(self.getUniqueLightName(Datas.lightName), Datas.lightFilePath, Datas.lightMaskFilePath, Datas.lightObjectPath, Datas.lightObjectFramePath, Datas.lightWidth, Datas.lightHeight, Options.lightScale, Datas.lightShape, Datas.lightColor, Datas.lightObjectFrameColor, Options.createLight, Options.texturedLight)
 		Options.activateIndirectLighting and self.setIndirectLighting()
 		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
@@ -201,9 +200,9 @@ class Setup(object):
 		cmds.connectAttr("%s.intensity" % light, "%s.multiplier" % miaPortalLight, f=True)		
 		return cmds.rename(miaPortalLight, "%s_%s" % (name, cmds.nodeType(miaPortalLight)))
 
-	def getLight(self, file, name, shape, scaleX, scaleY):
+	def getLight(self, name, file, scaleX, scaleY, shape):
 		light = cmds.shadingNode("areaLight", asLight=True)
-		intensityMultiplyDivide = self.getLightShaderBranch(file, name)
+		intensityMultiplyDivide = self.getLightShaderBranch(name, file)
 		cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.color" % light, f=True)		
 		
 		self.getPortalLightShader(light, name)
@@ -218,13 +217,13 @@ class Setup(object):
 		lockHideAttributes(light, ("tx", "ty", "tz", "rx", "ry", "rz", "sz"))
 		return cmds.rename(light, name)
 	
-	def getFileShaderBranch(self, filePath, name):
+	def getFileShaderBranch(self, name, filePath):
 		file = cmds.shadingNode("file", asTexture=True)
 		cmds.setAttr("%s.fileTextureName" % file, filePath, type="string")
 		return cmds.rename(file, "%s_%s" % (name, cmds.nodeType(file)))
 	
-	def getLightShaderBranch(self, filePath, name):
-		file = self.getFileShaderBranch(filePath, name)
+	def getLightShaderBranch(self, name, filePath):
+		file = self.getFileShaderBranch(name, filePath)
 		
 		colorMultiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
 		for component in ("X", "Y", "Z"):
@@ -239,8 +238,8 @@ class Setup(object):
 		cmds.rename(colorMultiplyDivide, "%s_color_%s" % (name, cmds.nodeType(colorMultiplyDivide)))
 		return cmds.rename(intensityMultiplyDivide, "%s_intensity_%s" % (name, cmds.nodeType(intensityMultiplyDivide)))
 
-	def getSupportShaderBranch(self, inputShader, slots, filePath, name):
-		intensityMultiplyDivide = self.getLightShaderBranch(filePath, name)
+	def getSupportShaderBranch(self, inputShader, slots, name, filePath):
+		intensityMultiplyDivide = self.getLightShaderBranch(name, filePath)
 	
 		modulationMultiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
 		for component in ("X", "Y", "Z"):
@@ -258,24 +257,29 @@ class Setup(object):
 		cmds.rename(modulationMultiplyDivide, "%s_modulation_%s" % (name, cmds.nodeType(modulationMultiplyDivide)))
 		return cmds.rename(userMultiplyDivide, "%s_user_%s" % (name, cmds.nodeType(userMultiplyDivide)))
 
-	def connectToLights(self):
-		pass
-
-	def getLightsmithLight(self):
+	def deleteLightShaders(self, light):
+		lightHistory = cmds.listHistory(light)
+		for node in lightHistory:
+			if re.search("_intensity_multiplyDivide", node) and cmds.nodeType(node) == "multiplyDivide":
+				cmds.delete(node)
+			if re.search("_color_multiplyDivide", node) and cmds.nodeType(node) == "multiplyDivide":
+				cmds.delete(node)
+		
+	def getLightsmithLight(self, name, filePath, maskFilePath, geometryPath, geometryFramePath, scaleX, scaleY, scale, shape, color, frameColor, createLight, texturedLight):
 		lightGroup = cmds.createNode("transform")
 		
-		lightRootRadius = truncFloat(2 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		lightRootRadius = truncFloat(2 * ((scaleX + scaleY)/2), 0.1)
 		lightRoot = cmds.circle(nr=(0, 0, 1), ch=0, r=lightRootRadius)[0]
 
-		lightHookRadius = truncFloat(1.5 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		lightHookRadius = truncFloat(1.5 * ((scaleX + scaleY)/2), 0.1)
 		lightHook = cmds.circle(nr=(0, 0, 1), ch=0, r=lightHookRadius)[0]
 
-		lightGeometriesRadius = truncFloat(1 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		lightGeometriesRadius = truncFloat(1 * ((scaleX + scaleY)/2), 0.1)
 		lightGeometries = cmds.circle(nr=(0, 0, 1), ch=0, r=lightGeometriesRadius)[0]
 
 		lightTarget = cmds.spaceLocator()
-		lightSupport = getTransform(importObjFile(Datas.lightObjectPath)[0])
-		lightFrame = getTransform(importObjFile(Datas.lightObjectFramePath)[0])
+		lightSupport = getTransform(importObjFile(geometryPath)[0])
+		lightFrame = getTransform(importObjFile(geometryFramePath)[0])
 		setAttributes({"%s.tz" % lightSupport:Constants.geometriesOffset,
 				"%s.tz" % lightFrame:Constants.geometriesOffset})
 		
@@ -296,62 +300,134 @@ class Setup(object):
 		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
 		cmds.connectAttr("%s.outColor" % surfaceShader, "%s.surfaceShader" % shadingEngine, f=True)
 		
-		self.getSupportShaderBranch(surfaceShader, ("outColor",), Datas.lightFilePath, self.lightName)
+		self.getSupportShaderBranch(surfaceShader, ("outColor",), name, filePath)
 		
-		if Datas.lightMaskFilePath:
-			lightMaskFile = self.getFileShaderBranch(Datas.lightMaskFilePath,   "%s_mask" % self.lightName)
+		if maskFilePath:
+			lightMaskFile = self.getFileShaderBranch( "%s_mask" % name, maskFilePath)
 			cmds.connectAttr("%s.outColor" % lightMaskFile, "%s.outMatteOpacity" % surfaceShader, f=True)		
 			reverse = cmds.shadingNode("reverse", asUtility=True)
 			cmds.connectAttr("%s.outColor" % lightMaskFile, "%s.input" % reverse, f=True)		
 			cmds.connectAttr("%s.output" % reverse, "%s.outTransparency" % surfaceShader, f=True)
-			cmds.rename(reverse, "%s_%s" % (self.lightName, cmds.nodeType(reverse)))
+			cmds.rename(reverse, "%s_%s" % (name, cmds.nodeType(reverse)))
 		cmds.sets(lightSupport, e=True, forceElement=shadingEngine)
 		
 		lambert = cmds.shadingNode("lambert", asShader=True)
-		cmds.setAttr("%s.color" % lambert, Datas.lightObjectFrameColor[0], Datas.lightObjectFrameColor[1], Datas.lightObjectFrameColor[2], type="double3")
+		cmds.setAttr("%s.color" % lambert, frameColor[0], frameColor[1], frameColor[2], type="double3")
 		frameShadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
 		cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % frameShadingEngine, f=True)
 		cmds.sets(lightFrame, e=True, forceElement=frameShadingEngine)
 		
-		controlsLocator = cmds.parent(self.getControlsLocator(self.lightName), lightHook)[0]
-		controlsLocatorOffset = truncFloat(1.25 * ((Datas.lightWidth + Datas.lightHeight)/2), 0.1)
+		controlsLocator = cmds.parent(self.getControlsLocator(name), lightHook)[0]
+		controlsLocatorOffset = truncFloat(1.25 * ((scaleX + scaleY)/2), 0.1)
 		cmds.setAttr("%s.ty" % controlsLocator, controlsLocatorOffset)
 		lockHideAttributes(controlsLocator, attributes)
-		self.connectDriverToMaterialShaders(controlsLocator, self.lightName)
+		self.connectDriverToMaterialShaders(controlsLocator, name)
 
-		if Options.createLight:
-			light = self.getLight(Datas.lightFilePath, "%s_light" % self.lightName, Datas.lightShape, Datas.lightWidth, Datas.lightHeight)
+		if createLight:
+			light = self.getLight("%s_light" % name, filePath, scaleX, scaleY, shape)
 			light = cmds.parent(light, lightHook)[0]
 			cmds.setAttr("%s.miFinalGatherCast" % lightSupport, False)
-			if not Options.texturedLight:
-				cmds.delete("%s_light_file" % self.lightName)
+			if not texturedLight:
+				cmds.delete("%s_light_file" % name)
 				for component in ("X", "Y", "Z"): 
-					cmds.setAttr("%s_light_color_multiplyDivide.input1%s" % (self.lightName, component), 1)
+					cmds.setAttr("%s_light_color_multiplyDivide.input1%s" % (name, component), 1)
 				
-				normalizationFactor = getNormalizationFactor(Datas.lightColor)
-				lightColor = normalizeArray(Datas.lightColor)
+				normalizationFactor = getNormalizationFactor(color)
+				color = normalizeArray(color)
 				for i, component in enumerate(("red", "green", "blue")): 
 					setAttributes({"%s.%sIntensity" % (controlsLocator, component):normalizationFactor,
-							"%s.%sColor" % (controlsLocator, component):lightColor[i]})
+							"%s.%sColor" % (controlsLocator, component):color[i]})
 				for component in ("X", "Y", "Z"): 
-					cmds.setAttr("%s_modulation_multiplyDivide.input2%s" % (self.lightName, component), (1 / normalizationFactor) * (1 / lightColor[i]))
+					cmds.setAttr("%s_modulation_multiplyDivide.input2%s" % (name, component), (1 / normalizationFactor) * (1 / color[i]))
 				cmds.setAttr("%s.emitSpecular" % light, False)
-			self.connectDriverToLightShaders(controlsLocator, self.lightName)
+			self.connectDriverToLightShaders(controlsLocator, name)
 		
-		setAttributes({"%s.sx" % lightRoot:Options.lightScale,
-				"%s.sy" % lightRoot:Options.lightScale,
-				"%s.sz" % lightRoot:Options.lightScale,
-				"%s.tx" % lightRoot:Options.lightScale*5,
-				"%s.ty" % lightRoot:Options.lightScale*5,
-				"%s.tz" % lightRoot:Options.lightScale*5})
+		setAttributes({"%s.sx" % lightRoot:scale,
+				"%s.sy" % lightRoot:scale,
+				"%s.sz" % lightRoot:scale,
+				"%s.tx" % lightRoot:scale*5,
+				"%s.ty" % lightRoot:scale*5,
+				"%s.tz" % lightRoot:scale*5})
 		
 		for node in (aimConstraint, surfaceShader, shadingEngine):
-			cmds.rename(node, "%s_%s" % (self.lightName, cmds.nodeType(node)))
+			cmds.rename(node, "%s_%s" % (name, cmds.nodeType(node)))
 		for node in (lambert, frameShadingEngine):
-			cmds.rename(node, "%s_frame_%s" % (self.lightName, cmds.nodeType(node)))
+			cmds.rename(node, "%s_frame_%s" % (name, cmds.nodeType(node)))
 		for node, type in {lightSupport : "support", lightFrame : "frame", lightGeometries : "geometries", lightHook : "hook", lightRoot : "root", lightTarget : "target"}.items():
-			cmds.rename(node, "%s_%s" % (self.lightName, type))
-		return cmds.rename(lightGroup, self.lightName)
+			cmds.rename(node, "%s_%s" % (name, type))
+		return cmds.rename(lightGroup, name)
+
+	def connectToLights(self, filePath, maskFilePath, geometryPath, geometryFramePath, scaleX, scaleY, frameColor, texturedLight):
+		if cmds.objExists(Constants.prefix):
+			compliantLights = [relative for relative in cmds.listRelatives(Constants.prefix, f=True, ad=True) if isType(relative, ("areaLight",))]
+			if compliantLights:
+				for compliantLight in compliantLights:
+					compliantLightTransform = getTransform(compliantLight)
+					name = self.getUniqueLightName(compliantLightTransform.split("|")[-1])
+					compliantLightRelatives = cmds.listRelatives(compliantLightTransform, f=True, ad=True)
+					
+					proceedSetup = True
+					for relative in compliantLightRelatives:
+						if re.search("_support$", relative):
+							if cmds.confirmDialog(title=Constants.applicationName, message="%s | '%s' Light Has Already A Lightsmith Setup! Would You Like To Replace It?" % (Constants.applicationName, compliantLightTransform), button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+								proceedSetup = False
+								break
+					
+					if proceedSetup:
+						color = [1, 1, 1]
+						intensity = 1
+						hasLightControls = False
+						for relative in compliantLightRelatives:
+							if re.search("_controls$", relative):
+								color = cmds.getAttr("%s.color" % relative)[0]
+								intensity = (cmds.getAttr("%s.redIntensity" % relative) + cmds.getAttr("%s.greenIntensity" % relative) + cmds.getAttr("%s.blueIntensity" % relative)) / 3
+								hasLightControls = True
+								break
+						if not hasLightControls:
+							color = cmds.getAttr("%s.color" % compliantLight)[0]
+							intensity = cmds.getAttr("%s.intensity" % compliantLight)
+						for relative in compliantLightRelatives:
+							if re.search("_root$", relative):
+								cmds.delete(relative)
+								break
+					
+						self.deleteLightShaders(compliantLight)
+						intensityMultiplyDivide = self.getLightShaderBranch("%s_light" % name, filePath)
+						cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.color" % compliantLight, f=True)
+						
+						if not texturedLight:
+							cmds.delete("%s_light_file" % name)
+							for component in ("X", "Y", "Z"): 
+								cmds.setAttr("%s_light_color_multiplyDivide.input1%s" % (name, component), 1)
+						
+						self.getPortalLightShader(compliantLight, name)
+						
+						light = self.getLightsmithLight(name, filePath, maskFilePath, geometryPath, geometryFramePath, scaleX, scaleY, 1, None, color, frameColor, False, texturedLight)
+						for relative in cmds.listRelatives(light, f=True, ad=True):
+							if re.search("_root$", relative) and cmds.nodeType(relative) == "transform":
+								lightRoot = getTransform(cmds.parent(relative, compliantLightTransform)[0])
+								break
+						for relative in cmds.listRelatives(lightRoot, f=True, ad=True):
+							if cmds.nodeType(relative) == "aimConstraint":
+								cmds.delete(relative)
+								break
+						cmds.delete(light)
+						
+						averageSupportScale = (scaleX + scaleY) / 2
+						for attribute in ("sx", "sy", "sz"): 
+							compliantLightAxis = cmds.getAttr("%s.%s" % (compliantLightTransform, attribute))
+							lightRootAxis = cmds.getAttr("%s.%s" % (lightRoot, attribute))
+							cmds.setAttr("%s.%s" % (lightRoot, attribute), (lightRootAxis * ((compliantLightAxis * 2) / averageSupportScale)))
+						for attribute in ("tx", "ty", "tz", "rx", "ry", "rz"): 
+							cmds.setAttr("%s.%s" % (lightRoot, attribute), 0)
+						self.connectDriverToLightShaders("%s_controls" % name, name)
+						averageColor = (color[0] +  color[1] +  color[2]) / 3
+						for i, component in enumerate((("red","X"), ("green", "Y"), ("blue", "Z"))):
+							cmds.setAttr("%s_controls.%sColor" % (name, component[0]), color[i])
+							cmds.setAttr("%s_modulation_multiplyDivide.input2%s" % (name, component[1]), (1 / intensity) * (1 / averageColor))
+						cmds.setAttr("%s.emitSpecular" % compliantLight, False)
+		else:
+			cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | No '%s' Group Found, Skipping Lightsmith Lights Creation!" % (Constants.applicationName, Constants.prefix), button=["Ok"])
 
 	def setIrradianceParticlesEngine(self):
 		# Implementation Produces Errors.
@@ -492,6 +568,11 @@ def getTransform(node, fullPath=True):
 		parents = cmds.listRelatives(node, fullPath=fullPath, parent=True)
 		transform = parents[0]
 	return transform
-	
+
+def isType(node, types):
+	for type in types:
+		if cmds.nodeType(node) == type:
+			return True
+
 def filterNonExistingNodes(nodes):
 	return [node for node in nodes if cmds.objExists(node)]
