@@ -45,7 +45,7 @@ dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dy
 shadowsType = @shadowsType | Raytraced;Shadow Maps;Deep Shadow Maps | Enum | Shadows Type
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
-activateIndirectIllumination = @activateIndirectIllumination | 1 | Boolean | Activate Indirect Illumination
+activateColorBleeding = @activateColorBleeding | 1 | Boolean | Activate Color Bleeding
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
 [Remote Connection]
@@ -142,9 +142,10 @@ class Options(object):
 	feedbackRadius = 100
 	sunLightType = "@sunLightType"
 	dynamicLightsType = "@dynamicLightsType"
+	shadowsType = "@shadowsType" 
 	hideLights = @hideLights
 	createGround = @createGround
-	activateIndirectIllumination = @activateIndirectIllumination
+	activateColorBleeding = @activateColorBleeding
 	activateLinearWorkflow = @activateLinearWorkflow
 
 class Setup(object):
@@ -195,16 +196,16 @@ class Setup(object):
 		self.getControlsLocator()
 		Options.hideLights and self.hideLights()
 		self.getEnvironmentShaders()
-#		self.getFeedback()
-#		self.getLigthsTarget()
-#		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
-#			self.getSun()
-#		if Options.createLights and Datas.dynamicLights:
-#			self.getDynamicLights()
-#		self.connectFeedbackToShaders()
-#		Options.createGround and self.getGround()
-#		Options.activateIndirectIllumination and self.setIndirectLighting()
-#		Options.activateLinearWorkflow and self.setLinearWorkflow()
+		self.getFeedback()
+		self.getLigthsTarget()
+		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
+			self.getSun()
+		if Options.createLights and Datas.dynamicLights:
+			self.getDynamicLights()
+		self.connectFeedbackToShaders()
+		Options.createGround and self.getGround()
+		Options.shadowsType == "Raytraced" and self.activateRaytracing()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
 		Options.preserveSessionSettings and self.restoreSessionAttributes()
 
@@ -269,55 +270,25 @@ class Setup(object):
 			cmds.addAttr(annotationTransform, ln="toggle%s" % component, nn=component, at="bool")
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), True)
+	
+		cmds.addAttr(annotationTransform, ln="cc%s" % "Background", nn="[ %s CC ]" % "Background", at="enum", en=Constants.title)
+		cmds.setAttr("%s.cc%s" % (annotationTransform, "Background"), e=True, keyable=True, lock=True)
+		for control in ("Gamma", "Gain"):
+			addColorAttributes(annotationTransform, "%s%s"% ("Background".lower(), control))
 		
-		controls = ("Gamma", "Gain")
-		for component in components:
+		for component in ("Reflection", "Lighting"):
 			cmds.addAttr(annotationTransform, ln="cc%s" % component, nn="[ %s CC ]" % component, at="enum", en=Constants.title)
 			cmds.setAttr("%s.cc%s" % (annotationTransform, component), e=True, keyable=True, lock=True)
-			for control in controls:
+			for control in ("Bias", "Gain"):
 				addColorAttributes(annotationTransform, "%s%s"% (component.lower(), control))
-	
+				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), 0.5, 0.5, 0.5, type="double3")
+
 		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
 
 	def hideLights(self):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentShadersBranch(self, slot, file, prefix, useOverride):
-		vrayPlaceEnvTex = cmds.shadingNode("VRayPlaceEnvTex", asShader=True)
-		cmds.setAttr("%s.mappingType" % vrayPlaceEnvTex, 2)
-
-		_file = cmds.shadingNode("file", asTexture=True)
-		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
-		cmds.connectAttr("%s.outUV" % vrayPlaceEnvTex, "%s.uvCoord" % _file, f=True)
-		
-		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)		
-		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
-
-		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
-		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)		
-
-		if useOverride:
-			condition = cmds.shadingNode("condition", asUtility=True)
-			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
-			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)		
-			
-			blendColors = cmds.shadingNode("blendColors", asUtility=True)
-			for color in ("color1", "color2"):
-				cmds.setAttr("%s.%s" % (blendColors, color), 0, 0, 0, type="double3")
-			cmds.setAttr("%s.blender" % blendColors, 0) 			
-			cmds.connectAttr("%s.output" % blendColors, "%s.colorIfFalse" % condition, f=True)
-
-			cmds.connectAttr("%s.outColor" % condition, slot, f=True)
-
-			for node in (blendColors, condition):
-				cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
-		else:
-			cmds.connectAttr("%s.output" % multiplyDivide, slot, f=True)
-
-		for node in (gammaCorrect, multiplyDivide, vrayPlaceEnvTex, _file):
-			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
-	
 	def getEnvironmentSphereBranch(self, file, prefix, radius, useOverride):
 		sphere = self.getDisplayLocator("%s_support" % prefix, radius, True)
 		cmds.parent(sphere, self.controlsGroup)
@@ -367,7 +338,9 @@ class Setup(object):
 		
 		for node in (surfaceShader, shadingEngine, _file, place2dTexture, gammaCorrect, multiplyDivide):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
-	
+		
+		return getTransform(sphere)
+
 	def getEnvironmentLightBranch(self, file, prefix, radius):
 		light = mel.eval("rmanCreateEnvLight();")
 		lightTransform = cmds.parent(getTransform(light), self.controlsGroup)[0]
@@ -376,24 +349,42 @@ class Setup(object):
 		setAttributes({"%s.rman__LightPrimaryVisibility" % light:False, 
 					"%s.rman__EnvSamples" % light:128,
 					"%s.rman__EnvGIMaxVariation" % light:1,
+					"%s.rman__EnvColorCorrect" % light:True,
 					"%s.sx" % lightTransform:radius,
-					"%s.sy" % lightTransform:radius,
+					"%s.sy" % lightTransform:-radius,
 					"%s.sz" % lightTransform:radius,
-					"%s.rx" % lightTransform:-90,
-					"%s.ry" % lightTransform:-90})
+					"%s.rx" % lightTransform:-90})
 		
-		cmds.rename(lightTransform, "%s_%s" % (prefix, cmds.nodeType(light)))
-		return light
+		lockHideAttributes(lightTransform, ("tx", "ty", "tz", "rx", "rz"))
+		lockHideAttributes(lightTransform, ("sx", "sy", "sz", "ry"), lock=False)
+
+		return cmds.rename(lightTransform, "%s_renderManEnvLight" % prefix)
 	
 	def getEnvironmentShaders(self):
 		if Options.createBackground:
-			self.getEnvironmentSphereBranch(Datas.backgroundFile, "%s_background" % Constants.prefix, self.feedbackRadius - (self.feedbackRadius * 5 / 100), True)
+			sphere = self.getEnvironmentSphereBranch(Datas.backgroundFile, "%s_background" % Constants.prefix, self.feedbackRadius - (self.feedbackRadius * 5 / 100), True)
+			setAttributes({"%s.castsShadows" % sphere:False, 
+					"%s.receiveShadows" % sphere:False,
+					"%s.visibleInReflections" % sphere:False,
+					"%s.visibleInRefractions" % sphere:False,
+					"%s.opposite" % sphere:False})
 
 		if Options.createLighting:
-			self.getEnvironmentLightBranch(Datas.lightingFile, "%s_lighting" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 7.5 / 100))
-	
+			light = self.getEnvironmentLightBranch(Datas.lightingFile, "%s_lighting" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 7.5 / 100))
+			cmds.setAttr("%s.rman__EnvEmitSpecular" % light, False) 			
+			
+			if Options.activateColorBleeding:
+				mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"colorbleeding\");" % light)
+				renderPass = mel.eval("createRenderManNode pass:render:RenderRadiosity;")
+				cmds.connectAttr("%s.message" % renderPass, "%s.rman__GDMap" % light, f=True)
+				cmds.rename(renderPass, "%s_rendermanRadiosityPass" % Constants.prefix)
+			else:
+				mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"occlusion\");" % light)
+			
 		if Options.createReflection:
-			self.getEnvironmentLightBranch(Datas.lightingFile, "%s_reflection" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 10 / 100))
+			light =  self.getEnvironmentLightBranch(Datas.reflectionFile, "%s_reflection" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 10 / 100))
+			cmds.setAttr("%s.rman__EnvEmitDiffuse" % light, False) 			
+			mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"none\");" % light)
 
 	def getDisplayLocator(self, name, radius, visibility):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
@@ -414,6 +405,13 @@ class Setup(object):
 
 	def getFeedback(self):
 		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius, Options.displayFeedback)
+		setAttributes({"%s.castsShadows" % self.feedback:False, 
+					"%s.receiveShadows" % self.feedback:False,
+					"%s.motionBlur" % self.feedback:False,
+					"%s.primaryVisibility" % self.feedback:False,
+					"%s.smoothShading" % self.feedback:False,
+					"%s.visibleInReflections" % self.feedback:False,
+					"%s.visibleInRefractions" % self.feedback:False})
 		cmds.parent(self.feedback, self.controlsGroup)
 		addToDisplayLayer(self.feedback, "%s_feedback_layer" % Constants.prefix)
 		
@@ -443,24 +441,7 @@ class Setup(object):
 
 		cmds.sets(self.feedback, e=True, forceElement=shadingEngine)
 
-		vrayObjectProperties = cmds.createNode("VRayObjectProperties")
-		cmds.connectAttr("%s.instObjGroups[0]" % self.feedback, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
-		setAttributes({"%s.generateGI" % vrayObjectProperties:False,
-						"%s.receiveGI" % vrayObjectProperties:False,
-						"%s.generateCaustics" % vrayObjectProperties:False,
-						"%s.receiveCaustics" % vrayObjectProperties:False,
-						"%s.giVisibility" % vrayObjectProperties:False,
-						"%s.reflectionVisibility" % vrayObjectProperties:False,
-						"%s.refractionVisibility" % vrayObjectProperties:False,
-						"%s.castsShadows" % self.feedback:False,
-						"%s.receiveShadows" % self.feedback:False,
-						"%s.motionBlur" % self.feedback:False,
-						"%s.primaryVisibility" % self.feedback:False,
-						"%s.smoothShading" % self.feedback:False,
-						"%s.visibleInReflections" % self.feedback:False,
-						"%s.visibleInRefractions" % self.feedback:False})
-
-		for node in (lambert, shadingEngine, file, place2dTexture, vrayObjectProperties):
+		for node in (lambert, shadingEngine, file, place2dTexture):
 			cmds.rename(node, "%s_feedback_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 	def getLigthsTarget(self):
@@ -469,16 +450,13 @@ class Setup(object):
 		cmds.parent(self.lightsTarget, self.controlsGroup)
 		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target" % Constants.prefix)
 		
-	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale):
+	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale, shadowsType):
 		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
 
 		if type == "Area" or type == "Directional" or type == "Point" or type == "Spot":
 			cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
-			setAttributes({"%s.intensity" % light:multiplier,
-							"%s.useRayTraceShadows" % light:True})
-		elif type == "VRaySphere" or type == "VRayRect" or type == "VRayIES":
-			cmds.setAttr("%s.lightColor" % light, color[0], color[1], color[2], type="double3")			
-			
+			cmds.setAttr("%s.intensity" % light, multiplier)
+		
 		if type == "Area":
 			cmds.setAttr("%s.areaLight" % light, True)
 			scale = scale / 2
@@ -489,21 +467,19 @@ class Setup(object):
 		elif type == "Spot":
 			setAttributes({"%s.coneAngle" % light:96,
 							"%s.penumbraAngle" % light:16})
-		elif type == "VRaySun":		
-			setAttributes({"%s.intensityMult" % light:0.0225 * multiplier,
-							"%s.sizeMultiplier" % light:1 * (scale / 20)})
-		elif type == "VRaySphere":		
-			setAttributes({"%s.intensityMult" % light:10000 * multiplier,
-							"%s.radius" % light:1 * (scale / 10),
-							"%s.subdivs" % light:24})		
-		elif type == "VRayRect":		
-			setAttributes({"%s.intensityMult" % light:75 * multiplier,
-							"%s.uSize" % light:1 * (scale / 10),
-							"%s.vSize" % light:1 * (scale / 10),
-							"%s.subdivs" % light:24})		
-		elif type == "VRayRect":		
-			cmds.setAttr("%s.intensityMult" % light, multiplier)		
-	
+		
+		if shadowsType == "Raytraced":
+			cmds.setAttr("%s.useRayTraceShadows" % light, True)
+		else:
+			setAttributes({"%s.useDepthMapShadows" % light:True,
+						"%s.dmapResolution" % light:4096})
+			lightShape = getShapes(light)[0]
+			if type == "Area":
+				self.addSoftShadowsAttributes(lightShape)
+			else:
+				self.addShadowsAttributes(lightShape)
+				mel.eval("rmanSetAttr(\"%s\", \"rman__dmap_DefaultPassClass\", \"%s\");" % (lightShape, shadowsType == "Shadow Maps" and "Shadow" or "DeepShadow"))
+
 		setAttributes({"%s.sx" % light:scale,
 						"%s.sy" % light:scale,
 						"%s.sz" % light:scale})
@@ -524,31 +500,54 @@ class Setup(object):
 		for node in (pointOnSurfaceInfo, aimConstraint):
 			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
 
+	def addShadowsAttributes(self, light):
+		for id, value in {"rman__dmap_DefaultPassClass" : "DeepShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapSamples" : "16", "rman__ShadowMapFilterSize" : "1", "rman__ShadowMapFilter" : "gaussian", "rman__TransmissionSubset" : "shadow" }.items():
+			attribute = mel.eval("rmanGetAttrName %s;" % id)
+			mel.eval("rmanAddAttr \"%s\" \"%s\" \"%s\";" % (light, attribute, value))
+	
+	def addSoftShadowsAttributes(self, light):
+		for id, value in {"rman__dmap_DefaultPassClass" : "MinMaxShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapGapBias" : "0.1", "rman__ShadowMapSamples" : "32", "rman__TransmissionSubset" : "shadow" }.items():
+			attribute = mel.eval("rmanGetAttrName %s;" % id)
+			mel.eval("rmanAddAttr \"%s\" \"%s\" \"%s\";" % (light, attribute, value))
+	
 	def getSun(self):
-		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10)
+		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10, Options.shadowsType)
 
 	def getDynamicLights(self):
 		for light in Datas.dynamicLights.values():
-			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15)	
-
+			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15, Options.shadowsType)	
+	
 	def bridgeFeedbackControlsAndShaders(self, target):
 		lowerCaseTarget = target.lower()
-		cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, target), "%s_%s_condition.firstTerm" % (Constants.prefix, lowerCaseTarget), f=True)
-		cmds.connectAttr("%s_controls.%sGamma" % (Constants.prefix, lowerCaseTarget), "%s_%s_gammaCorrect.gamma" % (Constants.prefix, lowerCaseTarget), f=True)
-		cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_multiplyDivide.input2" % (Constants.prefix, lowerCaseTarget), f=True)
+		cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, target), "%s_%s_renderManEnvLight.visibility" % (Constants.prefix, lowerCaseTarget), f=True)
+		cmds.connectAttr("%s_controls.%sBias" % (Constants.prefix, lowerCaseTarget), "%s_%s_renderManEnvLightShape.rman__EnvColorBias" % (Constants.prefix, lowerCaseTarget), f=True)
+		cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_renderManEnvLightShape.rman__EnvColorGain" % (Constants.prefix, lowerCaseTarget), f=True)
 
 	def connectFeedbackToShaders(self):
 		components = ("Gamma", "Gain")	
 		if Options.createBackground:
-			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
-			self.bridgeFeedbackControlsAndShaders("Background")
+			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_support.rotateY = %s.rotateY;" % (Constants.prefix, self.feedback))
+			scaleConstraint = cmds.scaleConstraint(self.feedback, "%s_background_support" % Constants.prefix, mo=True)
+			
+			target = "Background"
+			lowerCaseTarget = target.lower()
+			cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, target), "%s_%s_condition.firstTerm" % (Constants.prefix, lowerCaseTarget), f=True)
+			cmds.connectAttr("%s_controls.%sGamma" % (Constants.prefix, lowerCaseTarget), "%s_%s_gammaCorrect.gamma" % (Constants.prefix, lowerCaseTarget), f=True)
+			cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_multiplyDivide.input2" % (Constants.prefix, lowerCaseTarget), f=True)
+		
 		if Options.createLighting:
-			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
+			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_renderManEnvLight.rotateY = %s.rotateY+90;" % (Constants.prefix, self.feedback))
+			scaleConstraint = cmds.scaleConstraint(self.feedback, "%s_lighting_renderManEnvLight" % Constants.prefix, mo=True)
 			self.bridgeFeedbackControlsAndShaders("Lighting")
 
 		if Options.createReflection:
-			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
+			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_renderManEnvLight.rotateY = %s.rotateY+90;" % (Constants.prefix, self.feedback))
+			scaleConstraint = cmds.scaleConstraint(self.feedback, "%s_reflection_renderManEnvLight" % Constants.prefix, mo=True)
 			self.bridgeFeedbackControlsAndShaders("Reflection")
+	
+	def activateRaytracing(self):
+		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
+						"renderManGlobals.rman__torattr___rayTracing":True})
 
 	def getGround(self):
 		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
@@ -559,28 +558,13 @@ class Setup(object):
 						"%s.scaleZ" % ground:self.feedbackRadius * math.sqrt(2)})
 		cmds.parent(ground, self.controlsGroup)
 
-		if Options.shadowCatcher:
-			vrayObjectProperties = cmds.createNode("VRayObjectProperties")
-			cmds.connectAttr("%s.instObjGroups[0]" % ground, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
-			setAttributes({"%s.giVisibility" % vrayObjectProperties:False,
-							"%s.matteSurface" % vrayObjectProperties:True,
-							"%s.shadows" % vrayObjectProperties:True,
-							"%s.affectAlpha" % vrayObjectProperties:True,
-							"%s.alphaContribution" % vrayObjectProperties:-1,
-							"%s.shadowBrightness" % vrayObjectProperties:0.5,
-							"%s.giAmount" % vrayObjectProperties:0.5})
-			cmds.rename(vrayObjectProperties, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(vrayObjectProperties)))
-
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 
-	def setIndirectLighting(self):
-		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
-						"vraySettings.giOn":True})
-
 	def setLinearWorkflow(self):
-		setAttributes({"vraySettings.cmap_gamma":Constants.defaultGamma,
-						"vraySettings.cmap_affectBackground":False})
-
+		cmds.setAttr("rmanFinalOutputGlobals0.rman__riopt__Display_exposure1", Constants.defaultGamma)
+		if Options.createBackground:
+			cmds.setAttr("%s_controls.backgroundGamma" % Constants.prefix, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, type="double3")
+			
 def setAttributes(attributes):
 	for attribute, value in attributes.items():
 		cmds.setAttr(attribute, value)
