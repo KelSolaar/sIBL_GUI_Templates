@@ -275,11 +275,10 @@ class Setup(object):
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), True)
 		
-		controls = ("Gamma", "Gain")
 		for component in components:
 			cmds.addAttr(annotationTransform, ln="cc%s" % component, nn="[ %s CC ]" % component, at="enum", en=Constants.title)
 			cmds.setAttr("%s.cc%s" % (annotationTransform, component), e=True, keyable=True, lock=True)
-			for control in controls:
+			for control in ("Gamma", "Gain"):
 				addColorAttributes(annotationTransform, "%s%s"% (component.lower(), control))
 	
 		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
@@ -482,6 +481,7 @@ class Setup(object):
 		if Options.createBackground:
 			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Background")
+		
 		if Options.createLighting:
 			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Lighting")
