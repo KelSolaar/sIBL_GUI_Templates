@@ -45,7 +45,7 @@ dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point;VRaySun;VRa
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
-activateIndirectIllumination = @activateIndirectIllumination | 1 | Boolean | Activate Indirect Illumination
+activateIndirectLighting = @activateIndirectLighting | 1 | Boolean | Activate Indirect Lighting
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
 [Remote Connection]
@@ -149,7 +149,7 @@ class Options(object):
 	hideLights = @hideLights
 	createGround = @createGround
 	shadowCatcher = @shadowCatcher
-	activateIndirectIllumination = @activateIndirectIllumination
+	activateIndirectLighting = @activateIndirectLighting
 	activateLinearWorkflow = @activateLinearWorkflow
 
 class Setup(object):
@@ -177,7 +177,7 @@ class Setup(object):
 										"%s_ground.scaleY" % Constants.prefix:None,
 										"%s_ground.scaleZ" % Constants.prefix:None}
 
-	def	__exit__(self):
+	def __exit__(self):
 		sys.exit()
 
 	def execute(self):
@@ -208,7 +208,7 @@ class Setup(object):
 			self.getDynamicLights()
 		self.connectFeedbackToShaders()
 		Options.createGround and self.getGround()
-		Options.activateIndirectIllumination and self.setIndirectLighting()
+		Options.activateIndirectLighting and self.setIndirectLighting()
 		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
 		Options.preserveSessionSettings and self.restoreSessionAttributes()

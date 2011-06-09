@@ -2,7 +2,7 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 0.9.3 | String | Template Release
+Release = @Release | 2.0.0 | String | Template Release
 Date = @Date | 28 May 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
@@ -417,7 +417,7 @@ class Setup(object):
 						for attribute in ("sx", "sy", "sz"): 
 							compliantLightAxis = cmds.getAttr("%s.%s" % (compliantLightTransform, attribute))
 							lightRootAxis = cmds.getAttr("%s.%s" % (lightRoot, attribute))
-							cmds.setAttr("%s.%s" % (lightRoot, attribute), (lightRootAxis * ((compliantLightAxis * 2) / averageSupportScale)))
+							cmds.setAttr("%s.%s" % (lightRoot, attribute), lightRootAxis * ((compliantLightAxis * 2) / averageSupportScale))
 						for attribute in ("tx", "ty", "tz", "rx", "ry", "rz"): 
 							cmds.setAttr("%s.%s" % (lightRoot, attribute), 0)
 						self.connectDriverToLightShaders("%s_controls" % name, name)

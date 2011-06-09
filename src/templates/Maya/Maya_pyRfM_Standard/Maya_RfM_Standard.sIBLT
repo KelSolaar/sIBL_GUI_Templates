@@ -173,7 +173,7 @@ class Setup(object):
 										"%s_ground.scaleY" % Constants.prefix:None,
 										"%s_ground.scaleZ" % Constants.prefix:None}
 
-	def	__exit__(self):
+	def __exit__(self):
 		sys.exit()
 
 	def execute(self):
