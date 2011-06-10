@@ -25,7 +25,7 @@
 # The Following Code Is Protected By GNU GPL V3 Licence.
 #
 
-'''
+"""
 ************************************************************************************************
 ***	sIBL_GUI_Templates_getTemplatesReleases.py
 ***
@@ -38,7 +38,7 @@
 ***	Others:
 ***
 ************************************************************************************************
-'''
+"""
 
 #***********************************************************************************************
 #***	Python Begin
@@ -84,9 +84,9 @@ TEMPLATES_EXTENSION = "sIBLT"
 #***	Main Python Code
 #***********************************************************************************************
 def getTemplatesReleases():
-	'''
+	"""
 	This Definition Gets Templates Releases.
-	'''
+	"""
 
 	walker = Walker()
 	walker.root = TEMPLATES_PATH
