@@ -2,15 +2,15 @@
 Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard Template Manual.html | String | Help File
-Release = @Release | 1.1.8 | String | Template Release
-Date = @Date | 11 March 2011 | String | Date
+Release = @Release | 2.0.0 | String | Template Release
+Date = @Date | 10 June 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | Maya | String | Software
 Version = @Version | 2008 To 2011 | String | Version
 Renderer = @Renderer | RfM | String | Renderer
-OutputScript = @OutputScript | sIBL_Maya_Import.mel | String | Output Script
+OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
 Comment = @Comment | This is Renderman For Maya 2008 To 2011 Template. | String | Comment
 
 [Ibl Set Attributes]
@@ -50,959 +50,587 @@ activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | source "$loaderScriptPath"; | String | ExecutionCommand
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | ExecutionCommand
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
 [Script]
-// @OutputScript - @Release For @Software @Version
-// Author: @Author
-// EMail: @Email
-// Homepage: @Url
-// Template Path: @Path
-// Template Last Modified: @Date
-// sIBL_GUI
-string $backgroundFilePath = "@BGfile";
-int $backgroundWidth = @BGheight * 2;
-string $reflectionFilePath = "@REFfile";
-float $reflectionMultiplier = @REFmulti;
-float $reflectionGamma = @REFgamma;
-string $lightingFilePath = "@EVfile";
-float $lightingMultiplier = @EVmulti;
-float $lightingGamma = @EVgamma;
-float $sunU = @SUNu;
-float $sunV = @SUNv;
-float $sunColor[] = {@SUNcolor};
-float $sunMultiplier = @SUNmulti;
-string $dynamicLights = "@dynamicLights";
-float $height = @Height;
-float $north = @North;
-int $createBackground = @createBackground;
-int $createReflection = @createReflection;
-int $createLighting = @createLighting;
-int $createSun = @createSun;
-int $createLights = @createLights;
-int $preserveSessionSettings = @preserveSessionSettings;
-int $displayFeedback = @displayFeedback;
-float $feedbackRadius = 100;
-string $sunLightType = "@sunLightType";
-string $dynamicLightsType = "@dynamicLightsType";
-string $shadowsType = "@shadowsType";
-int $hideLights = @hideLights;
-int $createGround = @createGround;
-int $activateColorBleeding = @activateColorBleeding;
-int $activateLinearWorkflow = @activateLinearWorkflow;
+# @OutputScript - @Release For @Software @Version
+# Author: @Author
+# EMail: @Email
+# Homepage: @Url
+# Template Path: @Path
+# Template Last Modified: @Date
+# sIBL_GUI
+import math
+import maya.cmds as cmds
+import maya.mel as mel
+import os
+import re
+import sys
 
-int $proceedSetup = 1;
-if($backgroundFilePath == "-1" || $reflectionFilePath == "-1" || $lightingFilePath == "-1")
-{
-	if(`confirmDialog -title "Confirm" -message ("sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?") -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "No")
-		$proceedSetup = 0;
-}
-if($proceedSetup)
-	sIBL_Maya_RfM_setup($backgroundFilePath,
-					$backgroundWidth,
-					$reflectionFilePath,
-					$reflectionMultiplier,
-					$reflectionGamma,
-					$lightingFilePath,
-					$lightingMultiplier,
-					$lightingGamma,
-					$sunU,
-					$sunV,
-					$sunColor,
-					$sunMultiplier,
-					$dynamicLights,
-					$height,
-					$north,
-					$createBackground,
-					$createReflection,
-					$createLighting,
-					$createSun,
-					$createLights,
-					$preserveSessionSettings,
-					$displayFeedback,
-					$feedbackRadius,
-					$sunLightType,
-					$dynamicLightsType,
-					$shadowsType,
-					$hideLights,
-					$createGround,
-					$activateColorBleeding,
-					$activateLinearWorkflow);
-else
-	print("sIBL_GUI | sIBL File Import Aborted!\n");
+class Constants(object):
+	applicationName = "sIBL_GUI"
+	prefix = "sIBL"
+	package = "@Software".replace(" ", "_")
+	renderer = "@Renderer".replace(" ", "_")
+	packagePrefix = "%s_%s" % (prefix, package)
+	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+	title = "Smart IBL"
+	controlsTitle = "[ %s Controls ]" % title
+	maximumViewportTextureSize = 8192
+	defaultGamma = 2.2
+	sessionNodeTypes =  ("blendColors",
+						"condition", 
+						"displayLayer", 
+						"expression", 
+						"file", 
+						"gammaCorrect",
+						"lambert",
+						"multiplyDivide", 
+						"place2dTexture", 
+						"shadingEngine",
+						"RenderMan",
+						"RenderManEnvLightShape")
+	lightTypes = {"Area":"areaLight",
+					"Directional":"directionalLight",
+					"Point":"pointLight",
+					"Spot":"spotLight"}
 
-global proc sIBL_Maya_RfM_setup(string $backgroundFilePath,
-						int $backgroundWidth,
-						string $reflectionFilePath,
-						float $reflectionMultiplier,
-						float $reflectionGamma,
-						string $lightingFilePath,
-						float $lightingMultiplier,
-						float $lightingGamma,
-						float $sunU,
-						float $sunV,
-						float $sunColor[],
-						float $sunMultiplier,
-						string $dynamicLights,
-						float $height,
-						float $north,
-						int $createBackground,
-						int $createReflection,
-						int $createLighting,
-						int $createSun,
-						int $createLights,
-						int $preserveSessionSettings,
-						int $displayFeedback,
-						float $feedbackRadius,
-						string $sunLightType,
-						string $dynamicLightsType,
-						string $shadowsType,
-						int $hideLights,
-						int $createGround,
-						int $activateColorBleeding,
-						int $activateLinearWorkflow)
-{
-	if(`exists sIBL_Maya_preProcessCallback`)
-	{
-		print("sIBL_GUI | Executing Overall Preprocess Callback!\n");
-		sIBL_Maya_preProcessCallback();
-	}
+class Structure(object):
+	def __init__(self, **kwargs):
+		self.__dict__.update(kwargs)
 
-	if(`exists sIBL_Maya_RfM_preProcessCallback`)
-	{
-		print("sIBL_GUI | Executing Template Specific Preprocess Callback!\n");
-		sIBL_Maya_RfM_preProcessCallback();
-	}
+class Light(Structure):
+	pass
 
-	print("sIBL_GUI | Starting sIBL File Import!\n");
+def getDynamicLights(datas):
+	dynamicLights = {}
+	try:
+		tokens = datas.split("|")
+		for i in range(0, len(tokens), 8):
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2] / 255.0), float(tokens[i+3] / 255.0), float(tokens[i+4] / 255.0)), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
+	except:
+		pass
+	return dynamicLights
 
-	string $sessionPreservedAttributes[] = sIBL_Maya_RfM_getSessionPreservedAttributes();
-	string $sessionStoredAttributes[] = {};
-	if($preserveSessionSettings)
-		$sessionStoredAttributes = sIBL_Maya_RfM_storeSessionAttributes($sessionPreservedAttributes);
+class Datas(object):
+	backgroundFile = "@BGfile"
+	backgroundWidth = @BGheight * 2
+	reflectionFile = "@REFfile"
+	reflectionMultiplier = @REFmulti
+	reflectionGamma = @REFgamma
+	lightingFile = "@EVfile"
+	lightingMultiplier = @EVmulti
+	lightingGamma = @EVgamma
+	sunU = @SUNu
+	sunV = @SUNv
+	sunColor = [value / 255.0 for value in [@SUNcolor]]
+	sunMultiplier = @SUNmulti
+	dynamicLights = getDynamicLights("@dynamicLights")
+	height = @Height
+	north = @North
 
-	sIBL_Maya_RfM_activateRfM();
+class Options(object):
+	createBackground = @createBackground
+	createReflection = @createReflection
+	createLighting = @createLighting
+	createSun = @createSun
+	createLights = @createLights
+	preserveSessionSettings = @preserveSessionSettings
+	displayFeedback = @displayFeedback
+	feedbackRadius = 100
+	sunLightType = "@sunLightType"
+	dynamicLightsType = "@dynamicLightsType"
+	shadowsType = "@shadowsType" 
+	hideLights = @hideLights
+	createGround = @createGround
+	activateColorBleeding = @activateColorBleeding
+	activateLinearWorkflow = @activateLinearWorkflow
 
-	sIBL_Maya_RfM_environmentDeletion();
+class Setup(object):
+	def __init__(self):
+		if Datas.backgroundFile == "-1" or Datas.reflectionFile == "-1" or Datas.lightingFile == "-1":
+			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
+				self.__exit__()
 
-	$feedbackRadius = sIBL_Maya_RfM_getExtendedFeedbackRadius($feedbackRadius);
-	if($preserveSessionSettings && $sessionStoredAttributes[2] == "sIBL_Feedback.scaleX" && $sessionStoredAttributes[4] == "sIBL_Feedback.scaleY" && $sessionStoredAttributes[6] == "sIBL_Feedback.scaleZ")
-		$feedbackRadius = (float($sessionStoredAttributes[3]) + float($sessionStoredAttributes[5]) + float($sessionStoredAttributes[7])) / 3;
+		self.controlsGroup = None
+		self.feedback = None
+		self.lightsTarget = None
+		self.feedbackRadius = Options.feedbackRadius
+		self.storedSessionAttributes = {"%s_feedback.rotateY" % Constants.prefix:None,
+										"%s_feedback.scaleX" % Constants.prefix:None,
+										"%s_feedback.scaleY" % Constants.prefix:None,
+										"%s_feedback.scaleZ" % Constants.prefix:None,
+										"%s_ground.translateX" % Constants.prefix:None,
+										"%s_ground.translateY" % Constants.prefix:None,
+										"%s_ground.translateZ" % Constants.prefix:None,
+										"%s_ground.rotateX" % Constants.prefix:None,
+										"%s_ground.rotateY" % Constants.prefix:None,
+										"%s_ground.rotateZ" % Constants.prefix:None,
+										"%s_ground.scaleX" % Constants.prefix:None,
+										"%s_ground.scaleY" % Constants.prefix:None,
+										"%s_ground.scaleZ" % Constants.prefix:None}
 
-	sIBL_Maya_RfM_getMainLocator();
+	def __exit__(self):
+		sys.exit()
 
-	if($hideLights)
-		sIBL_Maya_RfM_hideLights();
+	def execute(self):
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing Overall Preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packagePrefix)
 
-	sIBL_Maya_RfM_getEnvironment($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $feedbackRadius, $displayFeedback, $activateColorBleeding);
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template Specific Preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packageRendererPrefix)
 
-	if($backgroundWidth > 8192)
-	{
-		confirmDialog -title "sIBL_GUI | Information" -message ("The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: " +  $backgroundWidth + " Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead.")  -button "Ok" -defaultButton "Ok";
-		sIBL_Maya_RfM_getFeedback($reflectionFilePath, $feedbackRadius, $displayFeedback);
-	}
-	else
-	{
-		sIBL_Maya_RfM_getFeedback($backgroundFilePath, $feedbackRadius, $displayFeedback);
-	}
+		print("%s | Starting %s File Import!" % (Constants.applicationName, Constants.title))
 
-	if(sIBL_Maya_RfM_objectExists("sIBL_Feedback", "sIBL_GUI | No Feedback Found, Aborting!\n"))
-	{
-		if($sunU != -1 && $sunV != -1)
-		{
-			if($createSun)
-			{
-				sIBL_Maya_RfM_getSun($sunLightType, $shadowsType, $sunU, $sunV, $sunColor, $sunMultiplier, $feedbackRadius);
-			}
-		}
+		Options.preserveSessionSettings and self.storeSessionAttributes()
 
-		if($dynamicLights != -1)
-		{
-			if($createLights)
-			{
-				sIBL_Maya_RfM_getDynamicLights($dynamicLightsType, $shadowsType, $dynamicLights, $feedbackRadius);
-			}
-		}
+		self.setRenderer()
+		self.deleteSession()
+		self.getExtendedFeedbackRadius()		
+		self.getControlsGroup()
+		self.getControlsLocator()
+		Options.hideLights and self.hideLights()
+		self.getEnvironmentShaders()
+		self.getFeedback()
+		self.getLigthsTarget()
+		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
+			self.getSun()
+		if Options.createLights and Datas.dynamicLights:
+			self.getDynamicLights()
+		self.connectFeedbackToShaders()
+		Options.createGround and self.getGround()
+		Options.shadowsType == "Raytraced" and self.activateRaytracing()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
 
-		string $feedback = sIBL_Maya_RfM_getObject("sIBL_Feedback");
-		sIBL_Maya_RfM_connectFeedbackToSIBLShaders($feedback, $createBackground, $createLighting, $createReflection);
+		Options.preserveSessionSettings and self.restoreSessionAttributes()
 
-		if($createGround)
-			sIBL_Maya_RfM_getGround($feedbackRadius);
+		print("%s | %s File Import Done!" % (Constants.applicationName, Constants.title))
 
-		if($shadowsType == "Raytraced")
-			sIBL_Maya_RfM_activateRaytracing();
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing Overall Postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packagePrefix)
 
-		if($activateLinearWorkflow)
-			sIBL_Maya_RfM_activateLinearWorkflow($createBackground);
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template Specific Postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packageRendererPrefix)
+	
+	def storeSessionAttributes(self):
+		for attribute in self.storedSessionAttributes.keys():
+			if len(cmds.ls(attribute)):
+				self.storedSessionAttributes[attribute]= cmds.getAttr(attribute)
+	
+	def restoreSessionAttributes(self):
+		for attribute, value in self.storedSessionAttributes.items():
+			if len(cmds.ls(attribute)) and value:
+				cmds.setAttr(attribute, value)
 
-		if($preserveSessionSettings)
-			sIBL_Maya_RfM_restoreSessionAttributes($sessionStoredAttributes);
+	def setRenderer(self):
+		not cmds.pluginInfo("RenderMan_for_Maya", q=True, loaded=True) and cmds.loadPlugin("RenderMan_for_Maya")
+		cmds.setAttr("defaultRenderGlobals.currentRenderer", "renderMan", type="string")
+		cmds.setAttr("renderManGlobals.rman__riattr___ShadingRate", 1)
 
-		print("sIBL_GUI | sIBL File Import Finished!\n");
+	def deleteSession(self):
+		if cmds.objExists(Constants.prefix):
+			cmds.delete(Constants.prefix)
+		
+		for type in Constants.sessionNodeTypes:
+			deleteType(type, "\\b%s*" % Constants.prefix)
 
-		if(`exists sIBL_Maya_postProcessCallback`)
-		{
-			print("sIBL_GUI | Executing Overall Postprocess Callback!\n");
-			sIBL_Maya_postProcessCallback();
-		}
+	def getExtendedFeedbackRadius(self):
+		sceneExtent = getSceneExtent() * math.sqrt(2)
+		sceneExtent = sceneExtent + (sceneExtent * 10 / 100)
+		
+		if sceneExtent > self.feedbackRadius:
+			self.feedbackRadius = truncFloat(sceneExtent, 10)
+
+	def getControlsGroup(self):
+		if not self.controlsGroup:
+			self.controlsGroup = cmds.createNode("transform", n=Constants.prefix)
+			lockHideAttributes(self.controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
+
+	def getControlsLocator(self):
+		annotation = cmds.createNode("annotationShape")
+		cmds.setAttr("%s.displayArrow" % annotation, 0)
+		cmds.setAttr("%s.displayArrow" % annotation, lock=True, keyable=False)
+		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
+
+		annotationTransform = getTransform(annotation)
+		cmds.setAttr("%s.ty" % annotationTransform, 5)
+		lockHideAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
+		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
+
+		components = ("Background", "Reflection", "Lighting")
+		for component in components:
+			cmds.addAttr(annotationTransform, ln="toggle%s" % component, nn=component, at="bool")
+			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
+			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), True)
+	
+		cmds.addAttr(annotationTransform, ln="cc%s" % "Background", nn="[ %s CC ]" % "Background", at="enum", en=Constants.title)
+		cmds.setAttr("%s.cc%s" % (annotationTransform, "Background"), e=True, keyable=True, lock=True)
+		for control in ("Gamma", "Gain"):
+			addColorAttributes(annotationTransform, "%s%s"% ("Background".lower(), control))
+		
+		for component in ("Reflection", "Lighting"):
+			cmds.addAttr(annotationTransform, ln="cc%s" % component, nn="[ %s CC ]" % component, at="enum", en=Constants.title)
+			cmds.setAttr("%s.cc%s" % (annotationTransform, component), e=True, keyable=True, lock=True)
+			for control in ("Bias", "Gain"):
+				addColorAttributes(annotationTransform, "%s%s"% (component.lower(), control))
+				cmds.setAttr("%s.%s%s" % (annotationTransform, component.lower(), control), 0.5, 0.5, 0.5, type="double3")
+
+		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
+
+	def hideLights(self):
+		lights = cmds.ls(lights=True)
+		lights and cmds.hide(lights)
+
+	def getEnvironmentSphereBranch(self, file, prefix, radius, useOverride):
+		sphere = self.getDisplayLocator("%s_support" % prefix, radius, True)
+		cmds.parent(sphere, self.controlsGroup)
+		setAttributes({"%s.overrideEnabled" % sphere:True,
+						"%s.overrideShading" % sphere:False})
+		
+		surfaceShader = cmds.shadingNode("surfaceShader", asShader=True)
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+		cmds.connectAttr("%s.outColor" % surfaceShader, "%s.surfaceShader" % shadingEngine, f=True)
+		
+		_file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
+
+		place2dTexture = cmds.shadingNode("place2dTexture", asUtility=True)
+		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % _file, f=True)
+		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % _file, f=True)
+		attributes = ("coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV")
+		for attribute in attributes:
+			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (_file, attribute), f=True)		
+		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
+
+		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)		
+		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
+
+		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
+		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)		
+
+		if useOverride:
+			condition = cmds.shadingNode("condition", asUtility=True)
+			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
+			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)		
 			
-		if(`exists sIBL_Maya_RfM_postProcessCallback`)
-		{
-			print("sIBL_GUI | Executing Template Specific Postprocess Callback!\n");
-			sIBL_Maya_RfM_postProcessCallback();
-		}
-	}
-}
+			blendColors = cmds.shadingNode("blendColors", asUtility=True)
+			for color in ("color1", "color2"):
+				cmds.setAttr("%s.%s" % (blendColors, color), 0, 0, 0, type="double3")
+			cmds.setAttr("%s.blender" % blendColors, 0) 			
+			cmds.connectAttr("%s.output" % blendColors, "%s.colorIfFalse" % condition, f=True)
 
-global proc string[] sIBL_Maya_RfM_getSessionPreservedAttributes()
-{
-	string $sessionPreservedAttributes[] = {"sIBL_Feedback.rotateX",
-						"sIBL_Feedback.scaleX",
-						"sIBL_Feedback.scaleY",
-						"sIBL_Feedback.scaleZ",
-						"sIBL_Ground.translateX",
-						"sIBL_Ground.translateY",
-						"sIBL_Ground.translateZ",
-						"sIBL_Ground.rotateX",
-						"sIBL_Ground.rotateY",
-						"sIBL_Ground.rotateZ",
-						"sIBL_Ground.scaleX",
-						"sIBL_Ground.scaleY",
-						"sIBL_Ground.scaleZ"
-						};
-	return $sessionPreservedAttributes;
-}
+			cmds.connectAttr("%s.outColor" % condition, "%s.outColor" % surfaceShader, f=True)
 
-global proc string[] sIBL_Maya_RfM_storeSessionAttributes(string $sessionPreservedAttributes[])
-{
-	string $sessionStoredAttributes[] = {};
-	for($attribute in $sessionPreservedAttributes)
-		if(size(`ls $attribute`) )
-		{
-			$sessionStoredAttributes[size($sessionStoredAttributes)] = $attribute;
-			$sessionStoredAttributes[size($sessionStoredAttributes)] = `getAttr $attribute`;
-		}
-	return $sessionStoredAttributes;
-}
-
-global proc sIBL_Maya_RfM_restoreSessionAttributes(string $sessionStoredAttributes[])
-{
-	for($i=0; $i<size($sessionStoredAttributes); $i+=2)
-		if(size(`ls $sessionStoredAttributes[$i]`) )
-		{
-			float $value = $sessionStoredAttributes[$i + 1];
-			setAttr $sessionStoredAttributes[$i] $value;
-		}
-}
-
-global proc float sIBL_Maya_RfM_getExtendedFeedbackRadius(float $feedbackRadius)
-{
-	float $sceneExtent = sIBL_Maya_RfM_getSceneExtent();
-	$sceneExtent = $sceneExtent * sqrt(2);
-	$sceneExtent = $sceneExtent + ($sceneExtent * 10 / 100);
-
-	if($sceneExtent < $feedbackRadius)
-		return $feedbackRadius;
-	else
-		return sIBL_Maya_RfM_truncFloatNumber($sceneExtent, 10);
-}
-
-global proc sIBL_Maya_RfM_hideLights()
-{
-	SelectAllLights();
-	if(size(`ls -sl`) != 0)
-		HideSelectedObjects();
-}
-
-global proc sIBL_Maya_RfM_deleteType(string $type, string $filter)
-{
-	string $types[] = `ls -type $type $filter`;
-	if(size($types) != 0)
-		delete($types);
-}
-
-global proc sIBL_Maya_RfM_environmentDeletion()
-{
-	// sIBL Transform Group Deletion.
-	string $sceneSIBLGroup[] = `ls -fl "sIBL"`;
-	if($sceneSIBLGroup[0] != "")
-	{
-		delete($sceneSIBLGroup);
-	}
-
-	// sIBL Texture Files Deletion.
-	sIBL_Maya_RfM_deleteType("file", "sIBL*");
-
-	// sIBL place2dTexture Shaders Deletion.
-	sIBL_Maya_RfM_deleteType("place2dTexture", "sIBL*");
-
-	// sIBL lambert Shaders Deletion.
-	sIBL_Maya_RfM_deleteType("lambert", "sIBL*");
-	
-	// sIBL Surface Shaders Deletion.
-	sIBL_Maya_RfM_deleteType("surfaceShader", "sIBL*");
-	
-	// sIBL Condition Nodes Deletion.
-	sIBL_Maya_RfM_deleteType("condition", "sIBL*");
-	
-	// sIBL gammaCorrect Nodes Deletion.
-	sIBL_Maya_RfM_deleteType("gammaCorrect", "sIBL*");	
-
-	// sIBL blendColors Nodes Deletion.
-	sIBL_Maya_RfM_deleteType("blendColors", "sIBL*");	
-	
-	// sIBL RenderManEnvLightShape Deletion.
-	sIBL_Maya_RfM_deleteType("RenderManEnvLightShape", "sIBL*");
-
-	// sIBL displayLayer Nodes Deletion.
-	sIBL_Maya_RfM_deleteType("displayLayer", "sIBL*");
-	
-	// sIBL RenderMan Nodes Deletion.
-	sIBL_Maya_RfM_deleteType("RenderMan", "sIBL*");
-}
-
-global proc sIBL_Maya_RfM_getMainLocator()
-{
-	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-	string $sIBLLocator = `createNode "annotationShape"`;
-	
-	setAttr ($sIBLLocator + ".displayArrow") 0;
-	setAttr -lock true -keyable false ($sIBLLocator + ".displayArrow");
-	setAttr -type "string" ($sIBLLocator + ".text") "[ Smart IBL Controls ]";
-	
-	string $sIBLLocatorTransform = sIBL_Maya_RfM_getTransform($sIBLLocator);
-	
-	// Adding Attributes For Various Toggling And CC Controls.
-	addAttr -ln "renderTogglers" -nn "[ Render Togglers ]" -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
-	setAttr -e-keyable true ($sIBLLocatorTransform + "." + "renderTogglers");
-	setAttr -lock true ($sIBLLocatorTransform + "." + "renderTogglers");
-
-	string $components[] = {"Background", "Reflection", "Lighting"};
-	
-	for($component in $components)
-	{
-		addAttr -ln ("toggle" + $component)  -nn ($component) -at bool  $sIBLLocatorTransform;
-		setAttr -e-keyable true ($sIBLLocatorTransform + (".toggle" + $component));
-		setAttr ($sIBLLocatorTransform + (".toggle" + $component)) true;
-	}
-
-	string $controls[] = {"Bias", "Gain"};
-	
-	for($component in $components)
-	{	
-		addAttr -ln ("cc" + $component) -nn ("[ " + $component + " CC ]") -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
-		setAttr -e-keyable true ($sIBLLocatorTransform + "." + ("cc" + $component));
-		setAttr -lock true ($sIBLLocatorTransform + "." + ("cc" + $component));
+			for node in (blendColors, condition):
+				cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
+		else:
+			cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.outColor" % surfaceShader, f=True)
 		
-		for($control in $controls)
-		{
-			if($component == "Background" && $control == "Bias")
-				$control = "Gamma";
+		cmds.sets(sphere, e=True, forceElement=shadingEngine)
+		
+		for node in (surfaceShader, shadingEngine, _file, place2dTexture, gammaCorrect, multiplyDivide):
+			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
+		
+		return getTransform(sphere)
+
+	def getEnvironmentLightBranch(self, file, prefix, radius):
+		light = mel.eval("rmanCreateEnvLight();")
+		lightTransform = cmds.parent(getTransform(light), self.controlsGroup)[0]
+		
+		cmds.setAttr("%s.rman__EnvMap" % light, file, type="string")
+		setAttributes({"%s.rman__LightPrimaryVisibility" % light:False, 
+						"%s.rman__EnvSamples" % light:128,
+						"%s.rman__EnvGIMaxVariation" % light:1,
+						"%s.rman__EnvColorCorrect" % light:True,
+						"%s.sx" % lightTransform:radius,
+						"%s.sy" % lightTransform:-radius,
+						"%s.sz" % lightTransform:radius,
+						"%s.rx" % lightTransform:-90})
+		
+		lockHideAttributes(lightTransform, ("tx", "ty", "tz", "rx", "rz"))
+		lockHideAttributes(lightTransform, ("sx", "sy", "sz", "ry"), lock=False)
+
+		return cmds.rename(lightTransform, "%s_renderManEnvLight" % prefix)
+	
+	def getEnvironmentShaders(self):
+		if Options.createBackground:
+			sphere = self.getEnvironmentSphereBranch(Datas.backgroundFile, "%s_background" % Constants.prefix, self.feedbackRadius - (self.feedbackRadius * 5 / 100), True)
+			setAttributes({"%s.castsShadows" % sphere:False, 
+							"%s.receiveShadows" % sphere:False,
+							"%s.visibleInReflections" % sphere:False,
+							"%s.visibleInRefractions" % sphere:False,
+							"%s.opposite" % sphere:False})
+
+		if Options.createLighting:
+			light = self.getEnvironmentLightBranch(Datas.lightingFile, "%s_lighting" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 7.5 / 100))
+			cmds.setAttr("%s.rman__EnvEmitSpecular" % light, False) 			
 			
-			float $value = 0.5;
-			if($component == "Background" && $control == "Gain")
-				$value = 1;
-
-			string $lowerCaseComponent = `tolower $component`;
-			addAttr -ln ($lowerCaseComponent + $control)  -nn $control -at double  $sIBLLocatorTransform;
-			setAttr -e-keyable true ($sIBLLocatorTransform + "." + ($lowerCaseComponent + $control));
-			setAttr ($sIBLLocatorTransform + "." + ($lowerCaseComponent + $control)) true;
-			setAttr ($sIBLLocatorTransform + "." + ($lowerCaseComponent + $control)) $value;
-		}
-	}
-
-	setAttr ($sIBLLocatorTransform + ".ty") 5;
-	sIBL_Maya_RfM_lockAttributes($sIBLLocatorTransform, {"rx", "ry", "rz", "sx", "sy", "sz"});
-
-	parent $sIBLLocatorTransform $sIBLGroup;
-	
-	rename ("sIBL" + $sIBLLocatorTransform) "sIBL_Controls";
-}
-
-global proc sIBL_Maya_RfM_getEnvironmentSphereBranch(float $radius, string $prefix, string $filePath, int $visibility, int $useOverride)
-{
-	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-
-	string $environmentSphere[] = `sphere -name ($prefix + "_Environment_Sphere")`;
-	rebuildSurface -ch 1 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kc 0 -su 4 -du 3 -sv 8 -dv 3 -tol 0.01 -fr 0  -dir 2 $environmentSphere;
-	delete -ch;
-
-	setAttr ($environmentSphere[0] + ".visibility") $visibility;
-
-	string $environmentSphereShapes[] = sIBL_Maya_RfM_getShapes($environmentSphere[0]);
-	select -r $environmentSphereShapes[0];
-
-	setAttr ($environmentSphereShapes[0] + ".overrideEnabled") 1;
-	setAttr ($environmentSphereShapes[0] + ".overrideShading") 0;
-
-	setAttr ($environmentSphere[0] + ".rotateZ") (90);
-	setAttr ($environmentSphere[0] + ".scaleZ") (-1);
-	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $environmentSphere[0];
-
-	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributes)
-		setAttr ($environmentSphere[0] + "." + $scaleAttribute) $radius;
-
-	string $surfaceShader = `shadingNode -asShader "surfaceShader"`;
-	string $shadingEngine = `sets -renderable true -noSurfaceShader true -empty`;
-	sets -renderable true -noSurfaceShader true -empty -name $shadingEngine;
-	connectAttr -f ($surfaceShader + ".outColor") ($shadingEngine + ".surfaceShader");
-
-	string $file = `shadingNode -asTexture "file"`;	
-	string $gammaNode = `shadingNode -asUtility "gammaCorrect"`;
-	
-	if($useOverride)
-	{
-		string $conditionNode = `shadingNode -asUtility "condition"`;
-		setAttr ($conditionNode + ".secondTerm") 1;
-		connectAttr -f ($gammaNode + ".outValue") ($conditionNode + ".colorIfTrue");
+			if Options.activateColorBleeding:
+				mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"colorbleeding\");" % light)
+				renderPass = mel.eval("createRenderManNode pass:render:RenderRadiosity;")
+				cmds.connectAttr("%s.message" % renderPass, "%s.rman__GDMap" % light, f=True)
+				cmds.rename(renderPass, "%s_rendermanRadiosityPass" % Constants.prefix)
+			else:
+				mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"occlusion\");" % light)
 			
-		string $blendColors = `shadingNode -asUtility "blendColors"`;
-		setAttr ($blendColors + ".color1") -type double3 0 0 0 ;
-		setAttr ($blendColors + ".color2") -type double3 0 0 0 ;
-		setAttr ($blendColors + ".blender") 0;
+		if Options.createReflection:
+			light =  self.getEnvironmentLightBranch(Datas.reflectionFile, "%s_reflection" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 10 / 100))
+			cmds.setAttr("%s.rman__EnvEmitDiffuse" % light, False) 			
+			mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"none\");" % light)
+
+	def getDisplayLocator(self, name, radius, visibility):
+		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
+		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
+		setAttributes({"%s.visibility" % locator:visibility,
+						"%s.rotateY" % locator:-90,
+						"%s.scaleZ" % locator:-1})
+		# Force UI Refresh.
+		cmds.refresh(force=True)
+		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
+		setAttributes({"%s.scaleX" % locator:radius,
+						"%s.scaleY" % locator:radius,
+						"%s.scaleZ" % locator:radius})
+		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
+		setAttributes({"%s.doubleSided" % locator:False,
+						"%s.opposite" % locator:False})	
+		return locator
+
+	def getFeedback(self):
+		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius, Options.displayFeedback)
+		setAttributes({"%s.castsShadows" % self.feedback:False, 
+					"%s.receiveShadows" % self.feedback:False,
+					"%s.motionBlur" % self.feedback:False,
+					"%s.primaryVisibility" % self.feedback:False,
+					"%s.smoothShading" % self.feedback:False,
+					"%s.visibleInReflections" % self.feedback:False,
+					"%s.visibleInRefractions" % self.feedback:False})
+		cmds.parent(self.feedback, self.controlsGroup)
+		addToDisplayLayer(self.feedback, "%s_feedback_layer" % Constants.prefix)
 		
-		connectAttr -f ($blendColors + ".output") ($conditionNode + ".colorIfFalse");
-		connectAttr -f ($conditionNode + ".outColor") ($surfaceShader + ".outColor");
+		lambert = cmds.shadingNode("lambert", asShader=True)
+		cmds.setAttr("%s.transparency" % lambert, 0.5, 0.5, 0.5, type="double3")
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+		cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % shadingEngine, f=True)
 		
-		rename $conditionNode ($prefix + "_" + `nodeType $conditionNode`);
-		rename $blendColors ($prefix + "_" + `nodeType $blendColors`);
-	}
-	else
-	{
-		connectAttr -f ($gammaNode + ".outValue") ($surfaceShader + ".outColor");
-	}
+		file = cmds.shadingNode("file", asTexture=True)
+		not cmds.ls("%s.resolution" % file) and cmds.addAttr(file, ln="resolution", at="long")
+		cmds.setAttr("%s.resolution" % file, 2048)
+		
+		fileTextureName = Datas.backgroundFile
+		if Datas.backgroundWidth > Constants.maximumViewportTextureSize:
+			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: %s Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead." % Datas.backgroundWidth, button=("Ok",), defaultButton="Ok")
+			fileTextureName = Datas.reflectionFile
+		cmds.setAttr("%s.fileTextureName" % file, fileTextureName, type="string")
+		cmds.connectAttr("%s.outColor" % file, "%s.color" % lambert, f=True)
+		
+		place2dTexture = cmds.shadingNode("place2dTexture", asUtility=True)
+		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % file, f=True)
+		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % file, f=True)
+		attributes = ("coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV")
+		for attribute in attributes:
+			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)		
+		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
 
-	setAttr -type "string" ($file + ".fileTextureName") $filePath;
+		cmds.sets(self.feedback, e=True, forceElement=shadingEngine)
 
-	if(!`attributeExists "resolution" $file`)
-		addAttr -ln "resolution" -at long $file;
- 	setAttr  ($file + ".resolution") 2048;
+		for node in (lambert, shadingEngine, file, place2dTexture):
+			cmds.rename(node, "%s_feedback_%s" % (Constants.prefix, cmds.nodeType(node)))
 
-	connectAttr -f ($file + ".outColor") ($gammaNode + ".value");
+	def getLigthsTarget(self):
+		self.lightsTarget = cmds.spaceLocator()
+		addToDisplayLayer(self.lightsTarget, "%s_lighting_layer" % Constants.prefix)
+		cmds.parent(self.lightsTarget, self.controlsGroup)
+		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target" % Constants.prefix)
+		
+	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale, shadowsType):
+		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
 
-	string $place2dTexture = `shadingNode -asUtility "place2dTexture"`;
+		if type == "Area" or type == "Directional" or type == "Point" or type == "Spot":
+			cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
+			cmds.setAttr("%s.intensity" % light, multiplier)
+		
+		if type == "Area":
+			cmds.setAttr("%s.areaLight" % light, True)
+			scale = scale / 2
+		elif type == "Directional":
+			pass
+		elif type == "Point":
+			pass
+		elif type == "Spot":
+			setAttributes({"%s.coneAngle" % light:96,
+							"%s.penumbraAngle" % light:16})
+		
+		if shadowsType == "Raytraced":
+			cmds.setAttr("%s.useRayTraceShadows" % light, True)
+		else:
+			setAttributes({"%s.useDepthMapShadows" % light:True,
+						"%s.dmapResolution" % light:4096})
+			lightShape = getShapes(light)[0]
+			if type == "Area":
+				self.addSoftShadowsAttributes(lightShape)
+			else:
+				self.addShadowsAttributes(lightShape)
+				mel.eval("rmanSetAttr(\"%s\", \"rman__dmap_DefaultPassClass\", \"%s\");" % (lightShape, shadowsType == "Shadow Maps" and "Shadow" or "DeepShadow"))
 
-	connectAttr -f ($place2dTexture + ".outUV") ($file + ".uvCoord");
-	connectAttr -f ($place2dTexture + ".outUvFilterSize") ($file + ".uvFilterSize");
+		setAttributes({"%s.sx" % light:scale,
+						"%s.sy" % light:scale,
+						"%s.sz" % light:scale})
+							
+		cmds.parent(light, self.controlsGroup)
+		
+		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
+		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
+		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo:0.5 + (0.5 - vCoordinate),
+						"%s.parameterV" % pointOnSurfaceInfo:0.5 + (0.5 - uCoordinate)})
+		
+		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 
-	string $uvAttributes[] = {"coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV"};
-	for($uvAttribute in $uvAttributes)
-		connectAttr -f ($place2dTexture + "." + $uvAttribute) ($file + "." + $uvAttribute);
+		addToDisplayLayer(light, "%s_lighting_layer" % Constants.prefix)
+		
+		cmds.rename(light, name)
+		for node in (pointOnSurfaceInfo, aimConstraint):
+			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
 
-	setAttr ($place2dTexture + ".rotateFrame") 90;
-
-	sets -e -forceElement $shadingEngine $environmentSphere[0];
-
-	parent $environmentSphere[0] $sIBLGroup;
-
-	rename $environmentSphere[0] ($prefix + "_Environment_Sphere");
-	rename $surfaceShader ($prefix + "_" + `nodeType $surfaceShader`);
-	rename $shadingEngine ($prefix + "_" + `nodeType $shadingEngine`);
-	rename $gammaNode ($prefix + "_" + `nodeType $gammaNode`);
-	rename $file ($prefix + "_" + `nodeType $file`);
-	rename $place2dTexture ($prefix + "_" + `nodeType $place2dTexture`);
-}
-
-global proc sIBL_Maya_RfM_getEnvironmentLightBranch(float $radius, string $prefix, string $filePath)
-{
-	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-
-	string $environmentLight = rmanCreateEnvLight();
-
-	setAttr -type "string" ($environmentLight + ".rman__EnvMap") $filePath;
-	setAttr ($environmentLight + ".rman__LightPrimaryVisibility") 0;
-	setAttr ($environmentLight + ".rman__EnvSamples") 128;
-	setAttr ($environmentLight + ".rman__EnvGIMaxVariation") 1;
-	setAttr ($environmentLight + ".rman__EnvColorCorrect") 1;
+	def addShadowsAttributes(self, light):
+		for id, value in {"rman__dmap_DefaultPassClass" : "DeepShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapSamples" : "16", "rman__ShadowMapFilterSize" : "1", "rman__ShadowMapFilter" : "gaussian", "rman__TransmissionSubset" : "shadow" }.items():
+			attribute = mel.eval("rmanGetAttrName %s;" % id)
+			mel.eval("rmanAddAttr \"%s\" \"%s\" \"%s\";" % (light, attribute, value))
 	
-	setAttr ($environmentLight + ".template") 1;
-
-	string $environmentLightTransform = sIBL_Maya_RfM_getTransform($environmentLight);
+	def addSoftShadowsAttributes(self, light):
+		for id, value in {"rman__dmap_DefaultPassClass" : "MinMaxShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapGapBias" : "0.1", "rman__ShadowMapSamples" : "32", "rman__TransmissionSubset" : "shadow" }.items():
+			attribute = mel.eval("rmanGetAttrName %s;" % id)
+			mel.eval("rmanAddAttr \"%s\" \"%s\" \"%s\";" % (light, attribute, value))
 	
-	string $scaleAttributes[] = {"scaleX", "scaleZ"};
-	for($scaleAttribute in $scaleAttributes)
-		setAttr ($environmentLightTransform + "." + $scaleAttribute) $radius;
-	setAttr ($environmentLightTransform + ".scaleY") (- $radius);
-	setAttr ($environmentLightTransform + ".rotateX") -90;
-	setAttr ($environmentLightTransform + ".rotateY") 90;
+	def getSun(self):
+		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10, Options.shadowsType)
 
-	parent $environmentLightTransform $sIBLGroup;
+	def getDynamicLights(self):
+		for light in Datas.dynamicLights.values():
+			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15, Options.shadowsType)	
 	
-	rename ("sIBL" + $environmentLightTransform) ($prefix + "_EnvironmentLigtht");
-}
+	def bridgeFeedbackControlsAndShaders(self, target):
+		lowerCaseTarget = target.lower()
+		cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, target), "%s_%s_renderManEnvLight.visibility" % (Constants.prefix, lowerCaseTarget), f=True)
+		cmds.connectAttr("%s_controls.%sBias" % (Constants.prefix, lowerCaseTarget), "%s_%s_renderManEnvLightShape.rman__EnvColorBias" % (Constants.prefix, lowerCaseTarget), f=True)
+		cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_renderManEnvLightShape.rman__EnvColorGain" % (Constants.prefix, lowerCaseTarget), f=True)
 
-global proc sIBL_Maya_RfM_getEnvironment(int $createBackground, int $createLighting, int $createReflection, string $backgroundFilePath, string $lightingFilePath, string $reflectionFilePath, float $feedbackRadius, int $visibility, int $activateColorBleeding)
-{
-	if($createBackground)
-	{
-		sIBL_Maya_RfM_getEnvironmentSphereBranch(($feedbackRadius - ($feedbackRadius * 5 / 100)), "sIBL_Background", $backgroundFilePath, $visibility, 1);
-		
-		string $renderStats[] = {"castsShadows", "receiveShadows", "visibleInReflections", "visibleInRefractions", "opposite"};
-		for($stat in $renderStats)
-			setAttr ("sIBL_Background_Environment_SphereShape" + "." + $stat) false;
-	}
-
-	if($createLighting)
-	{
-		sIBL_Maya_RfM_getEnvironmentLightBranch($feedbackRadius * 2 - ($feedbackRadius * 7.5 / 100), "sIBL_Lighting", $lightingFilePath);
-		
-		string $environmentLightNode = "sIBL_Lighting_EnvironmentLigthtShape";
-		setAttr ($environmentLightNode + ".rman__EnvEmitSpecular") 0;
-		
-		if($activateColorBleeding)
-		{
-			rmanSetAttr($environmentLightNode,"rman__EnvGIScheme","colorbleeding");
-			string $passNode = `createRenderManNode pass:render:RenderRadiosity`;
-			connectAttr ($passNode + ".message") ($environmentLightNode + ".rman__GDMap");
+	def connectFeedbackToShaders(self):
+		components = ("Gamma", "Gain")	
+		if Options.createBackground:
+			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_support.rotateY = %s.rotateY;" % (Constants.prefix, self.feedback))
+			scaleConstraint = cmds.scaleConstraint(self.feedback, "%s_background_support" % Constants.prefix, mo=True)
 			
-			rename $passNode sIBL_rmanRenderRadiosityPass;
-		}
-		else
-			rmanSetAttr("sIBL_Lighting_EnvironmentLigthtShape","rman__EnvGIScheme","occlusion");
-	}
-
-	if($createReflection)
-	{
-		sIBL_Maya_RfM_getEnvironmentLightBranch($feedbackRadius * 2 - ($feedbackRadius * 10 / 100), "sIBL_Reflection", $reflectionFilePath);
+			target = "Background"
+			lowerCaseTarget = target.lower()
+			cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, target), "%s_%s_condition.firstTerm" % (Constants.prefix, lowerCaseTarget), f=True)
+			cmds.connectAttr("%s_controls.%sGamma" % (Constants.prefix, lowerCaseTarget), "%s_%s_gammaCorrect.gamma" % (Constants.prefix, lowerCaseTarget), f=True)
+			cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_multiplyDivide.input2" % (Constants.prefix, lowerCaseTarget), f=True)
 		
-		string $environmentLightNode = "sIBL_Reflection_EnvironmentLigthtShape";
-		setAttr ($environmentLightNode + ".rman__EnvEmitDiffuse") 0;
-		rmanSetAttr($environmentLightNode,"rman__EnvGIScheme","none");
-	}
-}
+		if Options.createLighting:
+			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_renderManEnvLight.rotateY = %s.rotateY+90;" % (Constants.prefix, self.feedback))
+			scaleConstraint = cmds.scaleConstraint(self.feedback, "%s_lighting_renderManEnvLight" % Constants.prefix, mo=True)
+			self.bridgeFeedbackControlsAndShaders("Lighting")
 
-global proc string sIBL_Maya_RfM_getSIBLGroup()
-{
-	string $sIBLGroup[] = `ls -fl "sIBL"`;
-	if($sIBLGroup[0] == "")
-	{
-		$sIBLGroup[0] = `createNode "transform" -n "sIBL"`;
-		sIBL_Maya_RfM_lockAttributes($sIBLGroup[0], {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"});
-	}
-
-	return $sIBLGroup[0];
-}
-
-global proc string sIBL_Maya_RfM_getFeedbackGeometry(float $feedbackRadius, int $feedBackVisibility)
-{
- 	string $feedback[] = `sphere -name "sIBL_Feedback"`;
-	rebuildSurface -ch 1 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kc 0 -su 4 -du 3 -sv 8 -dv 3 -tol 0.01 -fr 0  -dir 2 $feedback;
-	delete -ch;
+		if Options.createReflection:
+			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_renderManEnvLight.rotateY = %s.rotateY+90;" % (Constants.prefix, self.feedback))
+			scaleConstraint = cmds.scaleConstraint(self.feedback, "%s_reflection_renderManEnvLight" % Constants.prefix, mo=True)
+			self.bridgeFeedbackControlsAndShaders("Reflection")
 	
-	string $feedBackShapes[] = sIBL_Maya_RfM_getShapes($feedback[0]);
-
-	string $renderStats[] = {"castsShadows", "receiveShadows", "motionBlur", "primaryVisibility", "smoothShading", "visibleInReflections", "visibleInRefractions", "opposite"};
-	for($stat in $renderStats)
-		setAttr ($feedBackShapes[0] + "." + $stat) false;
-
-	setAttr ($feedback[0] + ".scaleZ") (-1);
-	makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 $feedback[0];
-
-	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributes)
-		setAttr ($feedback[0] + "." + $scaleAttribute) $feedbackRadius;
-
-	setAttr ($feedback[0] + ".rotateZ") 90;
-
-	sIBL_Maya_RfM_lockAttributes($feedback[0], {"tx", "ty", "tz", "ry", "rz"});
-
-	setAttr ($feedback[0] + ".visibility") $feedBackVisibility;
-
-	string $feedBackShapes[] = sIBL_Maya_RfM_getShapes($feedback[0]);
-	string $renderStats[] = {"doubleSided", "opposite"};
-	for($stat in $renderStats)
-		setAttr ($feedBackShapes[0] + "." + $stat) false;
-
-	sIBL_Maya_RfM_addToDisplayLayer("sIBL_Feedback_Layer", $feedback[0]);
-
-	return $feedback[0];
-}
-
-global proc sIBL_Maya_RfM_getFeedback(string $backgroundFilePath, float $feedbackRadius, int $feedBackVisibility)
-{
- 	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-	string $feedback = sIBL_Maya_RfM_getFeedbackGeometry($feedbackRadius, $feedBackVisibility);
-	parent $feedback $sIBLGroup;
-
-	string $lambertShader = `shadingNode -asShader "lambert"`;
-	setAttr ($lambertShader + ".transparency") -type double3 0.5 0.5 0.5 ;
-	string $shadingEngine = `sets -renderable true -noSurfaceShader true -empty`;
-	sets -renderable true -noSurfaceShader true -empty -name $shadingEngine;
-	connectAttr -f ($lambertShader + ".outColor") ($shadingEngine + ".surfaceShader");
-
-	string $file = `shadingNode -asTexture "file"`;
-	if(!`attributeExists "resolution" $file`)
-		addAttr -ln "resolution" -at long $file;
- 	setAttr  ($file + ".resolution") 2048;
-
-	setAttr -type "string" ($file + ".fileTextureName") $backgroundFilePath;
-
-	connectAttr -f ($file + ".outColor") ($lambertShader + ".color");
-
-	string $place2dTexture = `shadingNode -asUtility "place2dTexture"`;
-
-	connectAttr -f ($place2dTexture + ".outUV") ($file + ".uvCoord");
-	connectAttr -f ($place2dTexture + ".outUvFilterSize") ($file + ".uvFilterSize");
-
-	string $uvAttributes[] = {"coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV"};
-	for($uvAttribute in $uvAttributes)
-		connectAttr -f ($place2dTexture + "." + $uvAttribute) ($file + "." + $uvAttribute);
-
-	setAttr ($place2dTexture + ".rotateFrame") 90;
-
-	sets -e -forceElement $shadingEngine $feedback;
-
-	rename $lambertShader ("sIBL_Feedback_" + `nodeType $lambertShader`);
-	rename $shadingEngine ("sIBL_Feedback_" + `nodeType $shadingEngine`);
-	rename $file ("sIBL_Feedback_" + `nodeType $file`);
-	rename $place2dTexture ("sIBL_Feedback_" + `nodeType $place2dTexture`);
-}
-
-global proc string sIBL_Maya_RfM_getLigthsTargetLocator()
-{
-	string $sIBL_Lights_Target_Locator[] = `ls -fl "sIBL_Lights_Target_Locator"`;
-
-	if($sIBL_Lights_Target_Locator[0] == "")
-	{
-		string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-
-		$sIBL_Lights_Target_Locator = `spaceLocator`;
-		parent $sIBL_Lights_Target_Locator[0] $sIBLGroup;
-
-		rename $sIBL_Lights_Target_Locator[0] "sIBL_Lights_Target_Locator";
-	}
-
-	$sIBL_Lights_Target_Locator = `ls -fl "sIBL_Lights_Target_Locator"`;
-
-	sIBL_Maya_RfM_addToDisplayLayer("sIBL_Lighting_Layer", $sIBL_Lights_Target_Locator[0]);
-
-	return $sIBL_Lights_Target_Locator[0];
-}
-
-global proc sIBL_Maya_RfM_getLight(string $type, string $shadowsType, string $name, float $scale, float $color[], float $intensity, float $uCoordinate, float $vCoordinate)
-{
-	switch($type)
-	{
-		case "Area":
-			string $primitiveType = "areaLight";
-			break;
-		case "Directional":
-			string $primitiveType = "directionalLight";
-			break;
-		case "Point":
-			string $primitiveType = "pointLight";
-			break;
-		case "Spot":
-			string $primitiveType = "spotLight";
-			break;
-	}
-	
-	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-	string $feedback[] = `ls -fl "sIBL_Feedback"`;
-
-	string $light = `shadingNode -asLight $primitiveType`;
-
-	setAttr -type double3 ($light + ".color") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
-	setAttr ($light + ".intensity") $intensity;
-	
-	if($shadowsType == "Raytraced")
-	{
-		setAttr ($light + ".useRayTraceShadows") 1;
-	}
-	else
-	{
-		setAttr ($light + ".useDepthMapShadows") 1;
-		setAttr ($light + ".dmapResolution") 4096;
-		
-		string $lightShapes[] = sIBL_Maya_RfM_getShapes($light);
-		if($type != "Area")
-		{
-			sIBL_Maya_RfM_addShadowsAttributes($lightShapes[0]);
-			if($shadowsType == "Shadow Maps")
-				$shadowsType = "Shadow";
-			else
-				$shadowsType = "DeepShadow";
-			rmanSetAttr($lightShapes[0], "rman__dmap_DefaultPassClass", $shadowsType);
-		}
-		else
-		{
-			sIBL_Maya_RfM_addSoftShadowsAttributes($lightShapes[0]);
-		}
-	}
-
-	switch($type)
-	{
-		case "Area":
-			setAttr($light + ".areaLight") 1;
-			break;
-		case "Directional":
-			break;
-		case "Point":
-			break;
-		case "Spot":
-			setAttr($light + ".coneAngle") 96;
-			setAttr($light + ".penumbraAngle") 16;
-			break;
-	}
-
-	if($type == "Area")
-		$scale = $scale / 2;
-	for($attribute in {"sx", "sy", "sz"})
-		setAttr ($light + "." + $attribute) $scale;
-
-	parent $light $sIBLGroup;
-
-	string $pointOnSurfaceInfo = `createNode "pointOnSurfaceInfo"`;
-	connectAttr -f ($feedback[0] + "Shape.worldSpace[0]") ($pointOnSurfaceInfo + ".inputSurface");
-	connectAttr -f ($pointOnSurfaceInfo + ".position") ($light + ".translate");
-
-	setAttr ($pointOnSurfaceInfo + ".parameterU") (0.5 + (0.5 - $vCoordinate));
-	setAttr ($pointOnSurfaceInfo + ".parameterV") (0.5 + (0.5 - $uCoordinate));
-
-	string $sIBL_Lights_Target_Locator = sIBL_Maya_RfM_getLigthsTargetLocator();
-
-	string $constraint[] = `aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 0 -1 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0 $sIBL_Lights_Target_Locator $light`;
-
-	sIBL_Maya_RfM_addToDisplayLayer("sIBL_Lighting_Layer", $light);
-
-	rename $light $name;
-	rename $pointOnSurfaceInfo ($name + "_" + `nodeType $pointOnSurfaceInfo`);
-	rename $constraint[0] ($name + "_" + `nodeType $constraint[0]`);
-}
-
-global proc sIBL_Maya_RfM_getSun(string $sunLightType, string $shadowsType, float $sunU, float $sunV, float $sunColor[], float $sunMultiplier, float $feedbackRadius)
-{
-	sIBL_Maya_RfM_getLight($sunLightType, $shadowsType, "sIBL_Sun", ($feedbackRadius / 15), $sunColor, $sunMultiplier, $sunU, $sunV);
-}
-
-global proc sIBL_Maya_RfM_getDynamicLights(string $dynamicLightsType, string $shadowsType, string $compactedDynamicLights, float $feedbackRadius)
-{
-	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-	string $feedback[] = `ls -fl "sIBL_Feedback"`;
-
-	string $dynamicLights[];
-	tokenize($compactedDynamicLights, "|", $dynamicLights);
-
-	for($i=0; $i<size($dynamicLights); $i+=8)
-	{
-		float $color[] = {float($dynamicLights[$i + 2]), float($dynamicLights[$i + 3]), float($dynamicLights[$i + 4])};
-		sIBL_Maya_RfM_getLight($dynamicLightsType, $shadowsType, "sIBL_DKL_" + $dynamicLights[$i + 1], ($feedbackRadius / 15), $color, float($dynamicLights[$i + 5]), float($dynamicLights[$i + 6]), float($dynamicLights[$i + 7]));
-	}
-}
-
-global proc sIBL_Maya_RfM_addShadowsAttributes(string $light)
-{
-	string $attrnm=`rmanGetAttrName rman__dmap_DefaultPassClass`;
-	rmanAddAttr $light $attrnm "DeepShadow";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapBias`;
-	rmanAddAttr $light $attrnm "0.1";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapSamples`;
-	rmanAddAttr $light $attrnm "16";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapFilterSize`;
-	rmanAddAttr $light $attrnm "1";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapFilter`;
-	rmanAddAttr $light $attrnm "gaussian";
-	string $attrnm=`rmanGetAttrName rman__TransmissionSubset`;
-	rmanAddAttr $light $attrnm "shadow";
-}
-
-global proc sIBL_Maya_RfM_addSoftShadowsAttributes(string $light)
-{
-	string $attrnm=`rmanGetAttrName rman__dmap_DefaultPassClass`;
-	rmanAddAttr $light $attrnm "MinMaxShadow";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapBias`;
-	rmanAddAttr $light $attrnm "0.1";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapGapBias`;
-	rmanAddAttr $light $attrnm "0.1";
-	string $attrnm=`rmanGetAttrName rman__ShadowMapSamples`;
-	rmanAddAttr $light $attrnm "32";
-	string $attrnm=`rmanGetAttrName rman__TransmissionSubset`;
-	rmanAddAttr $light $attrnm "shadow";
-}
-
-global proc sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders(string $target)
-{
-		connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_EnvironmentLigtht.visibility") ;
-		string $lowerCaseTarget = `tolower $target`;
-
-		string $subComponents[] = {"R", "G", "B"};
-		for($subComponent in $subComponents) 
-		{
-			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Bias") ("sIBL_" + $target + "_EnvironmentLigthtShape.rman__EnvColorBias.rman__EnvColorBias" + $subComponent);
-			connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_EnvironmentLigthtShape.rman__EnvColorGain.rman__EnvColorGain" + $subComponent);
-		}
-}
-
-global proc sIBL_Maya_RfM_connectFeedbackToSIBLShaders(string $feedback, int $connectToBackground, int $connectToLighting, int $connectToReflection)
-{
-	if($connectToBackground)
-	{
-		expression -name "sIBL_Background_Expression" -s ("sIBL_Background_Environment_Sphere.rotateX = " + $feedback + ".rotateX;\nsIBL_Background_Environment_Sphere.scaleX = " + $feedback + ".scaleX-" + $feedback + ".scaleX * 5 / 100;\nsIBL_Background_Environment_Sphere.scaleY = " + $feedback + ".scaleY-" + $feedback + ".scaleY * 5 / 100;\nsIBL_Background_Environment_Sphere.scaleZ = " + $feedback + ".scaleZ-" + $feedback + ".scaleZ * 5 / 100;");
-
-		connectAttr -f "sIBL_Controls.toggleBackground" "sIBL_Background_condition.firstTerm";
-
-		string $gammaSubComponents[] = {"X", "Y", "Z"};
-		for($gammaSubComponent in $gammaSubComponents) 
-		{
-			connectAttr -f ("sIBL_Controls.backgroundGamma") ("sIBL_Background_gammaCorrect.gamma" + $gammaSubComponent);
-		}
-
-		string $gainSubComponents[] = {"R", "G", "B"};
-		for($gainSubComponent in $gainSubComponents) 
-		{
-			connectAttr -f ("sIBL_Controls.backgroundGain") ("sIBL_Background_file.colorGain" + $gainSubComponent);
-		}
-	}
-
-	if($connectToLighting)
-	{
-		expression -name "sIBL_Lighting_Expression" -s ("sIBL_Lighting_EnvironmentLigtht.rotateY = 90 +" + $feedback + ".rotateX;\nsIBL_Lighting_EnvironmentLigtht.scaleX = " + $feedback + ".scaleX * 2-" + $feedback + ".scaleX * 7.5 / 100;\nsIBL_Lighting_EnvironmentLigtht.scaleY = -(" + $feedback + ".scaleY * 2-" + $feedback + ".scaleY * 7.5 / 100);\nsIBL_Lighting_EnvironmentLigtht.scaleZ = " + $feedback + ".scaleZ * 2-" + $feedback + ".scaleZ * 7.5 / 100;");
-		sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders("Lighting");
-	}
-
-	if($connectToReflection)
-	{
-		expression -name "sIBL_Reflection_Expression" -s ("sIBL_Reflection_EnvironmentLigtht.rotateY = 90 +" + $feedback + ".rotateX;\nsIBL_Reflection_EnvironmentLigtht.scaleX = " + $feedback + ".scaleX * 2-" + $feedback + ".scaleX * 10 / 100;\nsIBL_Reflection_EnvironmentLigtht.scaleY = -(" + $feedback + ".scaleY * 2-" + $feedback + ".scaleY * 10 / 100);\nsIBL_Reflection_EnvironmentLigtht.scaleZ = " + $feedback + ".scaleZ * 2-" + $feedback + ".scaleZ * 10 / 100;");
-		sIBL_Maya_RfM_bridgeFeedbackControlsAndShaders("Reflection");
-	}
-}
-
-global proc sIBL_Maya_RfM_activateRaytracing()
-{
-	setAttr "defaultRenderGlobals.enableDefaultLight" 0;
-	setAttr "renderManGlobals.rman__torattr___rayTracing" 1;
-}
-
-global proc sIBL_Maya_RfM_activateLinearWorkflow(int $createBackground)
-{
-	setAttr "rmanFinalOutputGlobals0.rman__riopt__Display_exposure1" 2.2;
-	
-	if($createBackground)
-		setAttr  "sIBL_Controls.backgroundGamma" 0.454545;
-}
-
-global proc sIBL_Maya_RfM_getGround(float $feedbackRadius)
-{
-	string $sIBLGroup = sIBL_Maya_RfM_getSIBLGroup();
-	string $ground[] = `polyPlane -sx 15 -sy 15`;
-	delete -ch;
-
-	setAttr ($ground[0] + ".overrideEnabled") 1;
-	setAttr ($ground[0] + ".overrideShading") 0;
-
-	string $scaleAttributes[] = {"scaleX", "scaleY", "scaleZ"};
-	for($scaleAttribute in $scaleAttributes)
-		setAttr ($ground[0] + "." + $scaleAttribute) ($feedbackRadius * sqrt(2));
-
-	parent $ground[0] $sIBLGroup;
-
-	sIBL_Maya_RfM_addToDisplayLayer("sIBL_Ground_Layer", $ground[0]);
-
-	rename $ground[0] "sIBL_Ground";
-}
-
-global proc sIBL_Maya_RfM_activateRfM()
-{
-	if(`pluginInfo -q -loaded "RenderMan_for_Maya"` == 0)
-	{
-		loadPlugin("RenderMan_for_Maya");
-	}
-	setAttr defaultRenderGlobals.currentRenderer -type "string" "renderMan";
-	setAttr "renderManGlobals.rman__riattr___ShadingRate" 1;
-}
-
-global proc sIBL_Maya_RfM_lockAttributes(string $node, string $attributes[])
-{
-	for($attribute in $attributes)
-		setAttr -lock true -keyable false ($node + "." + $attribute);
-}
-
-global proc float sIBL_Maya_RfM_getSceneExtent()
-{
-	string $geometries[] = `ls -l -geometry`;
-	string $transforms[] = {};
-
-	for($geometry in $geometries)
-		$transforms[size($transforms)] = sIBL_Maya_RfM_getTransform($geometry);
-	    
-	float $sceneExtent = 0;
-	for($transform in $transforms)
-	{
-		float $boundingBox[] = `xform -q -bb $transform`;
+	def activateRaytracing(self):
+		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
+						"renderManGlobals.rman__torattr___rayTracing":True})
+
+	def getGround(self):
+		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
+		setAttributes({"%s.overrideEnabled" % ground:True,
+						"%s.overrideShading" % ground:False,
+						"%s.scaleX" % ground:self.feedbackRadius * math.sqrt(2),
+						"%s.scaleY" % ground:self.feedbackRadius * math.sqrt(2),
+						"%s.scaleZ" % ground:self.feedbackRadius * math.sqrt(2)})
+		cmds.parent(ground, self.controlsGroup)
+
+		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
+
+	def setLinearWorkflow(self):
+		cmds.setAttr("rmanFinalOutputGlobals0.rman__riopt__Display_exposure1", Constants.defaultGamma)
+		if Options.createBackground:
+			cmds.setAttr("%s_controls.backgroundGamma" % Constants.prefix, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, type="double3")
 			
-		for($i=0; $i < size($boundingBox); $i++)
-			if(abs($boundingBox[$i]) > $sceneExtent)
-				$sceneExtent = abs($boundingBox[$i]);
-	}
-	return $sceneExtent;
-}
+def setAttributes(attributes):
+	for attribute, value in attributes.items():
+		cmds.setAttr(attribute, value)
 
-global proc float sIBL_Maya_RfM_truncFloatNumber(float $number, float $truncValue)
-{
-	if($truncValue != 0)
-		return `trunc ($number / $truncValue)` * $truncValue; 
-	else
-		return $number;
-}
+def lockHideAttributes(node, attributes, lock=True, keyable=False):
+	for attribute in attributes:
+		cmds.setAttr("%s.%s" % (node, attribute), lock=lock, keyable=keyable)
 
-global proc string[] sIBL_Maya_RfM_getShapes(string $xform)
-{
-	string $shapes[];
-	$shapes[0] = $xform;
-	if("transform" == `nodeType $xform`)
-		$shapes = `listRelatives -fullPath -shapes $xform`;
-	return $shapes;
-}
+def addColorAttributes(node, name):
+	subComponents = ("red", "green", "blue")
+	cmds.addAttr(node, ln=name, at="float3", uac=True)
+	for subComponent in subComponents:
+		cmds.addAttr(node, ln="%s%s" % (subComponent, name.capitalize()), at="float", p=name)
+	cmds.setAttr("%s.%s" % (node, name), 1, 1, 1, type="float3")
+	cmds.setAttr("%s.%s" % (node, name), e=True, keyable=True)
+	for subComponent in subComponents:
+		cmds.setAttr("%s.%s%s" % (node, subComponent, name.capitalize()), e=True, keyable=True)
 
-global proc string sIBL_Maya_RfM_getTransform(string $shape)
-{
-	string $transform = "";
-	if("transform" != `nodeType $shape`)
-	{
-		string $parents[] = `listRelatives -fullPath -parent $shape`;
-		$transform = $parents[0];
-	}
-	return $transform;
-}
+def getSceneExtent():
+	geometries = cmds.ls(l=True, geometry=True)
+	transforms = []
+	for geometry in geometries:
+		transforms.append(getTransform(geometry))
 
-global proc int sIBL_Maya_RfM_objectExists(string $object, string $errorMessage)
-{
-	string $objects[] = `ls -fl $object`;
-	if($objects[0] != "")
-	{
-		return 1;
-	}
-	else
-	{
-		error($errorMessage);
-		return 0;
-	}
-}
+	sceneExtent = 0
+	for transform in transforms:
+		boundingBox = cmds.xform(transform, q=True, bb=True)
+		for value in boundingBox:
+			if math.fabs(value) > sceneExtent:
+				sceneExtent = math.fabs(value)
 
-global proc string sIBL_Maya_RfM_getObject(string $object)
-{
-	string $list[] = `ls -fl $object`;
-	return $list[0];
-}
+	return sceneExtent
 
-global proc string sIBL_Maya_RfM_addToDisplayLayer(string $layerName, string $object)
-{
-	string $layer = sIBL_Maya_RfM_getObject($layerName);
-	if($layer == "")
-		$layer = `createDisplayLayer -name $layerName`;
-	editDisplayLayerMembers -noRecurse $layer $object;
-	return $layer;
-}
+def truncFloat(number, truncValue):
+	if truncValue != 0:
+		return math.trunc(number / truncValue) * truncValue
+	else:
+		return number
 
-global proc string[] sIBL_Maya_RfM_filterNonExistingNodes(string $nodes[])
-{
-	string $filteredNodes[];
-	for($node in $nodes)
-	if(`objExists($node)`)
-		$filteredNodes[size($filteredNodes)] =  $node;
-	return $filteredNodes;
-}
+def getShapes(node, fullPath=False, noIntermediate=True):
+	nodes = cmds.listRelatives(node, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
+	return nodes != None and nodes or []
+
+def getTransform(node, fullPath=True):
+	transform = node
+	if cmds.nodeType(node) != "transform":
+		parents = cmds.listRelatives(node, fullPath=fullPath, parent=True)
+		transform = parents[0]
+	return transform
+	
+def deleteType(type, pattern):
+	nodes=cmds.ls(l=True, type=type)
+	for node in nodes:
+		if re.search(pattern, node):
+			cmds.delete(node)
+
+def getObject(object):
+	try:
+		return cmds.ls(object, fl=True)[0]
+	except:
+		pass
+
+def addToDisplayLayer(object, displayLayer):
+	layer = getObject(displayLayer)
+	layer = not layer and cmds.createDisplayLayer(name=displayLayer) or layer
+	cmds.editDisplayLayerMembers(layer, object, noRecurse=True)
+		
+def filterNonExistingNodes(nodes):
+	return [node for node in nodes if cmds.objExists(node)]
