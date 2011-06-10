@@ -3,7 +3,7 @@ Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Lightsmith Template Manual.html | String | Help File
 Release = @Release | 2.0.0 | String | Template Release
-Date = @Date | 12 March 2011 | String | Date
+Date = @Date | 10 June 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -183,13 +183,13 @@ class Setup(object):
 		cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.rectTex" % light, f=True)		
 		
 		setAttributes({"%s.intensityMult" % light:(scaleX / 2) * (scaleY / 2),
-				"%s.subdivs" % light:24,
-				"%s.invisible" % light:True,
-				"%s.useRectTex" % light:True,
-				"%s.affectSpecular" % light:False,
-				"%s.affectReflections" % light:False,
-				"%s.sx" % light:scaleX / 2,
-				"%s.sy" % light:scaleY / 2})
+						"%s.subdivs" % light:24,
+						"%s.invisible" % light:True,
+						"%s.useRectTex" % light:True,
+						"%s.affectSpecular" % light:False,
+						"%s.affectReflections" % light:False,
+						"%s.sx" % light:scaleX / 2,
+						"%s.sy" % light:scaleY / 2})
 		
 		lockHideAttributes(light, ("tx", "ty", "tz", "rx", "ry", "rz", "sz"))
 		return cmds.rename(light, name)
@@ -327,11 +327,11 @@ class Setup(object):
 			cmds.rename(vrayObjProperties, "%s_%s" % (name, cmds.nodeType(vrayObjProperties)))
 		
 		setAttributes({"%s.sx" % lightRoot:scale,
-				"%s.sy" % lightRoot:scale,
-				"%s.sz" % lightRoot:scale,
-				"%s.tx" % lightRoot:scale*5,
-				"%s.ty" % lightRoot:scale*5,
-				"%s.tz" % lightRoot:scale*5})
+						"%s.sy" % lightRoot:scale,
+						"%s.sz" % lightRoot:scale,
+						"%s.tx" % lightRoot:scale*5,
+						"%s.ty" % lightRoot:scale*5,
+						"%s.tz" % lightRoot:scale*5})
 		
 		for node in (aimConstraint, surfaceShader, shadingEngine):
 			cmds.rename(node, "%s_%s" % (name, cmds.nodeType(node)))
@@ -412,10 +412,10 @@ class Setup(object):
 							cmds.setAttr("%s_modulation_multiplyDivide.input2%s" % (name, component[1]), (1 / intensity) * (1 / averageColor))
 						cmds.setAttr("%s.emitSpecular" % compliantLight, False)
 						setAttributes({"%s.subdivs" % light:24,
-								"%s.invisible" % light:True,
-								"%s.useRectTex" % light:True,
-								"%s.affectSpecular" % light:False,
-								"%s.affectReflections" % light:False})
+										"%s.invisible" % light:True,
+										"%s.useRectTex" % light:True,
+										"%s.affectSpecular" % light:False,
+										"%s.affectReflections" % light:False})
 		else:
 			cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | No '%s' Group Found, Skipping Lightsmith Lights Creation!" % (Constants.applicationName, Constants.prefix), button=["Ok"])
 

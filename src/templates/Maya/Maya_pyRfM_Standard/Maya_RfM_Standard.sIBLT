@@ -3,7 +3,7 @@ Name = @Name | Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard Template Manual.html | String | Help File
 Release = @Release | 2.0.0 | String | Template Release
-Date = @Date | 11 March 2011 | String | Date
+Date = @Date | 10 June 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -347,13 +347,13 @@ class Setup(object):
 		
 		cmds.setAttr("%s.rman__EnvMap" % light, file, type="string")
 		setAttributes({"%s.rman__LightPrimaryVisibility" % light:False, 
-					"%s.rman__EnvSamples" % light:128,
-					"%s.rman__EnvGIMaxVariation" % light:1,
-					"%s.rman__EnvColorCorrect" % light:True,
-					"%s.sx" % lightTransform:radius,
-					"%s.sy" % lightTransform:-radius,
-					"%s.sz" % lightTransform:radius,
-					"%s.rx" % lightTransform:-90})
+						"%s.rman__EnvSamples" % light:128,
+						"%s.rman__EnvGIMaxVariation" % light:1,
+						"%s.rman__EnvColorCorrect" % light:True,
+						"%s.sx" % lightTransform:radius,
+						"%s.sy" % lightTransform:-radius,
+						"%s.sz" % lightTransform:radius,
+						"%s.rx" % lightTransform:-90})
 		
 		lockHideAttributes(lightTransform, ("tx", "ty", "tz", "rx", "rz"))
 		lockHideAttributes(lightTransform, ("sx", "sy", "sz", "ry"), lock=False)
@@ -364,10 +364,10 @@ class Setup(object):
 		if Options.createBackground:
 			sphere = self.getEnvironmentSphereBranch(Datas.backgroundFile, "%s_background" % Constants.prefix, self.feedbackRadius - (self.feedbackRadius * 5 / 100), True)
 			setAttributes({"%s.castsShadows" % sphere:False, 
-					"%s.receiveShadows" % sphere:False,
-					"%s.visibleInReflections" % sphere:False,
-					"%s.visibleInRefractions" % sphere:False,
-					"%s.opposite" % sphere:False})
+							"%s.receiveShadows" % sphere:False,
+							"%s.visibleInReflections" % sphere:False,
+							"%s.visibleInRefractions" % sphere:False,
+							"%s.opposite" % sphere:False})
 
 		if Options.createLighting:
 			light = self.getEnvironmentLightBranch(Datas.lightingFile, "%s_lighting" % Constants.prefix, (self.feedbackRadius * 2) - ((self.feedbackRadius * 2) * 7.5 / 100))
