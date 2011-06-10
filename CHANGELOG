@@ -6,6 +6,10 @@ h3. 1.0.6 - Stable
 
 * Port "Maya_MR_Standard" template code to Python.
 * Port "Maya_VRay_Standard" template code to Python.
+* Port "Maya_VRay_Dome_Light" template code to Python.
+* Port "Maya_RfM_Standard" template code to Python.
+* Port "Maya_MR_Lightsmith" template code to Python.
+* Port "Maya_VRay_Lightsmith" template code to Python.
 
 h3. 1.0.5 - Stable
 

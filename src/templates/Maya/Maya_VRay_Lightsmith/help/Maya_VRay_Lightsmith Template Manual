@@ -25,7 +25,7 @@ h3. Common Attributes
 
 h3. Additional Attributes
 
-* *Activate Indirect Illumination*: Indirect Illumination is activated in the current Scene.
+* *Activate Indirect Lighting*: Indirect Lighting is activated in the current Scene.
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 
 h3. Scene Components

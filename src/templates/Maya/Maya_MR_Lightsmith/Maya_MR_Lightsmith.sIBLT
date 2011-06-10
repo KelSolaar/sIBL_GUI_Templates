@@ -2,7 +2,7 @@
 Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith Template Manual.html | String | Help File
-Release = @Release | 2.0.0 | String | Template Release
+Release = @Release | 1.0.0 | String | Template Release
 Date = @Date | 10 June 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email

@@ -33,7 +33,7 @@ h3. Additional Attributes
 * *Hide Lights*: Hides all current Scene lights.
 * *Create Ground*: A Plane is added to the Scene.
 * *Ground Shadow Catcher*: A VRayObjectProperties Node is assigned to the Ground.
-* *Activate Indirect Illumination*: Indirect Illumination is activated in the current Scene.
+* *Activate Indirect Lighting*: Indirect Lighting is activated in the current Scene.
 * *Activate Linear Workflow*: Sets the Output Gamma to 2.2.
 
 h3. Scene Components
