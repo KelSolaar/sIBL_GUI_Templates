@@ -17,17 +17,17 @@ Comment = @Comment | This is Softimage 2011 Arnold Lightsmith Template. | String
 Path = @iblPath | | String | sIBL File Path
 
 [Ibl Set Attributes]
-Lightsmith|LightsmithName = @LightsmithName
-Lightsmith|LightsmithFile = @LightsmithFile
-Lightsmith|LightsmithMaskFile = @LightsmithMaskFile
-Lightsmith|LightsmithWidth = @LightsmithWidth
-Lightsmith|LightsmithHeight = @LightsmithHeight
-Lightsmith|LightsmithColor = @LightsmithColor
-Lightsmith|LightsmithObjectFile = @LightsmithObjectFile
-Lightsmith|LightsmithObjectFrameFile = @LightsmithObjectFrameFile
-Lightsmith|LightsmithObjectFrameColor = @LightsmithObjectFrameColor
-Lightsmith|LightsmithScale = @LightsmithScale
-Lightsmith|LightsmithShape = @LightsmithShape
+Lightsmith1|LSname = @LightsmithName
+Lightsmith1|LSfile = @LightsmithFile
+Lightsmith1|LSmaskfile = @LightsmithMaskFile
+Lightsmith1|LSwidth = @LightsmithWidth
+Lightsmith1|LSheight = @LightsmithHeight
+Lightsmith1|LScolor = @LightsmithColor
+Lightsmith1|LSobjectfile = @LightsmithObjectFile
+Lightsmith1|LSframefile = @LightsmithObjectFrameFile
+Lightsmith1|LSObjectFrameColor = @LightsmithObjectFrameColor
+Lightsmith1|LSscale = @LightsmithScale
+Lightsmith1|LSshape = @LightsmithShape
 
 [Common Attributes]
 lightScale = @lightScale | 1 | Float | Light Scale

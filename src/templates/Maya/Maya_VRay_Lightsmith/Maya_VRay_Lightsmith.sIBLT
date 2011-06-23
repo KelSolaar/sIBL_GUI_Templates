@@ -3,7 +3,7 @@ Name = @Name | Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Lightsmith Template Manual.html | String | Help File
 Release = @Release | 1.0.0 | String | Template Release
-Date = @Date | 10 June 2011 | String | Date
+Date = @Date | 23 June 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -17,17 +17,17 @@ Comment = @Comment | This is Maya 2008 To 2011 VRay Lightsmith Template. | Strin
 Path = @iblPath | | String | sIBL File Path
 
 [Ibl Set Attributes]
-Lightsmith|LightsmithName = @LightsmithName
-Lightsmith|LightsmithFile = @LightsmithFile
-Lightsmith|LightsmithMaskFile = @LightsmithMaskFile
-Lightsmith|LightsmithWidth = @LightsmithWidth
-Lightsmith|LightsmithHeight = @LightsmithHeight
-Lightsmith|LightsmithColor = @LightsmithColor
-Lightsmith|LightsmithObjectFile = @LightsmithObjectFile
-Lightsmith|LightsmithObjectFrameFile = @LightsmithObjectFrameFile
-Lightsmith|LightsmithObjectFrameColor = @LightsmithObjectFrameColor
-Lightsmith|LightsmithScale = @LightsmithScale
-Lightsmith|LightsmithShape = @LightsmithShape
+Lightsmith1|LSname = @LightsmithName
+Lightsmith1|LSfile = @LightsmithFile
+Lightsmith1|LSmaskfile = @LightsmithMaskFile
+Lightsmith1|LSwidth = @LightsmithWidth
+Lightsmith1|LSheight = @LightsmithHeight
+Lightsmith1|LScolor = @LightsmithColor
+Lightsmith1|LSobjectfile = @LightsmithObjectFile
+Lightsmith1|LSframefile = @LightsmithObjectFrameFile
+Lightsmith1|LSObjectFrameColor = @LightsmithObjectFrameColor
+Lightsmith1|LSscale = @LightsmithScale
+Lightsmith1|LSshape = @LightsmithShape
 
 [Common Attributes]
 lightScale = @lightScale | 1 | Float | Light Scale
