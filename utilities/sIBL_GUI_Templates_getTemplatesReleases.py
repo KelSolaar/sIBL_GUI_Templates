@@ -64,7 +64,7 @@ import foundations.parser
 from foundations.io import File
 from foundations.walker import Walker
 from foundations.parser import Parser
-from globals.constants import Constants
+from foundations.globals.constants import Constants
 
 #***********************************************************************************************
 #***	Global Variables
