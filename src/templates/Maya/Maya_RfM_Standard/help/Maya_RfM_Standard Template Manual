@@ -4,7 +4,7 @@ h1=. Manual - Help File
 
 h2. Table Of Content
 
-*{color:rgb(50, 85, 125); font-size: 11pt;} "Introduction":#Introduction
+*{color:rgb(160, 96, 64); font-size: 11pt;} "Introduction":#Introduction
 * "Options":#Options
 * "Change Log":#ChangeLog
 * "About":#About
