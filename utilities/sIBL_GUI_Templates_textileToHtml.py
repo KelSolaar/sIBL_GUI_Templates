@@ -26,18 +26,16 @@
 #
 
 """
-************************************************************************************************
-***	sIBL_GUI__Templates_textileToHtml.py
-***
-***	Platform:
-***		Windows
-***
-***	Description:
-***		Converts A Textile File To HTML.
-***
-***	Others:
-***
-************************************************************************************************
+**sIBL_GUI__Templates_textileToHtml.py
+
+**Platform:**
+	Windows.
+
+**Description:**
+	Converts A Textile File To HTML.
+
+**Others:**
+
 """
 
 #***********************************************************************************************

@@ -26,18 +26,16 @@
 #
 
 """
-************************************************************************************************
-***	sIBL_GUI_Templates_getTemplatesReleases.py
-***
-***	Platform:
-***		Windows
-***
-***	Description:
-***		Get Templates Releases.
-***
-***	Others:
-***
-************************************************************************************************
+**sIBL_GUI_Templates_getTemplatesReleases.py
+
+**Platform:**
+	Windows.
+
+**Description:**
+	Get Templates Releases.
+
+**Others:**
+
 """
 
 #***********************************************************************************************
