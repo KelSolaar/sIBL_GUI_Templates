@@ -29,7 +29,7 @@
 **sIBL_GUI_Templates_getTemplatesReleases.py
 
 **Platform:**
-	Windows.
+	Windows, Linux, Mac Os X.
 
 **Description:**
 	Get Templates Releases.
