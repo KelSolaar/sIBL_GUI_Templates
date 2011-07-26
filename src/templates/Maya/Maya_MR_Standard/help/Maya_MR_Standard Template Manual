@@ -11,7 +11,7 @@ h2. Table Of Content
 
 h2(#Introduction). Introduction
 
-Maya MR Standard is a sIBL_GUI Template for Maya and Mental Ray starting from 2K versions. It provides a bridge between Maya, Mental Ray and Smart IBL. 
+Maya MR Standard is a sIBL_GUI Template for Maya and Mental Ray starting from 2K versions. It provides a bridge between Maya, Mental Ray and Smart IBL.
 There is an Helper Script with everything you need to use sIBL_GUI smoothly with Maya here: "sIBL_GUI For Maya - Helper Script":http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1223936394/2#2
 
 h2(#Options). Options
@@ -48,7 +48,7 @@ table(class#id){border-collapse: collapse; border-width: 1px; border-style: soli
 
 There are several Controls Attributes on the sIBL_Controls Annotation available in the Channel Box.
 
-* Render Togglers: 
+* Render Togglers:
 ** Activate / Deactivate the different Smart IBL Components.
 ** ==* ==CC: Gamma / Gain Controls of the different Smart IBL Components.
 
@@ -59,6 +59,6 @@ h2(#ChangeLog). Change Log
 h2(#About). About
 
 sIBL_GUI by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com 
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/ 
+Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
+This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
 "http://www.thomasmansencal.com/":http://www.thomasmansencal.com/

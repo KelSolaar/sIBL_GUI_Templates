@@ -32,7 +32,7 @@ h3. Additional Attributes
 * *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Distant", "Quad", "Spot", "Point".
 * *Hide Lights*: Hides all current Scene lights.
 * *Create Ground*: A Grid is added to the Scene.
-* *Use Lighting Image For Glossy*: Lighting Image branch is connected to the sIBL_Sky Glossy slot. 
+* *Use Lighting Image For Glossy*: Lighting Image branch is connected to the sIBL_Sky Glossy slot.
 * *Activate Linear Workflow*: Activates Linear Workflow.
 * *Use Arnold Gamma Correction*: Uses Arnold Gamma Correction instead of Softimage Native Color Management ( Preferences > Display > Color Management ).
 
@@ -45,7 +45,7 @@ table(class#id){border-collapse: collapse; border-width: 1px; border-style: soli
 
 There are several Controls Attributes on the Smart_IBL_Controls Property available in the sIBL Group.
 
-* Render Togglers: 
+* Render Togglers:
 ** Activate / Deactivate the different Smart IBL Components.
 ** ==* ==Color Correction: Gamma / Gain Controls of the different Smart IBL Components.
 
@@ -56,6 +56,6 @@ h2(#ChangeLog). Change Log
 h2(#About). About
 
 sIBL_GUI by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com 
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/ 
+Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
+This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
 "http://www.thomasmansencal.com/":http://www.thomasmansencal.com/

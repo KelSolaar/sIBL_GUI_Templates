@@ -80,14 +80,14 @@ class Constants(object):
 	maximumViewportTextureSize = 8192
 	defaultGamma = 2.2
 	sessionNodeTypes =  ("blendColors",
-						"condition", 
-						"displayLayer", 
-						"expression", 
-						"file", 
+						"condition",
+						"displayLayer",
+						"expression",
+						"file",
 						"gammaCorrect",
 						"lambert",
-						"multiplyDivide", 
-						"place2dTexture", 
+						"multiplyDivide",
+						"place2dTexture",
 						"shadingEngine",
 						"VRayObjectProperties",
 						"VRayPlaceEnvTex")
@@ -193,7 +193,7 @@ class Setup(object):
 
 		self.setRenderer()
 		self.deleteSession()
-		self.getExtendedFeedbackRadius()		
+		self.getExtendedFeedbackRadius()
 		self.getControlsGroup()
 		self.getControlsLocator()
 		Options.hideLights and self.hideLights()
@@ -219,12 +219,12 @@ class Setup(object):
 		if mel.eval("exists %s_postProcessCallback;" % Constants.packageRendererPrefix):
 			print("%s | Executing Template Specific Postprocess Callback!" % Constants.applicationName)
 			mel.eval("%s_postProcessCallback();" % Constants.packageRendererPrefix)
-	
+
 	def storeSessionAttributes(self):
 		for attribute in self.storedSessionAttributes.keys():
 			if len(cmds.ls(attribute)):
 				self.storedSessionAttributes[attribute]= cmds.getAttr(attribute)
-	
+
 	def restoreSessionAttributes(self):
 		for attribute, value in self.storedSessionAttributes.items():
 			if len(cmds.ls(attribute)) and value:
@@ -238,14 +238,14 @@ class Setup(object):
 	def deleteSession(self):
 		if cmds.objExists(Constants.prefix):
 			cmds.delete(Constants.prefix)
-		
+
 		for type in Constants.sessionNodeTypes:
 			deleteType(type, "\\b%s*" % Constants.prefix)
 
 	def getExtendedFeedbackRadius(self):
 		sceneExtent = getSceneExtent() * math.sqrt(2)
 		sceneExtent = sceneExtent + (sceneExtent * 10 / 100)
-		
+
 		if sceneExtent > self.feedbackRadius:
 			self.feedbackRadius = truncFloat(sceneExtent, 10)
 
@@ -271,13 +271,13 @@ class Setup(object):
 			cmds.addAttr(annotationTransform, ln="toggle%s" % component, nn=component, at="bool")
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
 			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), True)
-		
+
 		for component in components:
 			cmds.addAttr(annotationTransform, ln="cc%s" % component, nn="[ %s CC ]" % component, at="enum", en=Constants.title)
 			cmds.setAttr("%s.cc%s" % (annotationTransform, component), e=True, keyable=True, lock=True)
 			for control in ("Gamma", "Gain"):
 				addColorAttributes(annotationTransform, "%s%s"% (component.lower(), control))
-	
+
 		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
 
 	def hideLights(self):
@@ -291,22 +291,22 @@ class Setup(object):
 		_file = cmds.shadingNode("file", asTexture=True)
 		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
 		cmds.connectAttr("%s.outUV" % vrayPlaceEnvTex, "%s.uvCoord" % _file, f=True)
-		
-		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)		
+
+		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)
 		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
 
 		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
-		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)		
+		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)
 
 		if useOverride:
 			condition = cmds.shadingNode("condition", asUtility=True)
 			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
-			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)		
-			
+			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)
+
 			blendColors = cmds.shadingNode("blendColors", asUtility=True)
 			for color in ("color1", "color2"):
 				cmds.setAttr("%s.%s" % (blendColors, color), 0, 0, 0, type="double3")
-			cmds.setAttr("%s.blender" % blendColors, 0) 			
+			cmds.setAttr("%s.blender" % blendColors, 0)
 			cmds.connectAttr("%s.output" % blendColors, "%s.colorIfFalse" % condition, f=True)
 
 			cmds.connectAttr("%s.outColor" % condition, slot, f=True)
@@ -320,8 +320,8 @@ class Setup(object):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 
 	def getEnvironmentShaders(self):
-		cmds.setAttr("vraySettings.cam_overrideEnvtex", True) 			
-		
+		cmds.setAttr("vraySettings.cam_overrideEnvtex", True)
+
 		if Options.createBackground:
 			self.getEnvironmentShadersBranch("vraySettings.cam_envtexBg", Datas.backgroundFile, "%s_background" % Constants.prefix, True)
 
@@ -340,13 +340,13 @@ class Setup(object):
 							"%s.affectSpecular" % vrayDomeLight: False,
 							"%s.texAdaptive" % vrayDomeLight: False,
 							"%s.subdivs" % vrayDomeLight: 128})
-							
+
 			lockHideAttributes(vrayDomeLight, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"), lock=False)
 
 			self.getEnvironmentShadersBranch("%s.domeTex" % vrayDomeLight, Datas.lightingFile, "%s_lighting" % Constants.prefix, True)
-			
+
 			cmds.parent(vrayDomeLight, self.controlsGroup)
-			
+
 			cmds.rename(vrayDomeLight, "%s_VRayLightDome" % Constants.prefix)
 
 		if Options.createReflection:
@@ -366,36 +366,36 @@ class Setup(object):
 						"%s.scaleZ" % locator:radius})
 		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
 		setAttributes({"%s.doubleSided" % locator:False,
-						"%s.opposite" % locator:False})	
+						"%s.opposite" % locator:False})
 		return locator
 
 	def getFeedback(self):
 		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius, Options.displayFeedback)
 		cmds.parent(self.feedback, self.controlsGroup)
 		addToDisplayLayer(self.feedback, "%s_feedback_layer" % Constants.prefix)
-		
+
 		lambert = cmds.shadingNode("lambert", asShader=True)
 		cmds.setAttr("%s.transparency" % lambert, 0.5, 0.5, 0.5, type="double3")
-		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)		
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
 		cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % shadingEngine, f=True)
-		
+
 		file = cmds.shadingNode("file", asTexture=True)
 		not cmds.ls("%s.resolution" % file) and cmds.addAttr(file, ln="resolution", at="long")
 		cmds.setAttr("%s.resolution" % file, 2048)
-		
+
 		fileTextureName = Datas.backgroundFile
 		if Datas.backgroundWidth > Constants.maximumViewportTextureSize:
 			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: %s Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead." % Datas.backgroundWidth, button=("Ok",), defaultButton="Ok")
 			fileTextureName = Datas.reflectionFile
 		cmds.setAttr("%s.fileTextureName" % file, fileTextureName, type="string")
 		cmds.connectAttr("%s.outColor" % file, "%s.color" % lambert, f=True)
-		
+
 		place2dTexture = cmds.shadingNode("place2dTexture", asUtility=True)
 		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % file, f=True)
 		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % file, f=True)
 		attributes = ("coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV")
 		for attribute in attributes:
-			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)		
+			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)
 		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
 
 		cmds.sets(self.feedback, e=True, forceElement=shadingEngine)
@@ -425,7 +425,7 @@ class Setup(object):
 		addToDisplayLayer(self.lightsTarget, "%s_lighting_layer" % Constants.prefix)
 		cmds.parent(self.lightsTarget, self.controlsGroup)
 		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target" % Constants.prefix)
-		
+
 	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale):
 		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
 
@@ -434,8 +434,8 @@ class Setup(object):
 			setAttributes({"%s.intensity" % light:multiplier,
 							"%s.useRayTraceShadows" % light:True})
 		elif type == "VRaySphere" or type == "VRayRect" or type == "VRayIES":
-			cmds.setAttr("%s.lightColor" % light, color[0], color[1], color[2], type="double3")			
-			
+			cmds.setAttr("%s.lightColor" % light, color[0], color[1], color[2], type="double3")
+
 		if type == "Area":
 			cmds.setAttr("%s.areaLight" % light, True)
 			scale = scale / 2
@@ -446,37 +446,37 @@ class Setup(object):
 		elif type == "Spot":
 			setAttributes({"%s.coneAngle" % light:96,
 							"%s.penumbraAngle" % light:16})
-		elif type == "VRaySun":		
+		elif type == "VRaySun":
 			setAttributes({"%s.intensityMult" % light:0.350 * multiplier,
 							"%s.sizeMultiplier" % light:1 * (scale / 20)})
-		elif type == "VRaySphere":		
+		elif type == "VRaySphere":
 			setAttributes({"%s.intensityMult" % light:10000 * multiplier,
 							"%s.radius" % light:1 * (scale / 10),
-							"%s.subdivs" % light:24})		
-		elif type == "VRayRect":		
+							"%s.subdivs" % light:24})
+		elif type == "VRayRect":
 			setAttributes({"%s.intensityMult" % light:7500 * multiplier,
 							"%s.uSize" % light:1 * (scale / 10),
 							"%s.vSize" % light:1 * (scale / 10),
-							"%s.subdivs" % light:24})		
-		elif type == "VRayRect":		
-			cmds.setAttr("%s.intensityMult" % light, multiplier)		
-	
+							"%s.subdivs" % light:24})
+		elif type == "VRayRect":
+			cmds.setAttr("%s.intensityMult" % light, multiplier)
+
 		setAttributes({"%s.sx" % light:scale,
 						"%s.sy" % light:scale,
 						"%s.sz" % light:scale})
-							
+
 		cmds.parent(light, self.controlsGroup)
-		
+
 		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
 		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
 		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
 		setAttributes({"%s.parameterU" % pointOnSurfaceInfo:0.5 + (0.5 - vCoordinate),
 						"%s.parameterV" % pointOnSurfaceInfo:0.5 + (0.5 - uCoordinate)})
-		
+
 		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 
 		addToDisplayLayer(light, "%s_lighting_layer" % Constants.prefix)
-		
+
 		cmds.rename(light, name)
 		for node in (pointOnSurfaceInfo, aimConstraint):
 			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
@@ -486,7 +486,7 @@ class Setup(object):
 
 	def getDynamicLights(self):
 		for light in Datas.dynamicLights.values():
-			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15)	
+			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15)
 
 	def bridgeFeedbackControlsAndShaders(self, target):
 		lowerCaseTarget = target.lower()
@@ -495,11 +495,11 @@ class Setup(object):
 		cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_multiplyDivide.input2" % (Constants.prefix, lowerCaseTarget), f=True)
 
 	def connectFeedbackToShaders(self):
-		components = ("Gamma", "Gain")	
+		components = ("Gamma", "Gain")
 		if Options.createBackground:
 			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Background")
-		
+
 		if Options.createLighting:
 			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_VRayPlaceEnvTex.horRotation = -(%s.rotateY-90);\nsetAttr %s_VRayLightDome.locatorScale (`getAttr %s.scaleX`*60 / 100);" % (Constants.prefix, Constants.prefix, Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Lighting")
@@ -584,7 +584,7 @@ def getTransform(node, fullPath=True):
 		parents = cmds.listRelatives(node, fullPath=fullPath, parent=True)
 		transform = parents[0]
 	return transform
-	
+
 def deleteType(type, pattern):
 	nodes=cmds.ls(l=True, type=type)
 	for node in nodes:
@@ -601,6 +601,6 @@ def addToDisplayLayer(object, displayLayer):
 	layer = getObject(displayLayer)
 	layer = not layer and cmds.createDisplayLayer(name=displayLayer) or layer
 	cmds.editDisplayLayerMembers(layer, object, noRecurse=True)
-		
+
 def filterNonExistingNodes(nodes):
 	return [node for node in nodes if cmds.objExists(node)]

@@ -37,11 +37,11 @@ table(class#id){border-collapse: collapse; border-width: 1px; border-style: soli
 
 There are several Controls Attributes on the Lightsmith_Controls Annotation available in the Lightsmith Light Hook Group.
 
-* General Controls: 
+* General Controls:
 ** *Color*: Defines the Lightsmith Light color.
 ** *Intensity*: Defines the Lightsmith Light intensity.
 
-* Others Controls: 
+* Others Controls:
 ** *Override*: Override the Lightsmith Light HDR texture color without affecting the Lightsmith Light color.
 
 h2(#ChangeLog). Change Log
@@ -51,6 +51,6 @@ h2(#ChangeLog). Change Log
 h2(#About). About
 
 sIBL_GUI by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com 
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/ 
+Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
+This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
 "http://www.thomasmansencal.com/":http://www.thomasmansencal.com/

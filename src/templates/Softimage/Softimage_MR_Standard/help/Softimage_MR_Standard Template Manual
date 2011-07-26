@@ -11,7 +11,7 @@ h2. Table Of Content
 
 h2(#Introduction). Introduction
 
-Softimage MR Standard is a sIBL_GUI Template for Softimage and Mental Ray starting from 2011 versions. It provides a bridge between Softimage, Mental Ray and Smart IBL. 
+Softimage MR Standard is a sIBL_GUI Template for Softimage and Mental Ray starting from 2011 versions. It provides a bridge between Softimage, Mental Ray and Smart IBL.
 There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: "sIBL_GUI For XSI":http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511
 
 h2(#Options). Options
@@ -48,7 +48,7 @@ table(class#id){border-collapse: collapse; border-width: 1px; border-style: soli
 
 There are several Controls Attributes on the Smart_IBL_Controls Property available in the sIBL Group.
 
-* Render Togglers: 
+* Render Togglers:
 ** Activate / Deactivate the different Smart IBL Components.
 ** ==* ==Color Correction: Gamma / Gain Controls of the different Smart IBL Components.
 
@@ -59,6 +59,6 @@ h2(#ChangeLog). Change Log
 h2(#About). About
 
 sIBL_GUI by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com 
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/ 
+Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
+This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
 "http://www.thomasmansencal.com/":http://www.thomasmansencal.com/

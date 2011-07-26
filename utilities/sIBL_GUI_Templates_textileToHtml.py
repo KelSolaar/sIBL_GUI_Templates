@@ -73,7 +73,7 @@ core.setVerbosityLevel(3)
 def textileToHtml(fileIn, fileOut, title):
 	"""
 	This Definition Outputs A Textile File To HTML.
-		
+
 	@param fileIn: File To Convert. ( String )
 	@param fileOut: Output File. ( String )
 	@param title: HTML File Title. ( String )

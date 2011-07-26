@@ -123,7 +123,7 @@ if($proceedSetup)
 					$displayFeedback,
 					$feedbackRadius,
 					$sunLightType,
-					$dynamicLightsType,				
+					$dynamicLightsType,
 					$hideLights,
 					$createGround,
 					$useLightingForGlossy,
@@ -179,7 +179,7 @@ global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 	string $sessionStoredAttributes[] = {};
 	if($preserveSessionSettings)
 		$sessionStoredAttributes = sIBL_Maya_Arnold_storeSessionAttributes($sessionPreservedAttributes);
-	
+
 	sIBL_Maya_Arnold_activateArnold();
 
 	sIBL_Maya_Arnold_environmentDeletion();
@@ -187,12 +187,12 @@ global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 	$feedbackRadius = sIBL_Maya_Arnold_getExtendedFeedbackRadius($feedbackRadius);
 	if($preserveSessionSettings && $sessionStoredAttributes[2] == "sIBL_Feedback.scaleX" && $sessionStoredAttributes[4] == "sIBL_Feedback.scaleY" && $sessionStoredAttributes[6] == "sIBL_Feedback.scaleZ")
 		$feedbackRadius = (float($sessionStoredAttributes[3]) + float($sessionStoredAttributes[5]) + float($sessionStoredAttributes[7])) / 3;
-	
+
 	sIBL_Maya_Arnold_getMainLocator();
 
 	if($hideLights)
 		sIBL_Maya_Arnold_hideLights();
-	
+
 	sIBL_Maya_Arnold_getEnvironmentShaders($createBackground, $createLighting, $createReflection, $backgroundFilePath, $lightingFilePath, $reflectionFilePath, $displayFeedback, $useLightingForGlossy);
 
 	if($backgroundWidth > 8192)
@@ -232,10 +232,10 @@ global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 
 	if($activateLinearWorkflow)
 		sIBL_Maya_Arnold_activateLinearWorkflow($createBackground);
-			
+
 	if($preserveSessionSettings)
 		sIBL_Maya_Arnold_restoreSessionAttributes($sessionStoredAttributes);
-			
+
 	print("sIBL_GUI | sIBL File Import Finished!\n");
 
 	if(`exists sIBL_Maya_postProcessCallback`)
@@ -332,7 +332,7 @@ global proc sIBL_Maya_Arnold_environmentDeletion()
 
 	// sIBL ArnoldRaySwitchShader Shaders Deletion.
 	sIBL_Maya_Arnold_deleteType("ArnoldRaySwitchShader", "sIBL*");
-	
+
 	// sIBL shadingEngine Shaders Deletion.
 	sIBL_Maya_Arnold_deleteType("shadingEngine", "sIBL*");
 
@@ -343,20 +343,20 @@ global proc sIBL_Maya_Arnold_environmentDeletion()
 	sIBL_Maya_Arnold_deleteType("file", "sIBL*");
 
 	// sIBL gammaCorrect Nodes Deletion.
-	sIBL_Maya_Arnold_deleteType("gammaCorrect", "sIBL*");	
-	
+	sIBL_Maya_Arnold_deleteType("gammaCorrect", "sIBL*");
+
 	// sIBL blendColors Nodes Deletion.
-	sIBL_Maya_Arnold_deleteType("blendColors", "sIBL*");	
-	
+	sIBL_Maya_Arnold_deleteType("blendColors", "sIBL*");
+
 	// sIBL place2dTexture Shaders Deletion.
 	sIBL_Maya_Arnold_deleteType("place2dTexture", "sIBL*");
 
 	// sIBL Expressions Deletion.
 	sIBL_Maya_Arnold_deleteType("expression", "sIBL*");
-	
+
 	// sIBL Condition Nodes Deletion.
 	sIBL_Maya_Arnold_deleteType("condition", "sIBL*");
-	
+
 	// sIBL displayLayer Nodes Deletion.
 	sIBL_Maya_Arnold_deleteType("displayLayer", "sIBL*");
 }
@@ -365,35 +365,35 @@ global proc sIBL_Maya_Arnold_getMainLocator()
 {
 	string $sIBLGroup = sIBL_Maya_Arnold_getSIBLGroup();
 	string $sIBLLocator = `createNode "annotationShape"`;
-	
+
 	setAttr ($sIBLLocator + ".displayArrow") 0;
 	setAttr -lock true -keyable false ($sIBLLocator + ".displayArrow");
 	setAttr -type "string" ($sIBLLocator + ".text") "[ Smart IBL Controls ]";
-	
+
 	string $sIBLLocatorTransform = sIBL_Maya_Arnold_getTransform($sIBLLocator);
-	
+
 	// Adding Attributes For Various Toggling And CC Controls.
 	addAttr -ln "renderTogglers" -nn "[ Render Togglers ]" -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
 	setAttr -e-keyable true ($sIBLLocatorTransform + "." + "renderTogglers");
 	setAttr -lock true ($sIBLLocatorTransform + "." + "renderTogglers");
 
 	string $components[] = {"Background", "Reflection", "Lighting"};
-	
+
 	for($component in $components)
-	{	
+	{
 		addAttr -ln ("toggle" + $component)  -nn ($component) -at bool  $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + (".toggle" + $component));
 		setAttr ($sIBLLocatorTransform + (".toggle" + $component)) true;
 	}
-	
+
 	string $controls[] = {"Gamma", "Gain"};
 
 	for($component in $components)
-	{	
+	{
 		addAttr -ln ("cc" + $component) -nn ("[ " + $component + " CC ]") -at "enum" -en "Smart IBL" $sIBLLocatorTransform;
 		setAttr -e-keyable true ($sIBLLocatorTransform + "." + ("cc" + $component));
 		setAttr -lock true ($sIBLLocatorTransform + "." + ("cc" + $component));
-		
+
 		for($control in $controls)
 		{
 			string $lowerCaseComponent = `tolower $component`;
@@ -407,13 +407,13 @@ global proc sIBL_Maya_Arnold_getMainLocator()
 	sIBL_Maya_Arnold_lockAttributes($sIBLLocatorTransform, {"rx", "ry", "rz", "sx", "sy", "sz"});
 
 	parent $sIBLLocatorTransform $sIBLGroup;
-	
+
 	rename ("sIBL" + $sIBLLocatorTransform) "sIBL_Controls";
 }
 
 global proc sIBL_Maya_Arnold_getEnvironmentShadersBranch(string $skyShader, string $connectionEntries[], string $filePath, string $prefix, int $useOverride)
 {
-	string $file = `shadingNode -asTexture "file"`;	
+	string $file = `shadingNode -asTexture "file"`;
 	string $gammaCorrect = `shadingNode -asUtility "gammaCorrect"`;
 
 	if($useOverride)
@@ -421,14 +421,14 @@ global proc sIBL_Maya_Arnold_getEnvironmentShadersBranch(string $skyShader, stri
 		string $conditionNode = `shadingNode -asUtility "condition"`;
 		setAttr ($conditionNode + ".secondTerm") 1;
 		connectAttr -f ($gammaCorrect + ".outValue") ($conditionNode + ".colorIfTrue");
-			
+
 		string $blendColors = `shadingNode -asUtility "blendColors"`;
 		setAttr ($blendColors + ".color1") -type double3 0 0 0 ;
 		setAttr ($blendColors + ".color2") -type double3 0 0 0 ;
 		setAttr ($blendColors + ".blender") 0;
-		
+
 		connectAttr -f ($blendColors + ".output") ($conditionNode + ".colorIfFalse");
-		
+
 		for($entry in $connectionEntries)
 			connectAttr -f ($conditionNode + ".outColor") ($skyShader + "." + $entry);
 
@@ -440,9 +440,9 @@ global proc sIBL_Maya_Arnold_getEnvironmentShadersBranch(string $skyShader, stri
 		for($entry in $connectionEntries)
 			connectAttr -f ($gammaCorrect + ".outValue") ($skyShader + "." + $entry);
 	}
-	
+
 	connectAttr -f ($file + ".outColor") ($gammaCorrect + ".value");
-	
+
 	string $place2dTexture = `shadingNode -asUtility "place2dTexture"`;
 
 	connectAttr -f ($place2dTexture + ".outUV") ($file + ".uvCoord");
@@ -465,13 +465,13 @@ global proc sIBL_Maya_Arnold_getEnvironmentShaders(int $createBackground, int $c
 	setAttr ($skyShader + ".format") 2;
 	setAttr ($skyShader + ".primary_visibility") 1;
 	setAttr ($skyShader + ".skyRadius") 1;
-	
+
 	string $skyShaderTransform = sIBL_Maya_Arnold_getTransform($skyShader);
 	string $locks[] = {"tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"};
 	sIBL_Maya_Arnold_lockAttributes($skyShaderTransform, $locks);
 
 	setAttr ($skyShaderTransform + ".visibility") $visibility;
-	
+
 	string $raySwitch = `shadingNode -asUtility "ArnoldRaySwitchShader"`;
 	connectAttr -f ($raySwitch + ".message") ($skyShader + ".color");
 
@@ -487,7 +487,7 @@ global proc sIBL_Maya_Arnold_getEnvironmentShaders(int $createBackground, int $c
 		if($useLightingForGlossy)
 			$connectionEntries = {"diffuse", "glossy"};
 		else
-			$connectionEntries = {"diffuse"};			
+			$connectionEntries = {"diffuse"};
 		sIBL_Maya_Arnold_getEnvironmentShadersBranch($raySwitch,  $connectionEntries, $lightingFilePath, "sIBL_Lighting", 1);
 	}
 
@@ -501,7 +501,7 @@ global proc sIBL_Maya_Arnold_getEnvironmentShaders(int $createBackground, int $c
 	}
 
 	connectAttr -f ($skyShader + ".message") "defaultArnoldRenderOptions.background";
-	
+
 	string $sIBLGroup = sIBL_Maya_Arnold_getSIBLGroup();
 	string $skyHook = `createNode transform`;
 	for($lock in $locks)
@@ -509,10 +509,10 @@ global proc sIBL_Maya_Arnold_getEnvironmentShaders(int $createBackground, int $c
 
 	string $skyShaderTransforms[] = `parent  $skyShaderTransform $skyHook`;
 	$skyShaderTransform = $skyShaderTransforms[0];
-	
+
 	string $skyHookTransforms[] = `parent  $skyHook $sIBLGroup`;
 	$skyHook = $skyHookTransforms[0];
-	
+
 	rename $skyShader ("sIBL_" + `nodeType $skyShader`);
 	rename $skyHook ("sIBL_Sky_Hook");
 	rename $skyShaderTransform ("sIBL_Sky");
@@ -547,7 +547,7 @@ global proc string sIBL_Maya_Arnold_getFeedbackGeometry(float $feedbackRadius, i
 	setAttr ($feedback[0] + ".rotateZ") 90;
 
 	sIBL_Maya_Arnold_lockAttributes($feedback[0], {"tx", "ty", "tz"});
-	
+
 	setAttr ($feedback[0] + ".visibility") $feedBackVisibility;
 
 	string $feedBackShapes[] = sIBL_Maya_Arnold_getShapes($feedback[0]);
@@ -615,7 +615,7 @@ global proc string sIBL_Maya_Arnold_getLigthsTargetLocator()
 	}
 
 	$sIBL_Lights_Target_Locator = `ls -fl "sIBL_Lights_Target_Locator"`;
-	
+
 	sIBL_Maya_Arnold_addToDisplayLayer("sIBL_Lighting_Layer", $sIBL_Lights_Target_Locator[0]);
 
 	return $sIBL_Lights_Target_Locator[0];
@@ -647,7 +647,7 @@ global proc sIBL_Maya_Arnold_getLight(string $type, string $name, float $scale, 
 	setAttr -type double3 ($light + ".color") ($color[0] / 255) ($color[1] / 255) ($color[2] / 255);
 	setAttr ($light + ".intensity") $intensity;
 	setAttr ($light + ".useRayTraceShadows") 1;
-	
+
 	switch($type)
 	{
 		case "Area":
@@ -714,15 +714,15 @@ global proc sIBL_Maya_Arnold_bridgeFeedbackControlsAndShaders(string $target)
 	//connectAttr -f ("sIBL_Controls.toggle" + $target)  ("sIBL_" + $target + "_condition.firstTerm") ;
 	setAttr ("sIBL_" + $target + "_condition.firstTerm") 1 ;
 	string $lowerCaseTarget = `tolower $target`;
-		
+
 	string $gammaSubComponents[] = {"X", "Y", "Z"};
-	for($gammaSubComponent in $gammaSubComponents) 
+	for($gammaSubComponent in $gammaSubComponents)
 	{
 		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gamma") ("sIBL_" + $target + "_gammaCorrect.gamma" + $gammaSubComponent);
 	}
-		
+
 	string $gainSubComponents[] = {"R", "G", "B"};
-	for($gainSubComponent in $gainSubComponents) 
+	for($gainSubComponent in $gainSubComponents)
 	{
 		connectAttr -f ("sIBL_Controls." + $lowerCaseTarget + "Gain") ("sIBL_" + $target + "_file.colorGain" + $gainSubComponent);
 	}
@@ -733,7 +733,7 @@ global proc sIBL_Maya_Arnold_connectFeedbackToSIBLShaders(string $feedback, int 
 	string $skyShaderTransform = sIBL_Maya_Arnold_getObject("sIBL_Sky_Hook");
 	string $parentConstraint[] = `parentConstraint -mo -weight 1 $feedback $skyShaderTransform`;
 	string $scaleConstraint[] = `scaleConstraint -weight 1 $feedback $skyShaderTransform`;
-	
+
 	rename $parentConstraint[0] ($skyShaderTransform + "_" + `nodeType $parentConstraint[0]`);
 	rename $scaleConstraint[0] ($skyShaderTransform + "_" + `nodeType $scaleConstraint[0]`);
 
@@ -775,10 +775,10 @@ global proc sIBL_Maya_Arnold_getGround(float $feedbackRadius)
 		setAttr ($ground[0] + "." + $scaleAttribute) ($feedbackRadius * sqrt(2));
 
 	parent $ground[0] $sIBLGroup;
-	
+
 	sIBL_Maya_Arnold_addToDisplayLayer("sIBL_Ground_Layer", $ground[0]);
-	
-	rename $ground[0] "sIBL_Ground";		
+
+	rename $ground[0] "sIBL_Ground";
 }
 
 global proc sIBL_Maya_Arnold_activateArnold()
@@ -804,12 +804,12 @@ global proc float sIBL_Maya_Arnold_getSceneExtent()
 
 	for($geometry in $geometries)
 		$transforms[size($transforms)] = sIBL_Maya_Arnold_getTransform($geometry);
-	    
+
 	float $sceneExtent = 0;
 	for($transform in $transforms)
 	{
 		float $boundingBox[] = `xform -q -bb $transform`;
-			
+
 		for($i=0; $i < size($boundingBox); $i++)
 			if(abs($boundingBox[$i]) > $sceneExtent)
 				$sceneExtent = abs($boundingBox[$i]);
@@ -820,7 +820,7 @@ global proc float sIBL_Maya_Arnold_getSceneExtent()
 global proc float sIBL_Maya_Arnold_truncFloatNumber(float $number, float $truncValue)
 {
 	if($truncValue != 0)
-		return `trunc ($number / $truncValue)` * $truncValue; 
+		return `trunc ($number / $truncValue)` * $truncValue;
 	else
 		return $number;
 }
