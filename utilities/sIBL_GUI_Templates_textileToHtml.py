@@ -22,7 +22,7 @@
 #
 #***********************************************************************************************
 #
-# The Following Code Is Protected By GNU GPL V3 Licence.
+# The following code is protected by GNU GPL V3 Licence.
 #
 
 """
@@ -79,7 +79,7 @@ def textileToHtml(fileIn, fileOut, title):
 	@param title: HTML File Title. ( String )
 	"""
 
-	LOGGER.info("{0} | Converting '{1}' Textile File To HTML!".format(textileToHtml.__name__, fileIn))
+	LOGGER.info("{0} | Converting '{1}' textile File To HTML!".format(textileToHtml.__name__, fileIn))
 	file = File(fileIn)
 	file.read()
 

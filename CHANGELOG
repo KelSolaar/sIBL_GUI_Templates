@@ -16,7 +16,7 @@ h3. 1.0.5 - Stable
 
 * Fixed broken transparency support in Softimage Lightsmith templates.
 * Hide scene default light in "Softimage_MR_Lightsmith" and "Softimage_Arnold_Lightsmith" templates.
-* Implemented ibl sets compatibility guard.
+* Implemented Ibl Sets compatibility guard.
 * Arnold Renderer templates are now public.
 * Added additional geometries hierarchical control.
 

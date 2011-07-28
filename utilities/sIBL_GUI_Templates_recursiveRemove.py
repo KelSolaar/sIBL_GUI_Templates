@@ -22,7 +22,7 @@
 #
 #***********************************************************************************************
 #
-# The Following Code Is Protected By GNU GPL V3 Licence.
+# The following code is protected by GNU GPL V3 Licence.
 #
 
 """
@@ -77,7 +77,7 @@ def remove(item):
 	try:
 		os.remove(item)
 	except:
-		print("{0} | '{1}' Remove Failed!".format(remove.__name__, item))
+		print("{0} | '{1}' remove Failed!".format(remove.__name__, item))
 
 if __name__ == "__main__":
 	recursiveRemove(sys.argv[1], sys.argv[2])
