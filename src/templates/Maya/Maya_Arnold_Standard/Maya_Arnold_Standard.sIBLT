@@ -55,12 +55,12 @@ DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
 [Script]
-// @OutputScript - @Release For @Software @Version
+// @OutputScript - @Release for @Software @Version
 // Author: @Author
 // EMail: @Email
 // Homepage: @Url
-// Template Path: @Path
-// Template Last Modified: @Date
+// Template path: @Path
+// Template last modified: @Date
 // sIBL_GUI
 string $backgroundFilePath = "@BGfile";
 int $backgroundWidth = @BGheight * 2;
@@ -95,7 +95,7 @@ int $activateLinearWorkflow = @activateLinearWorkflow;
 int $proceedSetup = 1;
 if($backgroundFilePath == "-1" || $reflectionFilePath == "-1" || $lightingFilePath == "-1")
 {
-	if(`confirmDialog -title "Confirm" -message ("sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?") -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "No")
+	if(`confirmDialog -title "Confirm" -message ("sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?") -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"` == "No")
 		$proceedSetup = 0;
 }
 if($proceedSetup)
@@ -129,7 +129,7 @@ if($proceedSetup)
 					$useLightingForGlossy,
 					$activateLinearWorkflow);
 else
-	print("sIBL_GUI | sIBL File Import Aborted!\n");
+	print("sIBL_GUI | Ibl file import aborted!\n");
 
 global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 						int $backgroundWidth,
@@ -173,7 +173,7 @@ global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 		sIBL_Maya_Arnold_preProcessCallback();
 	}
 
-	print("sIBL_GUI | Starting sIBL File Import!\n");
+	print("sIBL_GUI | Starting Ibl file import!\n");
 
 	string $sessionPreservedAttributes[] = sIBL_Maya_Arnold_getSessionPreservedAttributes();
 	string $sessionStoredAttributes[] = {};
@@ -197,7 +197,7 @@ global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 
 	if($backgroundWidth > 8192)
 	{
-		confirmDialog -title "sIBL_GUI | Information" -message ("The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: " +  $backgroundWidth + " Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead.")  -button "Ok" -defaultButton "Ok";
+		confirmDialog -title "sIBL_GUI | Information" -message ("The background image is too Large to be displayed on the Visual Feedback.\nCurrent environment image width: " +  $backgroundWidth + " Pixels.\nThe Visual Feedback will use the reflection image instead.")  -button "Ok" -defaultButton "Ok";
 		sIBL_Maya_Arnold_getFeedback($reflectionFilePath, $feedbackRadius, $displayFeedback);
 	}
 	else
@@ -236,17 +236,17 @@ global proc sIBL_Maya_Arnold_setup(string $backgroundFilePath,
 	if($preserveSessionSettings)
 		sIBL_Maya_Arnold_restoreSessionAttributes($sessionStoredAttributes);
 
-	print("sIBL_GUI | sIBL File Import Finished!\n");
+	print("sIBL_GUI | Ibl file import finished!\n");
 
 	if(`exists sIBL_Maya_postProcessCallback`)
 	{
-		print("sIBL_GUI | Executing Overall Postprocess Callback!\n");
+		print("sIBL_GUI | Executing overall postprocess Callback!\n");
 		sIBL_Maya_postProcessCallback();
 	}
 
 	if(`exists sIBL_Maya_Arnold_postProcessCallback`)
 	{
-		print("sIBL_GUI | Executing Template Specific Postprocess Callback!\n");
+		print("sIBL_GUI | Executing Template specific postprocess Callback!\n");
 		sIBL_Maya_Arnold_postProcessCallback();
 	}
 }
@@ -339,7 +339,7 @@ global proc sIBL_Maya_Arnold_environmentDeletion()
 	// sIBL lambert Shaders Deletion.
 	sIBL_Maya_Arnold_deleteType("lambert", "sIBL*");
 
-	// sIBL file Shaders Deletion.
+	// Ibl file Shaders Deletion.
 	sIBL_Maya_Arnold_deleteType("file", "sIBL*");
 
 	// sIBL gammaCorrect Nodes Deletion.

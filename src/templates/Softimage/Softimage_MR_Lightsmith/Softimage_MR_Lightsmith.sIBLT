@@ -47,12 +47,12 @@ DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 
 [Script]
-// @OutputScript - @Release For @Software @Version
+// @OutputScript - @Release for @Software @Version
 // Author: @Author
 // EMail: @Email
 // Homepage: @Url
-// Template Path: @Path
-// Template Last Modified: @Date
+// Template path: @Path
+// Template last modified: @Date
 // sIBL_GUI
 var resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
 var lightName= "@LightsmithName";
@@ -80,7 +80,7 @@ var activateColorManagement = @activateColorManagement;
 var proceedSetup = true;
 if(lightName == "-1")
 {
-	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
 	if (result == siMsgNo )
 		proceedSetup = false;
 }
@@ -105,7 +105,7 @@ if(proceedSetup)
 							activateFinalGather,
 							activateColorManagement);
 else
-	LogMessage("sIBL_GUI | sIBL File Import Aborted!");
+	LogMessage("sIBL_GUI | Ibl file import aborted!");
 
 function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 							lightName,
@@ -132,13 +132,13 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 
 		if(sIBL_XSI_MR_Lightsmith_commandExists("sIBL_XSI_preProcessCommand"))
 		{
-			LogMessage("sIBL_GUI | Executing Overall Preprocess Command!");
+			LogMessage("sIBL_GUI | Executing overall preprocess Command!");
 			sIBL_XSI_preProcessCommand();
 		}
 
 		if(sIBL_XSI_MR_Lightsmith_commandExists(" sIBL_XSI_MR_Lightsmith_preProcessCommand"))
 		{
-			LogMessage("sIBL_GUI | Executing Template Specific Preprocess Command!");
+			LogMessage("sIBL_GUI | Executing Template specific preprocess Command!");
 			 sIBL_XSI_MR_Lightsmith_preProcessCommand();
 		}
 
@@ -156,7 +156,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 		{
 			if(selectedPasses.length != 0)
 			{
-				LogMessage("sIBL_GUI | Starting sIBL File Import!");
+				LogMessage("sIBL_GUI | Starting Ibl file import!");
 
 				 sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(false);
 				 sIBL_XSI_MR_Lightsmith_autoInspectState(false);
@@ -165,7 +165,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 				progressBar.Maximum = 100;
 				progressBar.CancelEnabled = false;
 
-				progressBar.Caption = "sIBL_GUI | Setting Up sIBL File!";
+				progressBar.Caption = "sIBL_GUI | Importing Ibl file!";
 
 				progressBar.Step = 5;
 				progressBar.Visible = true;
@@ -224,17 +224,17 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 				sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(true);
 				sIBL_XSI_MR_Lightsmith_autoInspectState(true);
 
-				LogMessage("sIBL_GUI | sIBL File Import Finished!");
+				LogMessage("sIBL_GUI | Ibl file import finished!");
 
 				if(sIBL_XSI_MR_Lightsmith_commandExists("sIBL_XSI_postProcessCommand"))
 				{
-					LogMessage("sIBL_GUI | Executing Overall Postprocess Command!");
+					LogMessage("sIBL_GUI | Executing overall postprocess Command!");
 					sIBL_XSI_postProcessCommand();
 				}
 
 				if(sIBL_XSI_MR_Lightsmith_commandExists(" sIBL_XSI_MR_Lightsmith_postProcessCommand"))
 				{
-					LogMessage("sIBL_GUI | Executing Template Specific Postprocess Command!");
+					LogMessage("sIBL_GUI | Executing Template specific postprocess Command!");
 					sIBL_XSI_MR_Lightsmith_postProcessCommand();
 				}
 			}
@@ -246,7 +246,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 				sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(true);
 				sIBL_XSI_MR_Lightsmith_autoInspectState(true);
 
-				LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
+				LogMessage("sIBL_GUI | No Pass selected, import canceled!");
 			}
 		}
 	}
@@ -255,7 +255,7 @@ function sIBL_XSI_MR_Lightsmith_setup(resourcesDirectory,
 		sIBL_XSI_MR_Lightsmith_scriptEditorVerbose(true);
 		sIBL_XSI_MR_Lightsmith_autoInspectState(true);
 
-		LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
+		LogMessage("sIBL_GUI | Ibl file import Failed!", siError);
 		throw (error)
 	}
 }
@@ -623,7 +623,7 @@ function sIBL_XSI_MR_Lightsmith_connectToLights(lightClip, lightMaskClip, lightW
 			var proceedSetup = true;
 			if(lightSupport)
 			{
-				var result = XSIUIToolkit.Msgbox( "sIBL_GUI | '" + sIBLLight + "' Light Has Already An Lightsmith Setup! Would You Like To Replace It?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+				var result = XSIUIToolkit.Msgbox( "sIBL_GUI | '" + sIBLLight + "' light has already a Lightsmith setup! Would you like to replace it?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
 				if (result == siMsgNo )
 					proceedSetup = false;
 			}
@@ -721,7 +721,7 @@ function sIBL_XSI_MR_Lightsmith_connectToLights(lightClip, lightMaskClip, lightW
 		}
 	}
 	else
-		XSIUIToolkit.Msgbox( "sIBL_GUI | No 'sIBL' Group Found, Skipping Lightsmith Lights Creation!", siMsgOkOnly, "sIBL_GUI " );
+		XSIUIToolkit.Msgbox( "sIBL_GUI | No 'sIBL' group found, skipping Lightsmith lights creation!", siMsgOkOnly, "sIBL_GUI " );
 }
 
 function sIBL_XSI_MR_Lightsmith_getNonClashingName(name)

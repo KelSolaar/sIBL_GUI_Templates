@@ -58,12 +58,12 @@ DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
 [Script]
-# @OutputScript - @Release For @Software @Version
+# @OutputScript - @Release for @Software @Version
 # Author: @Author
 # EMail: @Email
 # Homepage: @Url
-# Template Path: @Path
-# Template Last Modified: @Date
+# Template path: @Path
+# Template last modified: @Date
 # sIBL_GUI
 import math
 import maya.cmds as cmds
@@ -163,8 +163,8 @@ class Options(object):
 class Setup(object):
 	def __init__(self):
 		if Datas.backgroundFile == "-1" or Datas.reflectionFile == "-1" or Datas.lightingFile == "-1":
-			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.prefix))
+			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s file import canceled!" % Constants.prefix))
 				self.__exit__()
 
 		self.outputCameras = cmds.ls(l=True, type="camera")
@@ -191,22 +191,22 @@ class Setup(object):
 
 	def execute(self):
 		if mel.eval("exists %s_preProcessCallback;" % Constants.packagePrefix):
-			print("%s | Executing Overall Preprocess Callback!" % Constants.applicationName)
+			print("%s | Executing overall preprocess Callback!" % Constants.applicationName)
 			mel.eval("%s_preProcessCallback();" % Constants.packagePrefix)
 
 		if mel.eval("exists %s_preProcessCallback;" % Constants.packageRendererPrefix):
-			print("%s | Executing Template Specific Preprocess Callback!" % Constants.applicationName)
+			print("%s | Executing Template specific preprocess Callback!" % Constants.applicationName)
 			mel.eval("%s_preProcessCallback();" % Constants.packageRendererPrefix)
 
-		print("%s | Starting %s File Import!" % (Constants.applicationName, Constants.title))
+		print("%s | Starting %s file import!" % (Constants.applicationName, Constants.title))
 
 		if Options.showCamerasDialog:
 			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s File Import Canceled!" % Constants.title))
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s file import canceled!" % Constants.title))
 				self.__exit__()
 			self.outputCameras = cmds.optionVar(q="%s_outputCameras" % Constants.prefix) != "" and cmds.optionVar(q="%s_outputCameras" % Constants.prefix).split(",") or None
 			if not self.outputCameras:
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Cameras Selected, %s File Import Canceled!" % Constants.title))
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No cameras selected, %s file import canceled!" % Constants.title))
 				self.__exit__()
 
 		Options.preserveSessionSettings and self.storeSessionAttributes()
@@ -232,14 +232,14 @@ class Setup(object):
 
 		Options.preserveSessionSettings and self.restoreSessionAttributes()
 
-		print("%s | %s File Import Done!" % (Constants.applicationName, Constants.title))
+		print("%s | %s file import done!" % (Constants.applicationName, Constants.title))
 
 		if mel.eval("exists %s_postProcessCallback;" % Constants.packagePrefix):
-			print("%s | Executing Overall Postprocess Callback!" % Constants.applicationName)
+			print("%s | Executing overall postprocess Callback!" % Constants.applicationName)
 			mel.eval("%s_postProcessCallback();" % Constants.packagePrefix)
 
 		if mel.eval("exists %s_postProcessCallback;" % Constants.packageRendererPrefix):
-			print("%s | Executing Template Specific Postprocess Callback!" % Constants.applicationName)
+			print("%s | Executing Template specific postprocess Callback!" % Constants.applicationName)
 			mel.eval("%s_postProcessCallback();" % Constants.packageRendererPrefix)
 
 	def storeSessionAttributes(self):
@@ -395,7 +395,7 @@ class Setup(object):
 
 		fileTextureName = Datas.backgroundFile
 		if Datas.backgroundWidth > Constants.maximumViewportTextureSize:
-			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The Background Image Is Too Large To Be Displayed On The Visual Feedback.\nCurrent Environment Image Width: %s Pixels.\nThe Visual Feedback Will Use The Reflection Image Instead." % Datas.backgroundWidth, button=("Ok",), defaultButton="Ok")
+			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The background image is too Large to be displayed on the Visual Feedback.\nCurrent environment image width: %s Pixels.\nThe Visual Feedback will use the reflection image instead." % Datas.backgroundWidth, button=("Ok",), defaultButton="Ok")
 			fileTextureName = Datas.reflectionFile
 		cmds.setAttr("%s.fileTextureName" % file, fileTextureName, type="string")
 		cmds.connectAttr("%s.outColor" % file, "%s.color" % lambert, f=True)
@@ -518,7 +518,7 @@ class Setup(object):
 				for node in (mipMatteshadow, lambert, shadingEngine):
 					cmds.rename(node, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(node)))
 			else:
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No Background Shaders Detected, Matte Shadow Shader Will Not Be Set!"))
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No background shaders detected, mip_matteshadow Shader will not be set!"))
 
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 

@@ -45,12 +45,12 @@ ExecutionCommand = @ExecutionCommand | fileIn ("$loaderScriptPath") | String
 
 [Script]
 /*
-@OutputScript - @Release For @Software @Version
+@OutputScript - @Release for @Software @Version
 Author: @Author
 EMail: @Email
 Homepage: @Url
-Template Path: @Path
-Template Last Modified: @Date
+Template path: @Path
+Template last modified: @Date
 sIBL_GUI
 */
 
@@ -298,7 +298,7 @@ fn sIBL_3dsmax_Scanline_setEnvironment createBackground createLighting createRef
 	if(createReflection == 1) then
 	(
 		--local reflectionBranch = sIBL_3dsmax_Scanline_getEnvironmentBranch "sIBL_Reflection" reflectionFilePath
-		print "sIBL_GUI | This Template Doesn't Support Reflections, Reflections Shading Branch Skipped!"
+		print "sIBL_GUI | This Template doesn't support reflections, reflections shading branch skipped!"
 	)
 )
 
@@ -315,7 +315,7 @@ fn sIBL_3dsmax_Scanline_connectFeedbackToSIBLShaders createBackground createLigh
 	)
 
 	if(createReflection == 1) then
-		print "sIBL_GUI | This Template Doesn't Support Reflections, Reflections Branch Visual Feedback Connections Skipped!"
+		print "sIBL_GUI | This Template doesn't support reflections, reflections branch Visual Feedback connections skipped!"
 )
 
 fn sIBL_3dsmax_Scanline_connectFeedbackToLights =
@@ -351,17 +351,17 @@ fn sIBL_3dsmax_Scanline_setup  =
 	(
 		if(sIBL_3dsmax_preProcessCallback != undefined) then
 		(
-			print "sIBL_GUI | Executing Overall Preprocess Callback!"
+			print "sIBL_GUI | Executing overall preprocess Callback!"
 			sIBL_3dsmax_preProcessCallback()
 		)
 
 		if(sIBL_3dsmax_Scanline_preProcessCallback != undefined) then
 		(
-			print "sIBL_GUI | Executing Template Specific Preprocess Callback!"
+			print "sIBL_GUI | Executing Template specific preprocess Callback!"
 			sIBL_3dsmax_Scanline_preProcessCallback()
 		)
 
-		print "sIBL_GUI | Starting sIBL File Import!"
+		print "sIBL_GUI | Starting Ibl file import!"
 
 		sIBL_3dsmax_Scanline_environmentDeletion()
 
@@ -399,34 +399,34 @@ fn sIBL_3dsmax_Scanline_setup  =
 		if(sIBL_OPTIONS.activateLinearWorkflow == 1) then
 			sIBL_3dsmax_Scanline_activateLinearWorkflow sIBL_OPTIONS.createBackground
 
-		print "sIBL_GUI | sIBL File Import Finished!"
+		print "sIBL_GUI | Ibl file import finished!"
 
 		if(sIBL_3dsmax_postProcessCallback != undefined) then
 		(
-			print "sIBL_GUI | Executing Overall Postprocess Callback!"
+			print "sIBL_GUI | Executing overall postprocess Callback!"
 			sIBL_3dsmax_postProcessCallback()
 		)
 
 		if(sIBL_3dsmax_Scanline_postProcessCallback != undefined) then
 		(
-			print "sIBL_GUI | Executing Template Specific Postprocess Callback!"
+			print "sIBL_GUI | Executing Template specific postprocess Callback!"
 			sIBL_3dsmax_Scanline_postProcessCallback()
 		)
 	)
 	else
-		messageBox "sIBL_GUI | Mental Ray Renderer Is Not Available!" title:"sIBL_GUI Error"
+		messageBox "sIBL_GUI | Scanline Renderer Is Not Available!" title:"sIBL_GUI Error"
 )
 
 (
 	local sIBL_proceedSetup = 1
 	if(sIBL_DATAS.backgroundFilePath == "-1" or sIBL_DATAS.reflectionFilePath == "-1" or sIBL_DATAS.lightingFilePath == "-1") then
 	(
-		if not queryBox "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?" beep:false then
+		if not queryBox "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" beep:false then
 			sIBL_proceedSetup = 0
 	)
 
 	if(sIBL_proceedSetup == 1)	then
 		sIBL_3dsmax_Scanline_setup()
 	else
-		print "sIBL_GUI | sIBL File Import Aborted!"
+		print "sIBL_GUI | Ibl file import aborted!"
 )

@@ -55,12 +55,12 @@ DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 
 [Script]
-// @OutputScript - @Release For @Software @Version
+// @OutputScript - @Release for @Software @Version
 // Author: @Author
 // EMail: @Email
 // Homepage: @Url
-// Template Path: @Path
-// Template Last Modified: @Date
+// Template path: @Path
+// Template last modified: @Date
 // sIBL_GUI
 var backgroundFilePath = "@BGfile";
 var reflectionFilePath = "@REFfile";
@@ -96,7 +96,7 @@ var useArnoldGammaCorrection = @useArnoldGammaCorrection;
 var proceedSetup = true;
 if(backgroundFilePath == "-1" || reflectionFilePath == "-1" || lightingFilePath == "-1")
 {
-	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template Compatible Ibl Set Provided: Unpredictable Results May Occur! Would You Like To Proceed Anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
 	if (result == siMsgNo )
 		proceedSetup = false;
 }
@@ -132,7 +132,7 @@ if(proceedSetup)
 						activateLinearWorkflow,
 						useArnoldGammaCorrection);
 else
-	LogMessage("sIBL_GUI | sIBL File Import Aborted!");
+	LogMessage("sIBL_GUI | Ibl file import aborted!");
 
 function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 							reflectionFilePath,
@@ -171,13 +171,13 @@ function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 		{
 			if(sIBL_XSI_Arnold_DLight_commandExists("sIBL_XSI_preProcessCommand"))
 			{
-				LogMessage("sIBL_GUI | Executing Overall Preprocess Command!");
+				LogMessage("sIBL_GUI | Executing overall preprocess Command!");
 				sIBL_XSI_preProcessCommand();
 			}
 
 			if(sIBL_XSI_Arnold_DLight_commandExists("sIBL_XSI_Arnold_DLight_preProcessCommand"))
 			{
-				LogMessage("sIBL_GUI | Executing Template Specific Preprocess Command!");
+				LogMessage("sIBL_GUI | Executing Template specific preprocess Command!");
 				sIBL_XSI_Arnold_DLight_preProcessCommand();
 			}
 
@@ -195,7 +195,7 @@ function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 			{
 				if(selectedPasses.length != 0)
 				{
-					LogMessage("sIBL_GUI | Starting sIBL File Import!");
+					LogMessage("sIBL_GUI | Starting Ibl file import!");
 
 					sIBL_XSI_Arnold_DLight_scriptEditorVerbose(false);
 					sIBL_XSI_Arnold_DLight_autoInspectState(false);
@@ -204,12 +204,12 @@ function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 					progressBar.Maximum = 100;
 					progressBar.CancelEnabled = false;
 
-					progressBar.Caption = "sIBL_GUI | Setting Up sIBL File!";
+					progressBar.Caption = "sIBL_GUI | Importing Ibl file!";
 
 					progressBar.Step = 10;
 					progressBar.Visible = true;
 
-					// Defines Sun And Dynamic Lights Existence From sIBL File.
+					// Defines Sun And Dynamic Lights Existence From Ibl file.
 					if(sunU != -1 && sunV != -1)
 						var sunExists = true;
 					else
@@ -290,17 +290,17 @@ function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 					sIBL_XSI_Arnold_DLight_scriptEditorVerbose(true);
 					sIBL_XSI_Arnold_DLight_autoInspectState(true);
 
-					LogMessage("sIBL_GUI | sIBL File Import Finished!");
+					LogMessage("sIBL_GUI | Ibl file import finished!");
 
 					if(sIBL_XSI_Arnold_DLight_commandExists("sIBL_XSI_postProcessCommand"))
 					{
-						LogMessage("sIBL_GUI | Executing Overall Postprocess Command!");
+						LogMessage("sIBL_GUI | Executing overall postprocess Command!");
 						sIBL_XSI_postProcessCommand();
 					}
 
 					if(sIBL_XSI_Arnold_DLight_commandExists("sIBL_XSI_Arnold_DLight_postProcessCommand"))
 					{
-						LogMessage("sIBL_GUI | Executing Template Specific Postprocess Command!");
+						LogMessage("sIBL_GUI | Executing Template specific postprocess Command!");
 						sIBL_XSI_Arnold_DLight_postProcessCommand();
 					}
 				}
@@ -312,13 +312,13 @@ function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 					sIBL_XSI_Arnold_DLight_scriptEditorVerbose(true);
 					sIBL_XSI_Arnold_DLight_autoInspectState(true);
 
-					LogMessage("sIBL_GUI | No Pass Selected, Import Canceled!");
+					LogMessage("sIBL_GUI | No Pass selected, import canceled!");
 				}
 			}
 		}
 		else
 		{
-			var errorMessage = "sIBL_GUI | Arnold Renderer Is Not Available, Aborting Loader Script Import!"
+			var errorMessage = "sIBL_GUI | Arnold renderer is not available, aborting Loader Script import!"
 			XSIUIToolkit.Msgbox(errorMessage, siMsgCritical);
 			throw (new Error(errorMessage));
 		}
@@ -328,7 +328,7 @@ function sIBL_XSI_Arnold_DLight_setup(backgroundFilePath,
 		sIBL_XSI_Arnold_DLight_scriptEditorVerbose(true);
 		sIBL_XSI_Arnold_DLight_autoInspectState(true);
 
-		LogMessage("sIBL_GUI | sIBL File Import Failed!", siError);
+		LogMessage("sIBL_GUI | Ibl file import Failed!", siError);
 		throw (error)
 	}
 }
