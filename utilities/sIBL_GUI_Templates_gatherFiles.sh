@@ -3,10 +3,10 @@ echo ----------------------------------------------------------------
 echo sIBL_GUI_Templates - Files Gathering
 echo ----------------------------------------------------------------
 
-#! Gathering Folder Cleanup.
+#! Gathering folder cleanup.
 rm -rf ./releases/repository/*
 
-#! Templates Cleanup.
+#! Templates cleanup.
 echo ----------------------------------------------------------------
 echo Cleanup - Begin
 echo ----------------------------------------------------------------
@@ -15,7 +15,7 @@ echo ----------------------------------------------------------------
 echo Cleanup - End
 echo ----------------------------------------------------------------
 
-#! Templates Gathering.
+#! Templates gathering.
 mkdir ./releases/repository/templates/
 cd ./src/templates/3dsMax/
 zip -r ../../../releases/repository/templates/3dsMax_MR_Standard.zip 3dsMax_MR_Standard --exclude "./3dsMax_MR_Standard/help/3dsMax_MR_Standard Template Manual"
@@ -40,5 +40,5 @@ zip -r ../../../releases/repository/templates/XSI_Arnold_Dome_Light.zip XSI_Arno
 zip -r ../../../releases/repository/templates/XSI_Arnold_Standard.zip XSI_Arnold_Standard --exclude "./XSI_Arnold_Standard/help/XSI_Arnold_Standard Template Manual"
 zip -r ../../../releases/repository/templates/XSI_MR_Standard.zip XSI_MR_Standard --exclude "./XSI_MR_Standard/help/XSI_MR_Standard Template Manual"
 
-#! Reaching Original Directory.
+#! Reaching original directory.
 cd ../../../

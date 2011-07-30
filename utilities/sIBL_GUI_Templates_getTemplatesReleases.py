@@ -24,6 +24,7 @@
 #
 # The following code is protected by GNU GPL V3 Licence.
 #
+#***********************************************************************************************
 
 """
 **sIBL_GUI_Templates_getTemplatesReleases.py
@@ -32,29 +33,29 @@
 	Windows, Linux, Mac Os X.
 
 **Description:**
-	Get Templates Releases.
+	Get Templates releases.
 
 **Others:**
 
 """
 
 #***********************************************************************************************
-#***	Python Begin.
+#***	Python begin.
 #***********************************************************************************************
 #***********************************************************************************************
-#***	External Imports.
+#***	External imports.
 #***********************************************************************************************
 import logging
 import os
 import sys
 
 #***********************************************************************************************
-#***	Path Settings.
+#***	Path settings.
 #***********************************************************************************************
 sys.path.append("../../Foundations/src")
 
 #***********************************************************************************************
-#***	Internal Imports.
+#***	Internal imports.
 #***********************************************************************************************
 import foundations.core as core
 import foundations.namespace as namespace
@@ -65,7 +66,7 @@ from foundations.parser import Parser
 from foundations.globals.constants import Constants
 
 #***********************************************************************************************
-#***	Global Variables.
+#***	Global variables.
 #***********************************************************************************************
 LOGGER = logging.getLogger(Constants.logger)
 
@@ -79,11 +80,11 @@ TEMPLATES_PATH = "../src/templates"
 TEMPLATES_EXTENSION = "sIBLT"
 
 #***********************************************************************************************
-#***	Main Python Code.
+#***	Main python code.
 #***********************************************************************************************
 def getTemplatesReleases():
 	"""
-	This Definition Gets Templates Releases.
+	This definition gets Templates releases.
 	"""
 
 	walker = Walker()
@@ -99,5 +100,5 @@ if __name__ == "__main__":
 	getTemplatesReleases()
 
 #***********************************************************************************************
-#***	Python End.
+#***	Python end.
 #***********************************************************************************************

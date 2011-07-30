@@ -24,25 +24,26 @@
 #
 # The following code is protected by GNU GPL V3 Licence.
 #
+#***********************************************************************************************
 
 """
-**sIBL_GUI__Templates_textileToHtml.py
+**sIBL_GUI_Templates_textileToHtml.py
 
 **Platform:**
 	Windows, Linux, Mac Os X.
 
 **Description:**
-	Converts A Textile File To HTML.
+	Converts a Textile file to HTML.
 
 **Others:**
 
 """
 
 #***********************************************************************************************
-#***	Python Begin.
+#***	Python begin.
 #***********************************************************************************************
 #***********************************************************************************************
-#***	External Imports.
+#***	External imports.
 #***********************************************************************************************
 import logging
 import os
@@ -50,14 +51,14 @@ import sys
 import textile
 
 #***********************************************************************************************
-#***	Internal Imports.
+#***	Internal imports.
 #***********************************************************************************************
 import foundations.core as core
 from foundations.io import File
 from foundations.globals.constants import Constants
 
 #***********************************************************************************************
-#***	Global Variables.
+#***	Global variables.
 #***********************************************************************************************
 LOGGER = logging.getLogger(Constants.logger)
 
@@ -68,18 +69,18 @@ LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
 core.setVerbosityLevel(3)
 
 #***********************************************************************************************
-#***	Main Python Code.
+#***	Main python code.
 #***********************************************************************************************
 def textileToHtml(fileIn, fileOut, title):
 	"""
-	This Definition Outputs A Textile File To HTML.
+	This definition outputs a Textile file to HTML.
 
-	@param fileIn: File To Convert. ( String )
-	@param fileOut: Output File. ( String )
-	@param title: HTML File Title. ( String )
+	@param fileIn: File to convert. ( String )
+	@param fileOut: Output file. ( String )
+	@param title: HTML file title. ( String )
 	"""
 
-	LOGGER.info("{0} | Converting '{1}' textile File To HTML!".format(textileToHtml.__name__, fileIn))
+	LOGGER.info("{0} | Converting '{1}' Textile file to HTML!".format(textileToHtml.__name__, fileIn))
 	file = File(fileIn)
 	file.read()
 
@@ -121,7 +122,7 @@ def textileToHtml(fileIn, fileOut, title):
 	file.content = output
 	file.write()
 
-	LOGGER.info("{0} | Formatting HTML File!".format(textileToHtml.__name__))
+	LOGGER.info("{0} | Formatting HTML file!".format(textileToHtml.__name__))
 	os.system("tidy -config {0} -m '{1}'".format(os.path.join(os.path.dirname(__file__), "tidy/tidySettings.rc"), file.file))
 
 	file.read()
@@ -132,5 +133,5 @@ if __name__ == "__main__":
 	textileToHtml(sys.argv[1], sys.argv[2], sys.argv[3])
 
 #***********************************************************************************************
-#***	Python End.
+#***	Python end.
 #***********************************************************************************************
