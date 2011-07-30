@@ -53,9 +53,9 @@ def textileToHtml(fileIn, fileOut, title):
 	"""
 	This definition outputs a Textile file to HTML.
 
-	@param fileIn: File to convert. ( String )
-	@param fileOut: Output file. ( String )
-	@param title: HTML file title. ( String )
+	:param fileIn: File to convert. ( String )
+	:param fileOut: Output file. ( String )
+	:param title: HTML file title. ( String )
 	"""
 
 	LOGGER.info("{0} | Converting '{1}' Textile file to HTML!".format(textileToHtml.__name__, fileIn))
