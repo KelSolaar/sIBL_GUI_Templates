@@ -1009,7 +1009,6 @@ function sIBL_XSI_Arnold_DLight_getShadersPath()
 	return sIBL_XSI_Arnold_DLight_getPluginPath() + "../../Data/DSPresets/";
 }
 
-
 function sIBL_XSI_Arnold_DLight_objectExists(object)
 {
 	var seekedObject = Application.ActiveSceneRoot.FindChild(object);
