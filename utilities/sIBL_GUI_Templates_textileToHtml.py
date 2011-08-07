@@ -108,5 +108,3 @@ def textileToHtml(fileIn, fileOut, title):
 	file.write()
 
 if __name__ == "__main__":
-	textileToHtml(sys.argv[1], sys.argv[2], sys.argv[3])
-

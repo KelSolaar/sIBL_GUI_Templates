@@ -62,5 +62,3 @@ def remove(item):
 		print("{0} | '{1}' remove failed!".format(remove.__name__, item))
 
 if __name__ == "__main__":
-	recursiveRemove(sys.argv[1], sys.argv[2])
-
