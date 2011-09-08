@@ -30,10 +30,10 @@ sys.path.append("../../Foundations/src")
 #***********************************************************************************************
 import foundations.core as core
 import foundations.namespace as namespace
-import foundations.parser
+import foundations.parsers
 from foundations.io import File
-from foundations.walker import Walker
-from foundations.parser import Parser
+from foundations.walkers import OsWalker
+from foundations.parsers import SectionsFileParser
 from foundations.globals.constants import Constants
 
 #***********************************************************************************************
@@ -65,13 +65,13 @@ def getTemplatesReleases():
 	This definition gets Templates releases.
 	"""
 
-	walker = Walker()
-	walker.root = TEMPLATES_PATH
-	templates = walker.walk((TEMPLATES_EXTENSION,), ("\._",))
+	osWalker = OsWalker()
+	osWalker.root = TEMPLATES_PATH
+	templates = osWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
 	for template in sorted(templates.keys()):
-		parser = Parser(templates[template])
+		parser = SectionsFileParser(templates[template])
 		parser.read() and parser.parse()
 
-		LOGGER.info("{0} | '{1}': '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parser.getAttributeCompound("Release", parser.getValue("Release", "Template", encode=True)).value))
+		LOGGER.info("{0} | '{1}': '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parsers.getAttributeCompound("Release", parser.getValue("Release", "Template", encode=True)).value))
 
 if __name__ == "__main__":
