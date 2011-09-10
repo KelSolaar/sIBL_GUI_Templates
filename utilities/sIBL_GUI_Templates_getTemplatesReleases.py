@@ -69,9 +69,9 @@ def getTemplatesReleases():
 	osWalker.root = TEMPLATES_PATH
 	templates = osWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
 	for template in sorted(templates.keys()):
-		parser = SectionsFileParser(templates[template])
-		parser.read() and parser.parse()
+		sectionsFileParser = SectionsFileParser(templates[template])
+		sectionsFileParser.read() and sectionsFileParser.parse()
 
-		LOGGER.info("{0} | '{1}': '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parsers.getAttributeCompound("Release", parser.getValue("Release", "Template", encode=True)).value))
+		LOGGER.info("{0} | '{1}': '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parsers.getAttributeCompound("Release", sectionsFileParser.getValue("Release", "Template", encode=True)).value))
 
 if __name__ == "__main__":
