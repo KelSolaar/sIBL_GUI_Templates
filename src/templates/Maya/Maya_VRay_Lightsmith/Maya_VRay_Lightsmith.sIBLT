@@ -237,9 +237,9 @@ class Setup(object):
 	def deleteLightShaders(self, light):
 		lightHistory = cmds.listHistory(light)
 		for node in lightHistory:
-			if re.search("_intensity_multiplyDivide", node) and cmds.nodeType(node) == "multiplyDivide":
+			if re.search(r"_intensity_multiplyDivide", node) and cmds.nodeType(node) == "multiplyDivide":
 				cmds.delete(node)
-			if re.search("_color_multiplyDivide", node) and cmds.nodeType(node) == "multiplyDivide":
+			if re.search(r"_color_multiplyDivide", node) and cmds.nodeType(node) == "multiplyDivide":
 				cmds.delete(node)
 
 	def getLightsmithLight(self, name, filePath, maskFilePath, geometryPath, geometryFramePath, scaleX, scaleY, scale, shape, color, frameColor, createLight, texturedLight):
@@ -352,7 +352,7 @@ class Setup(object):
 
 					proceedSetup = True
 					for relative in compliantLightRelatives:
-						if re.search("_support$", relative):
+						if re.search(r"_support$", relative):
 							if cmds.confirmDialog(title=Constants.applicationName, message="%s | '%s' light has already a Lightsmith setup! Would you like to replace it?" % (Constants.applicationName, compliantLightTransform), button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 								proceedSetup = False
 								break
@@ -362,7 +362,7 @@ class Setup(object):
 						intensity = 1
 						hasLightControls = False
 						for relative in compliantLightRelatives:
-							if re.search("_controls$", relative):
+							if re.search(r"_controls$", relative):
 								color = cmds.getAttr("%s.color" % relative)[0]
 								intensity = (cmds.getAttr("%s.redIntensity" % relative) + cmds.getAttr("%s.greenIntensity" % relative) + cmds.getAttr("%s.blueIntensity" % relative)) / 3
 								hasLightControls = True
@@ -371,7 +371,7 @@ class Setup(object):
 							color = cmds.getAttr("%s.lightColor" % compliantLight)[0]
 							intensity = cmds.getAttr("%s.intensityMult" % compliantLight)
 						for relative in compliantLightRelatives:
-							if re.search("_root$", relative):
+							if re.search(r"_root$", relative):
 								cmds.delete(relative)
 								break
 
@@ -388,7 +388,7 @@ class Setup(object):
 
 						light = self.getLightsmithLight(name, filePath, maskFilePath, geometryPath, geometryFramePath, scaleX, scaleY, 1, None, color, frameColor, False, texturedLight)
 						for relative in cmds.listRelatives(light, f=True, ad=True):
-							if re.search("_root$", relative) and cmds.nodeType(relative) == "transform":
+							if re.search(r"_root$", relative) and cmds.nodeType(relative) == "transform":
 								lightRoot = getTransform(cmds.parent(relative, compliantLightTransform)[0])
 								break
 						for relative in cmds.listRelatives(lightRoot, f=True, ad=True):
