@@ -54,11 +54,11 @@ Template last modified: @Date
 sIBL_GUI
 */
 
-struct sIBL_datas (backgroundFilePath, reflectionFilePath,  lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
+struct sIBL_data (backgroundFilePath, reflectionFilePath,  lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
 struct sIBL_options (createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, activateLinearWorkflow)
-struct sIBL_sceneNodes (datasGroup,  lightsGroup, feedback, domeLight)
+struct sIBL_sceneNodes (dataGroup,  lightsGroup, feedback, domeLight)
 
-global sIBL_DATAS =  sIBL_datas backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
+global sIBL_DATAS =  sIBL_data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
 global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround activateLinearWorkflow:@activateLinearWorkflow
 global sIBL_SCENE_NODES = sIBL_sceneNodes()
 
@@ -132,7 +132,7 @@ fn sIBL_3dsmax_Scanline_hideLights =
 fn sIBL_3dsmax_Scanline_getSIBLGroup =
 (
 	local sIBL_Point = Point name:"sIBL_Point" centermarker:off axistripod:off cross:off Box:off
-	sIBL_SCENE_NODES.datasGroup = group sIBL_Point name:"sIBL_Datas"
+	sIBL_SCENE_NODES.dataGroup = group sIBL_Point name:"sIBL_Data"
 )
 
 fn sIBL_3dsmax_Scanline_getFeedback feedbackRadius createBackground texturePath =
@@ -162,7 +162,7 @@ fn sIBL_3dsmax_Scanline_getFeedback feedbackRadius createBackground texturePath 
 		showTextureMap feedbackShader True
 	)
 
-	feedbackSphere.parent = sIBL_SCENE_NODES.datasGroup
+	feedbackSphere.parent = sIBL_SCENE_NODES.dataGroup
 	setTransformLockFlags feedbackSphere #{1,2,3,4,5}
 
 	feedbackSphere.name = "sIBL_Feedback"
@@ -176,7 +176,7 @@ fn sIBL_3dsmax_Scanline_getLightsGroup =
 
 	sIBL_3dsmax_Scanline_getDefaultControllers sIBL_SCENE_NODES.lightsGroup
 
-	sIBL_SCENE_NODES.lightsGroup.parent = sIBL_SCENE_NODES.datasGroup
+	sIBL_SCENE_NODES.lightsGroup.parent = sIBL_SCENE_NODES.dataGroup
 )
 
 fn sIBL_3dsmax_Scanline_createSkyLight =
@@ -184,7 +184,7 @@ fn sIBL_3dsmax_Scanline_createSkyLight =
 	local iblSkylight = Skylight()
 	iblSkylight.sky_mode = 1
 
-	iblSkylight.parent = sIBL_SCENE_NODES.datasGroup
+	iblSkylight.parent = sIBL_SCENE_NODES.dataGroup
 
 	iblSkylight.name = "sIBL_SkyLight"
 
@@ -332,7 +332,7 @@ fn sIBL_3dsmax_Scanline_createGround currentScale =
 	local currentScale = currentScale * (sqrt 2)
 	local currentPlane = plane typeinCreationMethod:1 length:currentScale width:currentScale
 	currentPlane.backfacecull = on
-	currentPlane.parent = sIBL_SCENE_NODES.datasGroup
+	currentPlane.parent = sIBL_SCENE_NODES.dataGroup
 
 	local groundShader = StandardMaterial name:"sIBL_GroundShader"
 	currentPlane.material = groundShader

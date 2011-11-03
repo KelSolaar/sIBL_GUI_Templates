@@ -108,17 +108,17 @@ class Structure(object):
 class Light(Structure):
 	pass
 
-def getDynamicLights(datas):
+def getDynamicLights(data):
 	dynamicLights = {}
 	try:
-		tokens = datas.split("|")
+		tokens = data.split("|")
 		for i in range(0, len(tokens), 8):
 			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2] / 255.0), float(tokens[i+3] / 255.0), float(tokens[i+4] / 255.0)), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
 	except:
 		pass
 	return dynamicLights
 
-class Datas(object):
+class Data(object):
 	backgroundFile = "@BGfile"
 	backgroundWidth = @BGheight * 2
 	reflectionFile = "@REFfile"
@@ -154,7 +154,7 @@ class Options(object):
 
 class Setup(object):
 	def __init__(self):
-		if Datas.backgroundFile == "-1" or Datas.reflectionFile == "-1" or Datas.lightingFile == "-1":
+		if Data.backgroundFile == "-1" or Data.reflectionFile == "-1" or Data.lightingFile == "-1":
 			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s file import canceled!" % Constants.prefix))
 				self.__exit__()
@@ -202,9 +202,9 @@ class Setup(object):
 		self.getEnvironmentShaders()
 		self.getFeedback()
 		self.getLigthsTarget()
-		if Options.createSun and Datas.sunU != -1 and Datas.sunV != -1:
+		if Options.createSun and Data.sunU != -1 and Data.sunV != -1:
 			self.getSun()
-		if Options.createLights and Datas.dynamicLights:
+		if Options.createLights and Data.dynamicLights:
 			self.getDynamicLights()
 		self.connectFeedbackToShaders()
 		Options.createGround and self.getGround()
@@ -326,13 +326,13 @@ class Setup(object):
 		cmds.setAttr("vraySettings.cam_overrideEnvtex", True)
 
 		if Options.createBackground:
-			self.getEnvironmentShadersBranch("vraySettings.cam_envtexBg", Datas.backgroundFile, "%s_background" % Constants.prefix, True)
+			self.getEnvironmentShadersBranch("vraySettings.cam_envtexBg", Data.backgroundFile, "%s_background" % Constants.prefix, True)
 
 		if Options.createLighting:
-			self.getEnvironmentShadersBranch("vraySettings.cam_envtexGi", Datas.lightingFile, "%s_lighting" % Constants.prefix, True)
+			self.getEnvironmentShadersBranch("vraySettings.cam_envtexGi", Data.lightingFile, "%s_lighting" % Constants.prefix, True)
 
 		if Options.createReflection:
-			self.getEnvironmentShadersBranch("vraySettings.cam_envtexReflect", Datas.reflectionFile, "%s_reflection" % Constants.prefix, True)
+			self.getEnvironmentShadersBranch("vraySettings.cam_envtexReflect", Data.reflectionFile, "%s_reflection" % Constants.prefix, True)
 
 	def getDisplayLocator(self, name, radius, visibility):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
@@ -365,10 +365,10 @@ class Setup(object):
 		not cmds.ls("%s.resolution" % file) and cmds.addAttr(file, ln="resolution", at="long")
 		cmds.setAttr("%s.resolution" % file, 2048)
 
-		fileTextureName = Datas.backgroundFile
-		if Datas.backgroundWidth > Constants.maximumViewportTextureSize:
-			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The background image is too Large to be displayed on the Visual Feedback.\nCurrent environment image width: %s Pixels.\nThe Visual Feedback will use the reflection image instead." % Datas.backgroundWidth, button=("Ok",), defaultButton="Ok")
-			fileTextureName = Datas.reflectionFile
+		fileTextureName = Data.backgroundFile
+		if Data.backgroundWidth > Constants.maximumViewportTextureSize:
+			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The background image is too Large to be displayed on the Visual Feedback.\nCurrent environment image width: %s Pixels.\nThe Visual Feedback will use the reflection image instead." % Data.backgroundWidth, button=("Ok",), defaultButton="Ok")
+			fileTextureName = Data.reflectionFile
 		cmds.setAttr("%s.fileTextureName" % file, fileTextureName, type="string")
 		cmds.connectAttr("%s.outColor" % file, "%s.color" % lambert, f=True)
 
@@ -464,10 +464,10 @@ class Setup(object):
 			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 	def getSun(self):
-		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Datas.sunColor, Datas.sunMultiplier, Datas.sunU, Datas.sunV, self.feedbackRadius / 10)
+		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Data.sunColor, Data.sunMultiplier, Data.sunU, Data.sunV, self.feedbackRadius / 10)
 
 	def getDynamicLights(self):
-		for light in Datas.dynamicLights.values():
+		for light in Data.dynamicLights.values():
 			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15)
 
 	def bridgeFeedbackControlsAndShaders(self, target):

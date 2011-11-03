@@ -76,7 +76,7 @@ class Structure(object):
 	def __init__(self, **kwargs):
 		self.__dict__.update(kwargs)
 
-class Datas(object):
+class Data(object):
 	resourcesDirectory = os.path.dirname("@iblPath")
 	lightName= "@LightsmithName"
 	lightFilePath = os.path.join(resourcesDirectory, "@LightsmithFile")
@@ -99,7 +99,7 @@ class Options(object):
 
 class Setup(object):
 	def __init__(self):
-		if Datas.lightName == "-1":
+		if Data.lightName == "-1":
 			if cmds.confirmDialog(title=Constants.applicationName, message="%s | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
 				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s file import canceled!" % Constants.prefix))
 				self.__exit__()
@@ -122,9 +122,9 @@ class Setup(object):
 
 		self.setRenderer()
 		if Options.connectToLights:
-			self.connectToLights(Datas.lightFilePath, Datas.lightMaskFilePath, Datas.lightObjectPath, Datas.lightObjectFramePath, Datas.lightWidth, Datas.lightHeight, Datas.lightObjectFrameColor, Options.texturedLight)
+			self.connectToLights(Data.lightFilePath, Data.lightMaskFilePath, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightWidth, Data.lightHeight, Data.lightObjectFrameColor, Options.texturedLight)
 		else:
-			self.getLightsmithLight(self.getUniqueLightName(Datas.lightName), Datas.lightFilePath, Datas.lightMaskFilePath, Datas.lightObjectPath, Datas.lightObjectFramePath, Datas.lightWidth, Datas.lightHeight, Options.lightScale, Datas.lightShape, Datas.lightColor, Datas.lightObjectFrameColor, Options.createLight, Options.texturedLight)
+			self.getLightsmithLight(self.getUniqueLightName(Data.lightName), Data.lightFilePath, Data.lightMaskFilePath, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightWidth, Data.lightHeight, Options.lightScale, Data.lightShape, Data.lightColor, Data.lightObjectFrameColor, Options.createLight, Options.texturedLight)
 		Options.activateIndirectLighting and self.setIndirectLighting()
 		Options.activateLinearWorkflow and self.setLinearWorkflow()
 

@@ -55,11 +55,11 @@ Template last modified: @Date
 sIBL_GUI
 */
 
-struct sIBL_datas (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
+struct sIBL_data (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
 struct sIBL_options (createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, shadowCatcher, activateLinearWorkflow)
-struct sIBL_sceneNodes (datasGroup,  lightsGroup, feedback)
+struct sIBL_sceneNodes (dataGroup,  lightsGroup, feedback)
 
-global sIBL_DATAS =  sIBL_datas backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
+global sIBL_DATAS =  sIBL_data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
 global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global sIBL_SCENE_NODES = sIBL_sceneNodes()
 
@@ -152,7 +152,7 @@ fn sIBL_3dsmax_MR_hideLights =
 fn sIBL_3dsmax_MR_getSIBLGroup =
 (
 	local sIBL_Point = Point name:"sIBL_Point" centermarker:off axistripod:off cross:off Box:off
-	sIBL_SCENE_NODES.datasGroup = group sIBL_Point name:"sIBL_Datas"
+	sIBL_SCENE_NODES.dataGroup = group sIBL_Point name:"sIBL_Data"
 )
 
 fn sIBL_3dsmax_MR_getFeedback feedbackRadius createBackground texturePath =
@@ -182,7 +182,7 @@ fn sIBL_3dsmax_MR_getFeedback feedbackRadius createBackground texturePath =
 		showTextureMap feedbackShader True
 	)
 
-	feedbackSphere.parent = sIBL_SCENE_NODES.datasGroup
+	feedbackSphere.parent = sIBL_SCENE_NODES.dataGroup
 	setTransformLockFlags feedbackSphere #{1,2,3,4,5}
 
 	feedbackSphere.name = "sIBL_Feedback"
@@ -196,7 +196,7 @@ fn sIBL_3dsmax_MR_getLightsGroup =
 
 	sIBL_3dsmax_MR_getDefaultControllers sIBL_SCENE_NODES.lightsGroup
 
-	sIBL_SCENE_NODES.lightsGroup.parent = sIBL_SCENE_NODES.datasGroup
+	sIBL_SCENE_NODES.lightsGroup.parent = sIBL_SCENE_NODES.dataGroup
 )
 
 fn sIBL_3dsmax_MR_createSkyLight =
@@ -204,7 +204,7 @@ fn sIBL_3dsmax_MR_createSkyLight =
 	local iblSkylight = Skylight()
 	iblSkylight.sky_mode = 0
 
-	iblSkylight.parent = sIBL_SCENE_NODES.datasGroup
+	iblSkylight.parent = sIBL_SCENE_NODES.dataGroup
 
 	iblSkylight.name = "sIBL_SkyLight"
 )
@@ -386,7 +386,7 @@ fn sIBL_3dsmax_MR_createGround currentScale shadowCatcher =
 	local currentScale = currentScale * (sqrt 2)
 	local currentPlane = plane typeinCreationMethod:1 length:currentScale width:currentScale
 	currentPlane.backfacecull = on
-	currentPlane.parent = sIBL_SCENE_NODES.datasGroup
+	currentPlane.parent = sIBL_SCENE_NODES.dataGroup
 
 	local groundShader = if(shadowCatcher == 1) then
 		Matte_Shadow_Reflection__mi background_shader:environmentMap.eye ambient_intensity:1.0 ambient:(color 20 20 20) ao_samples:32 ao_distance:0.0 ao_dark:(color 40 40 40)
