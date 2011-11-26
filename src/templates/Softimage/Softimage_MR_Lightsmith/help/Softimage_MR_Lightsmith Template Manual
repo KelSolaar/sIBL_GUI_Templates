@@ -1,57 +1,75 @@
-h1=. Softimage MR Lightsmith - Template
+Softimage MR Lightsmith - Template
+==================================
 
-h1=. Manual - Help File
+Manual - Help File
+==================
 
-h2. Table Of Content
+Table Of Content
+----------------
 
-*{color:rgb(160, 96, 64); font-size: 11pt;} "Introduction":#Introduction
-* "Options":#Options
-* "Change Log":#ChangeLog
-* "About":#About
+-  `Introduction`_
+-  `Options`_
 
-h2(#Introduction). Introduction
+   -  `Common Attributes`_
+   -  `Additional Attributes`_
+   -  `Scene Components`_
+
+-  `Change Log`_
+-  `About`_
+
+Introduction
+------------
 
 Softimage MR Lightsmith is a sIBL_GUI Template for Softimage and Mental Ray for XSI / Softimage. It provides a way to create Lightsmith Lights in your scene.
-There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: "sIBL_GUI For Softimage":http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511
+There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
-h2(#Options). Options
+Options
+-------
 
-h3. Common Attributes
+Common Attributes
+-----------------
 
-* *Light Scale*: Defines the Lightsmith Light scale.
-* *Create Light*: Creates a real light that will drive the HDR texture as companion for the Lightsmith Light.
-* *Connect To Smart Ibl Lights*: The Lightsmith Light will be connected to the existing scene Smart Ibl Lights.
+-  **Light Scale**: Defines the Lightsmith Light scale.
+-  **Create Light**: Creates a real light that will drive the HDR texture as companion for the Lightsmith Light.
+-  **Connect To Smart Ibl Lights**: The Lightsmith Light will be connected to the existing scene Smart Ibl Lights.
 
-h3. Additional Attributes
+Additional Attributes
+---------------------
 
-* *Passes Selection Dialog*: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the Linear Workflow.
-* *Hide Default Light*: Hides current Scene Default Light.
-* *Activate Final Gather*: Ambiant Lighting ( Ambience ) of the scene is desactivated and Final Gathering is set for the current / selected Pass(es).
-* *Activate Color Management*: Activates Softimage Color Management ( Preferences > Display > Color Management ).
+-  **Passes Selection Dialog**: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the Linear Workflow.
+-  **Hide Default Light**: Hides current Scene Default Light.
+-  **Activate Final Gather**: Ambiant Lighting ( Ambience ) of the scene is desactivated and Final Gathering is set for the current / selected Pass(es).
+-  **Activate Color Management**: Activates Softimage Color Management ( Preferences > Display > Color Management ).
 
-h3. Scene Components
+Scene Components
+----------------
 
-h4. Lightsmith_Controls
-
-table(class#id){border-collapse: collapse; border-width: 1px; border-style: solid; border-color: gray}.
-|!resources/pictures/Lightsmith_Controls.jpg(Lightsmith_Controls)!|
+Lightsmith_Controls
+^^^^^^^^^^^^^^^^^^^
++------------------------------------------------------------+
+| ..  image:: resources/pictures/Lightsmith_Controls.jpg     |
++------------------------------------------------------------+
 
 There are several Controls Attributes on the Lightsmith_Controls Property available in the Lightsmith Light Hook Group.
 
-* General Controls:
-** *Color*: Defines the Lightsmith Light color.
-** *Intensity*: Defines the Lightsmith Light intensity.
+General Controls:
 
-* Others Controls:
-** *Override*: Override the Lightsmith Light HDR texture color without affecting the Lightsmith Light color.
+-  **Color**: Defines the Lightsmith Light color.
+-  **Intensity**: Defines the Lightsmith Light intensity.
 
-h2(#ChangeLog). Change Log
+Others Controls:
 
-<p><a href="http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html">sIBL_GUI_Templates - Change Log</a></p>
+-  **Override***: Override the Lightsmith Light HDR texture color without affecting the Lightsmith Light color.
 
-h2(#About). About
+Change Log
+----------
 
-sIBL_GUI by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
-"http://www.thomasmansencal.com/":http://www.thomasmansencal.com/
+`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html>`_
+
+About
+-----
+
+| *sIBL_GUI* by Thomas Mansencal - 2008 - 2011
+| Copyright© 2008 - 2011 - Thomas Mansencal - `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
+| This Software Is Released Under Terms Of GNU GPL V3 License: http://www.gnu.org/licenses/
+| http://www.thomasmansencal.com/

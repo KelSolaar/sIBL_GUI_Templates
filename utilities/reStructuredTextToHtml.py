@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-**sIBL_GUI_Templates_textileToHtml.py
+**reStructuredTextToHtml.py
 
 **Platform:**
 	Windows, Linux, Mac Os X.
 
 **Description:**
-	Converts a Textile file to HTML.
+	Converts a reStructuredText file to html.
 
 **Others:**
 
@@ -19,7 +19,6 @@
 import logging
 import os
 import sys
-import textile
 
 #**********************************************************************************************************************
 #***	Internal imports.
@@ -46,65 +45,37 @@ LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
 
 core.setVerbosityLevel(3)
 
+RST2HTML = "/Library/Frameworks/Python.framework/Versions/2.7/bin/rst2html.py"
+CSS_FILE = "css/style.css"
+TIDY_SETTINGS_FILE = "tidy/tidySettings.rc"
+
+NORMALIZATION = {"document": "document", }
+
 #**********************************************************************************************************************
-#***	Main python code.
+#***	Main Python code.
 #**********************************************************************************************************************
-def textileToHtml(fileIn, fileOut, title):
+def reStructuredTextToHtml(fileIn, fileOut):
 	"""
-	This definition outputs a Textile file to HTML.
+	This definition outputs a reStructuredText file to html.
 
 	:param fileIn: File to convert. ( String )
 	:param fileOut: Output file. ( String )
-	:param title: HTML file title. ( String )
 	"""
 
-	LOGGER.info("{0} | Converting '{1}' Textile file to HTML!".format(textileToHtml.__name__, fileIn))
-	file = File(fileIn)
-	file.read()
+	LOGGER.info("{0} | Converting '{1}' reStructuredText file to html!".format(reStructuredTextToHtml.__name__, fileIn))
+	os.system("{0} --stylesheet-path='{1}' '{2}' > '{3}'".format(RST2HTML,
+																os.path.join(os.path.dirname(__file__), CSS_FILE),
+																fileIn,
+																fileOut))
 
-	output = []
-	output.append("<html>\n\t<head>\n")
-	output.append("\t\t<title>{0}</title>\n".format(title))
-	output.append(
-			"""\t\t<style type="text/css">
-	            body {
-	                text-align: justify;
-	                font-size: 10pt;
-	                margin: 10px 10px 10px 10px;
-	                background-color: rgb(48, 48, 48);
-	                color: rgb(192, 192, 192);
-	            }
-	            A:link {
-	                text-decoration: none;
-	                color: rgb(160, 96, 64);
-	            }
-	            A:visited {
-	                text-decoration: none;
-	                color: rgb(160, 96, 64);
-	            }
-	            A:active {
-	                text-decoration: none;
-	                color: rgb(160, 96, 64);
-	            }
-	            A:hover {
-	                text-decoration: underline;
-	                color: rgb(160, 96, 64);
-	            }
-	        </style>\n""")
-	output.append("\t</head>\n\t<body>\n\t")
-	output.append("\n\t".join(line for line in textile.textile("".join(file.content)).split("\n") if line))
-	output.append("\t\t</span>\n")
-	output.append("\t</body>\n</html>")
+	LOGGER.info("{0} | Formatting html file!".format("Tidy"))
+	os.system("tidy -config {0} -m '{1}'".format(os.path.join(os.path.dirname(__file__), TIDY_SETTINGS_FILE), fileOut))
 
 	file = File(fileOut)
-	file.content = output
-	file.write()
-
-	LOGGER.info("{0} | Formatting HTML file!".format(textileToHtml.__name__))
-	os.system("tidy -config {0} -m '{1}'".format(os.path.join(os.path.dirname(__file__), "tidy/tidySettings.rc"), file.file))
-
 	file.read()
+	LOGGER.info("{0} | Replacing spaces with tabs!".format(reStructuredTextToHtml.__name__))
 	file.content = [line.replace(" " * 4, "\t") for line in file.content]
 	file.write()
 
 if __name__ == "__main__":
+	reStructuredTextToHtml(sys.argv[1], sys.argv[2])

@@ -1,174 +1,265 @@
-<html>
-	<head>
-		<meta name="generator"
-		content="HTML Tidy for Mac OS X (vers 31 October 2006 - Apple Inc. build 15.3.6), see www.w3.org" />
-		<title>Softimage Arnold Standard - Template - Manual - Help
-		File</title>
-		<style type="text/css">
-					body {
-						text-align: justify;
-						font-size: 10pt;
-						margin: 10px 10px 10px 10px;
-						background-color: rgb(48, 48, 48);
-						color: rgb(192, 192, 192);
-					}
-					A:link {
-						text-decoration: none;
-						color: rgb(160, 96, 64);
-					}
-					A:visited {
-						text-decoration: none;
-						color: rgb(160, 96, 64);
-					}
-					A:active {
-						text-decoration: none;
-						color: rgb(160, 96, 64);
-					}
-					A:hover {
-						text-decoration: underline;
-						color: rgb(160, 96, 64);
-					}
+<?xml version="1.0" encoding="utf-8"?>
 
-</style>
-	</head>
-	<body>
-		<h1 style="text-align:center;">Softimage Arnold Standard
-		&#8211; Template</h1>
-		<h1 style="text-align:center;">Manual &#8211; Help
-		File</h1>
-		<h2>Table Of Content</h2>
-		<ul style="color:rgb(160, 96, 64); font-size: 11pt;">
-			<li>
-				<a href="#Introduction">Introduction</a>
-			</li>
-			<li>
-				<a href="#Options">Options</a>
-			</li>
-			<li>
-				<a href="#ChangeLog">Change Log</a>
-			</li>
-			<li>
-				<a href="#About">About</a>
-			</li>
-		</ul>
-		<h2 id="Introduction">Introduction</h2>
-		<p>Softimage Arnold Standard is a sIBL_GUI Template for
-		Softimage and Arnold for Softimage 2010 version. It
-		provides a bridge between Softimage, Arnold and Smart
-		<span class="caps">IBL</span>.
-		<br />There is a Softimage Addon with everything needed to
-		use sIBL_GUI smoothly with Softimage here:
-		<a href="http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511">
-		sIBL_GUI For Softimage</a></p>
-		<h2 id="Options">Options</h2>
-		<h3>Common Attributes</h3>
-		<ul>
-			<li>
-			<strong>Create Background</strong>: Creates the
-			Background Environment Branch of the Sky Shader ( Using
-			the High Resolution
-			<span class="caps">LDR</span> file of the current
-			<span class="caps">IBL</span> Set ).</li>
-			<li>
-			<strong>Create Reflection</strong>: Creates the
-			Reflection Environment Branch of the Sky Shader ( Using
-			the Reflection
-			<span class="caps">HDR</span> file of the current
-			<span class="caps">IBL</span> Set ).</li>
-			<li>
-			<strong>Create Lighting</strong>: Creates the Lighting
-			Environment Branch of the Sky Shader ( Using the
-			Lighting
-			<span class="caps">HDR</span> file of the current
-			<span class="caps">IBL</span> Set ).</li>
-			<li>
-			<strong>Create Sun</strong>: Creates the light used as
-			Sun.</li>
-			<li>
-			<strong>Create Dynamic Lights</strong>: Creates the
-			sIBL Dynamics Lights.</li>
-		</ul>
-		<h3>Additional Attributes</h3>
-		<ul>
-			<li>
-			<strong>Passes Selection Dialog</strong>: A Pass(es)
-			selection dialog appears to choose which Pass(es) will
-			be affected by the
-			<span class="caps">IBL</span>.</li>
-			<li>
-			<strong>Display Feedback</strong>: Displays a viewport
-			Visual Feedback with the current
-			<span class="caps">IBL</span>
-			<span class="caps">LDR</span> Background image.</li>
-			<li>
-			<strong>Sun Light Type</strong>: Create the Sun as one
-			of these lights type: &#8220;Distant&#8221;,
-			&#8220;Quad&#8221;, &#8220;Spot&#8221;,
-			&#8220;Point&#8221;.</li>
-			<li>
-			<strong>Dynamic Lights Type</strong>: Create the
-			Dynamics Lights as one of these lights type:
-			&#8220;Distant&#8221;, &#8220;Quad&#8221;,
-			&#8220;Spot&#8221;, &#8220;Point&#8221;.</li>
-			<li>
-			<strong>Hide Lights</strong>: Hides all current Scene
-			lights.</li>
-			<li>
-			<strong>Create Ground</strong>: A Grid is added to the
-			Scene.</li>
-			<li>
-			<strong>Use Lighting Image For Glossy</strong>:
-			Lighting Image branch is connected to the sIBL_Sky
-			Glossy slot.</li>
-			<li>
-			<strong>Activate Linear Workflow</strong>: Activates
-			Linear Workflow.</li>
-			<li>
-			<strong>Use Arnold Gamma Correction</strong>: Uses
-			Arnold Gamma Correction instead of Softimage Native
-			Color Management ( Preferences &gt; Display &gt; Color
-			Management ).</li>
-		</ul>
-		<h3>Scene Components</h3>
-		<h4>Smart_IBL_Controls</h4>
-		<table style="border-collapse: collapse; border-width: 1px; border-style: solid; border-color: gray;"
-		class="class" id="id">
-			<tr>
-				<td>
-					<img src="resources/pictures/Smart_IBL_Controls.jpg"
-					title="Smart_IBL_Controls"
-					alt="Smart_IBL_Controls" />
-				</td>
-			</tr>
-		</table>
-		<p>There are several Controls Attributes on the
-		Smart_IBL_Controls Property available in the sIBL
-		Group.</p>
-		<ul>
-			<li>Render Togglers:
-			<ul>
-				<li>Activate / Deactivate the different Smart
-				<span class="caps">IBL</span> Components.</li>
-				<li>* Color Correction: Gamma / Gain Controls of
-				the different Smart
-				<span class="caps">IBL</span> Components.</li>
-			</ul></li>
-		</ul>
-		<h2 id="ChangeLog">Change Log</h2>
-		<p>
-			<a href="http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html">
-			sIBL_GUI_Templates &#8211; Change Log</a>
-		</p>
-		<h2 id="About">About</h2>
-		<p>sIBL_GUI by Thomas Mansencal &#8211; 2008 &#8211; 2011
-		<br />Copyright&#169; 2008 &#8211; 2011 &#8211; Thomas
-		Mansencal &#8211;
-		<a href="mailto:thomas.mansencal@gmail.com">thomas.mansencal@gmail.com</a>
-		<br />This Software Is Released Under Terms Of
-		<span class="caps">GNU</span>
-		<span class="caps">GPL</span> V3 License:
-		<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>
-		<br />
-		<a href="http://www.thomasmansencal.com/">http://www.thomasmansencal.com/</a></p>
-	</body>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta name="generator" content=
+	"HTML Tidy for Mac OS X (vers 31 October 2006 - Apple Inc. build 15.3.6), see www.w3.org" />
+	<meta http-equiv="Content-Type" content=
+	"text/html; charset=utf-8" />
+	<meta name="generator" content=
+	"Docutils 0.8: http://docutils.sourceforge.net/" />
+
+	<title></title>
+	<style type="text/css">
+/*<![CDATA[*/
+
+	body {
+		background-color: rgb(48, 48, 48);
+		color: rgb(192, 192, 192);
+		text-align: justify;
+		font-size: 10pt;
+		margin: 10px 10px 10px 10px;
+	}
+
+	A:link {
+		color: rgb(160, 96, 64);
+		text-decoration: none;
+	}
+
+	A:visited {
+		text-decoration: none;
+		color: rgb(160, 96, 64);
+	}
+
+	A:active {
+		text-decoration: none;
+		color: rgb(160, 96, 64);
+	}
+
+	A:hover {
+		text-decoration: underline;
+		color: rgb(160, 96, 64);
+	}
+
+	table {
+		border-color: rgb(96, 96, 96);
+		border-collapse: collapse;
+		border-style: solid;
+		border-width: 2px;
+	}
+	/*]]>*/
+	</style>
+</head>
+
+<body>
+	<div class="document">
+		<div class="section" id=
+		"softimage-arnold-standard-template">
+			<h1>Softimage Arnold Standard - Template</h1>
+		</div>
+
+		<div class="section" id="manual-help-file">
+			<h1>Manual - Help File</h1>
+
+			<div class="section" id="table-of-content">
+				<h2>Table Of Content</h2>
+
+				<ul class="simple">
+					<li><a class="reference internal" href=
+					"#introduction">Introduction</a></li>
+
+					<li>
+						<a class="reference internal" href=
+						"#options">Options</a>
+
+						<ul>
+							<li><a class="reference internal" href=
+							"#common-attributes">Common
+							Attributes</a></li>
+
+							<li><a class="reference internal" href=
+							"#additional-attributes">Additional
+							Attributes</a></li>
+
+							<li><a class="reference internal" href=
+							"#scene-components">Scene
+							Components</a></li>
+						</ul>
+					</li>
+
+					<li><a class="reference internal" href=
+					"#change-log">Change Log</a></li>
+
+					<li><a class="reference internal" href=
+					"#about">About</a></li>
+				</ul>
+			</div>
+
+			<div class="section" id="introduction">
+				<h2>Introduction</h2>
+
+				<p>Softimage Arnold Standard is a sIBL_GUI Template
+				for Softimage and Arnold for Softimage 2010
+				version. It provides a bridge between Softimage,
+				Arnold and Smart IBL. There is a Softimage Addon
+				with everything needed to use sIBL_GUI smoothly
+				with Softimage here: <a class="reference external"
+				href=
+				"http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511">
+				sIBL_GUI For Softimage - Helper Script</a></p>
+			</div>
+
+			<div class="section" id="options">
+				<h2>Options</h2>
+			</div>
+
+			<div class="section" id="common-attributes">
+				<h2>Common Attributes</h2>
+
+				<ul class="simple">
+					<li><strong>Create Background</strong>: Creates
+					the Background Environment Branch of the Sky
+					Shader ( Using the High Resolution LDR file of
+					the current IBL Set ).</li>
+
+					<li><strong>Create Reflection</strong>: Creates
+					the Reflection Environment Branch of the Sky
+					Shader ( Using the Reflection HDR file of the
+					current IBL Set ).</li>
+
+					<li><strong>Create Lighting</strong>: Creates
+					the Lighting Environment Branch of the Sky
+					Shader ( Using the Lighting HDR file of the
+					current IBL Set ).</li>
+
+					<li><strong>Create Sun</strong>: Creates the
+					light used as Sun.</li>
+
+					<li><strong>Create Dynamic Lights</strong>:
+					Creates the sIBL Dynamics Lights.</li>
+				</ul>
+			</div>
+
+			<div class="section" id="additional-attributes">
+				<h2>Additional Attributes</h2>
+
+				<ul class="simple">
+					<li><strong>Passes Selection Dialog</strong>: A
+					Pass(es) selection dialog appears to choose
+					which Pass(es) will be affected by the
+					IBL.</li>
+
+					<li><strong>Display Feedback</strong>: Displays
+					a viewport Visual Feedback with the current IBL
+					LDR Background image.</li>
+
+					<li><strong>Sun Light Type</strong>: Create the
+					Sun as one of these lights type:
+					&quot;Distant&quot;, &quot;Quad&quot;,
+					&quot;Spot&quot;, &quot;Point&quot;.</li>
+
+					<li><strong>Dynamic Lights Type</strong>:
+					Create the Dynamics Lights as one of these
+					lights type: &quot;Distant&quot;,
+					&quot;Quad&quot;, &quot;Spot&quot;,
+					&quot;Point&quot;.</li>
+
+					<li><strong>Hide Lights</strong>: Hides all
+					current Scene lights.</li>
+
+					<li><strong>Create Ground</strong>: A Grid is
+					added to the Scene.</li>
+
+					<li><strong>Use Lighting Image For
+					Glossy</strong>: Lighting Image branch is
+					connected to the sIBL_Sky Glossy slot.</li>
+
+					<li><strong>Activate Linear Workflow</strong>:
+					Activates Linear Workflow.</li>
+
+					<li><strong>Use Arnold Gamma
+					Correction</strong>: Uses Arnold Gamma
+					Correction instead of Softimage Native Color
+					Management ( Preferences &gt; Display &gt;
+					Color Management ).</li>
+				</ul>
+			</div>
+
+			<div class="section" id="scene-components">
+				<h2>Scene Components</h2>
+
+				<div class="section" id=
+				"sibl-controls-smart-ibl-controls">
+					<h3>sIBL_Controls / [ Smart IBL Controls ]</h3>
+
+					<table border="1" class="docutils">
+						<colgroup>
+							<col width="100%" />
+						</colgroup>
+
+						<tbody valign="top">
+							<tr>
+								<td><img alt=
+								"resources/pictures/Smart_IBL_Controls.jpg"
+								class="first last" src=
+								"resources/pictures/Smart_IBL_Controls.jpg" /></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<p>There are several Controls Attributes on the
+					sIBL_Controls Annotation available in the
+					Channel Box.</p>
+
+					<p>Render Togglers:</p>
+
+					<ul class="simple">
+						<li>Activate / Deactivate the different
+						Smart IBL Components.</li>
+
+						<li>[* CC]: Gamma / Gain Controls of the
+						different Smart IBL Components.</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="section" id="change-log">
+				<h2>Change Log</h2>
+
+				<p><a class="reference external" href=
+				"http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html">
+				sIBL_GUI_Templates - Change Log</a></p>
+			</div>
+
+			<div class="section" id="about">
+				<h2>About</h2>
+
+				<div class="line-block">
+					<div class="line">
+						<em>sIBL_GUI</em> by Thomas Mansencal -
+						2008 - 2011
+					</div>
+
+					<div class="line">
+						Copyright© 2008 - 2011 - Thomas Mansencal
+						- <a class="reference external" href=
+						"mailto:thomas.mansencal&#64;gmail.com">thomas.mansencal&#64;gmail.com</a>
+					</div>
+
+					<div class="line">
+						This Software Is Released Under Terms Of
+						GNU GPL V3 License: <a class=
+						"reference external" href=
+						"http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>
+					</div>
+
+					<div class="line">
+						<a class="reference external" href=
+						"http://www.thomasmansencal.com/">http://www.thomasmansencal.com/</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
 </html>

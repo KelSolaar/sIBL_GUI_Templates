@@ -10,7 +10,7 @@ rm -rf ./releases/repository/*
 echo ----------------------------------------------------------------
 echo Cleanup - Begin
 echo ----------------------------------------------------------------
-python ./utilities/sIBL_GUI_Templates_recursiveRemove.py ./src/templates/ .DS_Store
+python ./utilities/recursiveRemove.py ./src/templates/ .DS_Store
 echo ----------------------------------------------------------------
 echo Cleanup - End
 echo ----------------------------------------------------------------

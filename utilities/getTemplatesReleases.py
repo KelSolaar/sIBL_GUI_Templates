@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-**sIBL_GUI_Templates_getTemplatesReleases.py
+**getTemplatesReleases.py
 
 **Platform:**
 	Windows, Linux, Mac Os X.

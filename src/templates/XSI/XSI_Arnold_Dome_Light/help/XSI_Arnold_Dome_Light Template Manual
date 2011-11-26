@@ -1,62 +1,80 @@
-h1=. XSI Arnold Dome Light - Template
+XSI Arnold Dome Light - Template
+================================
 
-h1=. Manual - Help File
+Manual - Help File
+==================
 
-h2. Table Of Content
+Table Of Content
+----------------
 
-*{color:rgb(160, 96, 64); font-size: 11pt;} "Introduction":#Introduction
-* "Options":#Options
-* "Change Log":#ChangeLog
-* "About":#About
+-  `Introduction`_
+-  `Options`_
 
-h2(#Introduction). Introduction
+   -  `Common Attributes`_
+   -  `Additional Attributes`_
+   -  `Scene Components`_
+
+-  `Change Log`_
+-  `About`_
+
+Introduction
+------------
 
 XSI Arnold Dome Light is a sIBL_GUI Template for XSI and Arnold for XSI 2010 version. It provides a bridge between XSI, Arnold and Smart IBL.
-There is a XSI Addon with everything needed to use sIBL_GUI smoothly with XSI here: "sIBL_GUI For XSI":http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511
+There is a XSI Addon with everything needed to use sIBL_GUI smoothly with XSI here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
-h2(#Options). Options
+Options
+-------
 
-h3. Common Attributes
+Common Attributes
+-----------------
 
-* *Create Background*: Creates the Background Environment Branch of the Sky Shader ( Using the High Resolution LDR file of the current IBL Set ).
-* *Create Reflection*: Creates the Reflection Environment Branch of the Sky Shader ( Using the Reflection HDR file of the current IBL Set ).
-* *Create Lighting*: Creates the Lighting Environment Branch of the Sky Shader ( Using the Lighting HDR file of the current IBL Set ).
-* *Create Sun*: Creates the light used as Sun.
-* *Create Dynamic Lights*: Creates the sIBL Dynamics Lights.
+-  **Create Background**: Creates the Background Environment Branch of the Sky Shader ( Using the High Resolution LDR file of the current IBL Set ).
+-  **Create Reflection**: Creates the Reflection Environment Branch of the Sky Shader ( Using the Reflection HDR file of the current IBL Set ).
+-  **Create Lighting**: Creates the Lighting Environment Branch of the Sky Shader ( Using the Lighting HDR file of the current IBL Set ).
+-  **Create Sun**: Creates the light used as Sun.
+-  **Create Dynamic Lights**: Creates the sIBL Dynamics Lights.
 
-h3. Additional Attributes
+Additional Attributes
+---------------------
 
-* *Passes Selection Dialog*: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the IBL.
-* *Display Feedback*: Displays a viewport Visual Feedback with the current IBL LDR Background image.
-* *Sun Light Type*: Create the Sun as one of these lights type: "Distant", "Quad", "Spot", "Point".
-* *Dynamic Lights Type*: Create the Dynamics Lights as one of these lights type: "Distant", "Quad", "Spot", "Point".
-* *Hide Lights*: Hides all current Scene lights.
-* *Create Ground*: A Grid is added to the Scene.
-* *Use Dual Skydome Setup*: Two Skydomes lights will be created: one for the Diffuse component and another one for the Specular component.
-* *Use Reflection Image For Lighting*: Reflection Image is connected to the Skydome(s).
-* *Activate Linear Workflow*: Activates Linear Workflow.
-* *Use Arnold Gamma Correction*: Uses Arnold Gamma Correction instead of XSI Native Color Management ( Preferences > Display > Color Management ).
+-  **Passes Selection Dialog**: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the IBL.
+-  **Display Feedback**: Displays a viewport Visual Feedback with the current IBL LDR Background image.
+-  **Sun Light Type**: Create the Sun as one of these lights type: "Distant", "Quad", "Spot", "Point".
+-  **Dynamic Lights Type**: Create the Dynamics Lights as one of these lights type: "Distant", "Quad", "Spot", "Point".
+-  **Hide Lights**: Hides all current Scene lights.
+-  **Create Ground**: A Grid is added to the Scene.
+-  **Use Dual Skydome Setup**: Two Skydomes lights will be created: one for the Diffuse component and another one for the Specular component.
+-  **Use Reflection Image For Lighting**: Reflection Image is connected to the Skydome(s).
+-  **Activate Linear Workflow**: Activates Linear Workflow.
+-  **Use Arnold Gamma Correction**: Uses Arnold Gamma Correction instead of XSI Native Color Management ( Preferences > Display > Color Management ).
 
-h3. Scene Components
+Scene Components
+----------------
 
-h4. Smart_IBL_Controls
+sIBL_Controls / [ Smart IBL Controls ]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-table(class#id){border-collapse: collapse; border-width: 1px; border-style: solid; border-color: gray}.
-|!resources/pictures/Smart_IBL_Controls.jpg(Smart_IBL_Controls)!|
++-----------------------------------------------------------+
+| ..  image:: resources/pictures/Smart_IBL_Controls.jpg     |
++-----------------------------------------------------------+
 
-There are several Controls Attributes on the Smart_IBL_Controls Property available in the sIBL Group.
+There are several Controls Attributes on the sIBL_Controls Annotation available in the Channel Box.
 
-* Render Togglers:
-** Activate / Deactivate the different Smart IBL Components.
-** ==* ==Color Correction: Gamma / Gain Controls of the different Smart IBL Components.
+Render Togglers:
 
-h2(#ChangeLog). Change Log
+-  Activate / Deactivate the different Smart IBL Components.
+-  [* CC]: Gamma / Gain Controls of the different Smart IBL Components.
 
-<p><a href="http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html">sIBL_GUI_Templates - Change Log</a></p>
+Change Log
+----------
 
-h2(#About). About
+`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html>`_
 
-sIBL_GUI by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
-"http://www.thomasmansencal.com/":http://www.thomasmansencal.com/
+About
+-----
+
+| *sIBL_GUI* by Thomas Mansencal - 2008 - 2011
+| Copyright© 2008 - 2011 - Thomas Mansencal - `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
+| This Software Is Released Under Terms Of GNU GPL V3 License: http://www.gnu.org/licenses/
+| http://www.thomasmansencal.com/
