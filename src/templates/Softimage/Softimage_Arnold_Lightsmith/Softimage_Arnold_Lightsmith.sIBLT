@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Lightsmith | String | Template Name
+Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith Template Manual.html | String | Help File
 Release = @Release | 0.9.5 | String | Template Release

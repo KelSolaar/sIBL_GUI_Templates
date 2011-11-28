@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Standard | String | Template Name
+Name = @Name | Maya Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Standard Template Manual.html | String | Help File
 Release = @Release | 0.3.4 | String | Template Release

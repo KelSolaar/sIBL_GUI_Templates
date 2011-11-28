@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Dome Light | String | Template Name
+Name = @Name | Softimage Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Dome_Light Template Manual.html | String | Help File
 Release = @Release | 0.9.8 | String | Template Release

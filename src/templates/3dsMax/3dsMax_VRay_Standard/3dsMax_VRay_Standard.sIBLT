@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Standard | String | Template Name
+Name = @Name | 3dsMax VRay Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/3dsMax_VRay_Standard Template Manual.html | String | Help File
 Release = @Release | 1.1.2 | String | Template Release

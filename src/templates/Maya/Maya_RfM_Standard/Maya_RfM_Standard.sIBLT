@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Standard | String | Template Name
+Name = @Name | Maya RfM Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard Template Manual.html | String | Help File
 Release = @Release | 2.0.0 | String | Template Release
@@ -31,6 +31,7 @@ Header|North = @North
 Lights|DynamicLights = @dynamicLights
 
 [Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
 createBackground = @createBackground | 1 | Boolean | Create Background
 createReflection = @createReflection | 1 | Boolean | Create Reflection
 createLighting = @createLighting | 1 | Boolean | Create Lighting
@@ -71,7 +72,7 @@ import sys
 
 class Constants(object):
 	applicationName = "sIBL_GUI"
-	prefix = "sIBL"
+	prefix = "@sceneSetupPrefix"
 	package = "@Software".replace(" ", "_")
 	renderer = "@Renderer".replace(" ", "_")
 	packagePrefix = "%s_%s" % (prefix, package)

@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Standard | String | Template Name
+Name = @Name | XSI Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_Arnold_Standard Template Manual.html | String | Help File
 Release = @Release | 1.0.5 | String | Template Release
