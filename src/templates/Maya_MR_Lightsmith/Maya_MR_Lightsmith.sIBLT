@@ -165,11 +165,11 @@ class Setup(object):
 		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
 
 	def connectDriverToMaterialShaders(self, driver, name):
-		for key, value in {"color" : "color", "intensity" : "intensity", "override" : "user"}.items():
+		for key, value in {"color" : "color", "intensity" : "intensity", "override" : "user"}.iteritems():
 			cmds.connectAttr("%s.%s" % (driver, key), "%s_%s_multiplyDivide.input2" % (name, value), f=True)
 
 	def connectDriverToLightShaders(self, driver, name):
-		for key, value in {"color" : "color", "intensity" : "intensity"}.items():
+		for key, value in {"color" : "color", "intensity" : "intensity"}.iteritems():
 			cmds.connectAttr("%s.%s" % (driver, key), "%s_light_%s_multiplyDivide.input2" % (name, value), f=True)
 
 	def getControlsLocator(self, name):
@@ -353,7 +353,7 @@ class Setup(object):
 			cmds.rename(node, "%s_%s" % (name, cmds.nodeType(node)))
 		for node in (lambert, frameShadingEngine):
 			cmds.rename(node, "%s_frame_%s" % (name, cmds.nodeType(node)))
-		for node, type in {lightSupport : "support", lightFrame : "frame", lightGeometries : "geometries", lightHook : "hook", lightRoot : "root", lightTarget : "target"}.items():
+		for node, type in {lightSupport : "support", lightFrame : "frame", lightGeometries : "geometries", lightHook : "hook", lightRoot : "root", lightTarget : "target"}.iteritems():
 			cmds.rename(node, "%s_%s" % (name, type))
 		return cmds.rename(lightGroup, name)
 
@@ -519,7 +519,7 @@ def importObjFile(file):
 	return objects
 
 def setAttributes(attributes):
-	for attribute, value in attributes.items():
+	for attribute, value in attributes.iteritems():
 		cmds.setAttr(attribute, value)
 
 def lockHideAttributes(node, attributes, lock=True, keyable=False):

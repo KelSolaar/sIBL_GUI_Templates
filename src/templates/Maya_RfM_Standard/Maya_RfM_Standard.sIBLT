@@ -226,7 +226,7 @@ class Setup(object):
 				self.storedSessionAttributes[attribute]= cmds.getAttr(attribute)
 
 	def restoreSessionAttributes(self):
-		for attribute, value in self.storedSessionAttributes.items():
+		for attribute, value in self.storedSessionAttributes.iteritems():
 			if len(cmds.ls(attribute)) and value:
 				cmds.setAttr(attribute, value)
 
@@ -502,12 +502,12 @@ class Setup(object):
 			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 	def addShadowsAttributes(self, light):
-		for id, value in {"rman__dmap_DefaultPassClass" : "DeepShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapSamples" : "16", "rman__ShadowMapFilterSize" : "1", "rman__ShadowMapFilter" : "gaussian", "rman__TransmissionSubset" : "shadow" }.items():
+		for id, value in {"rman__dmap_DefaultPassClass" : "DeepShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapSamples" : "16", "rman__ShadowMapFilterSize" : "1", "rman__ShadowMapFilter" : "gaussian", "rman__TransmissionSubset" : "shadow" }.iteritems():
 			attribute = mel.eval("rmanGetAttrName %s;" % id)
 			mel.eval("rmanAddAttr \"%s\" \"%s\" \"%s\";" % (light, attribute, value))
 
 	def addSoftShadowsAttributes(self, light):
-		for id, value in {"rman__dmap_DefaultPassClass" : "MinMaxShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapGapBias" : "0.1", "rman__ShadowMapSamples" : "32", "rman__TransmissionSubset" : "shadow" }.items():
+		for id, value in {"rman__dmap_DefaultPassClass" : "MinMaxShadow", "rman__ShadowMapBias" : "0.1", "rman__ShadowMapGapBias" : "0.1", "rman__ShadowMapSamples" : "32", "rman__TransmissionSubset" : "shadow" }.iteritems():
 			attribute = mel.eval("rmanGetAttrName %s;" % id)
 			mel.eval("rmanAddAttr \"%s\" \"%s\" \"%s\";" % (light, attribute, value))
 
@@ -515,7 +515,7 @@ class Setup(object):
 		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Data.sunColor, Data.sunMultiplier, Data.sunU, Data.sunV, self.feedbackRadius / 10, Options.shadowsType)
 
 	def getDynamicLights(self):
-		for light in Data.dynamicLights.values():
+		for light in Data.dynamicLights.itervalues():
 			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15, Options.shadowsType)
 
 	def bridgeFeedbackControlsAndShaders(self, target):
@@ -567,7 +567,7 @@ class Setup(object):
 			cmds.setAttr("%s_controls.backgroundGamma" % Constants.prefix, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, type="double3")
 
 def setAttributes(attributes):
-	for attribute, value in attributes.items():
+	for attribute, value in attributes.iteritems():
 		cmds.setAttr(attribute, value)
 
 def lockHideAttributes(node, attributes, lock=True, keyable=False):
