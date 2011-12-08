@@ -219,7 +219,7 @@ class Setup(object):
 		self.getExtendedFeedbackRadius()
 		self.getControlsGroup()
 		self.getControlsLocator()
-		Options.hideLights and self.hideLights()
+		Options.hideLights and self.hideSceneLights()
 		self.getEnvironmentShaders()
 		self.getFeedback()
 		self.getLigthsTarget()
@@ -304,7 +304,7 @@ class Setup(object):
 
 		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
 
-	def hideLights(self):
+	def hideSceneLights(self):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 

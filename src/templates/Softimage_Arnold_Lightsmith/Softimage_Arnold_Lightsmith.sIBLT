@@ -86,7 +86,7 @@ if(lightName == "-1")
 		proceedSetup = false;
 }
 if(proceedSetup)
-	sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
+	setup(resourcesDirectory,
 							lightName,
 							lightFilePath,
 							lightMaskFilePath,
@@ -108,7 +108,7 @@ if(proceedSetup)
 else
 	LogMessage("sIBL_GUI | Ibl file import aborted!");
 
-function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
+function setup(resourcesDirectory,
 							lightName,
 							lightFilePath,
 							lightMaskFilePath,
@@ -130,18 +130,18 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 {
 	try
 	{
-		if(sIBL_XSI_Arnold_Lightsmith_arnoldRendererExists())
+		if(arnoldRendererExists())
 		{
-			if(sIBL_XSI_Arnold_Lightsmith_commandExists("sIBL_XSI_preProcessCommand"))
+			if(commandExists("sIBL_XSI_preProcessCommand"))
 			{
 				LogMessage("sIBL_GUI | Executing overall preprocess Command!");
 				sIBL_XSI_preProcessCommand();
 			}
 
-			if(sIBL_XSI_Arnold_Lightsmith_commandExists(" sIBL_XSI_Arnold_Lightsmith_preProcessCommand"))
+			if(commandExists(" preProcessCommand"))
 			{
 				LogMessage("sIBL_GUI | Executing Template specific preprocess Command!");
-				 sIBL_XSI_Arnold_Lightsmith_preProcessCommand();
+				 preProcessCommand();
 			}
 
 			// Storing Active Layer.
@@ -150,7 +150,7 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 			var selectedPasses = [];
 
 			if(showPassesDialog)
-				selectedPasses = sIBL_XSI_Arnold_Lightsmith_getPasses();
+				selectedPasses = getPasses();
 			else
 				selectedPasses[0] = GetCurrentPass();
 
@@ -160,8 +160,8 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 				{
 					LogMessage("sIBL_GUI | Starting Ibl file import!");
 
-					 sIBL_XSI_Arnold_Lightsmith_scriptEditorVerbose(false);
-					 sIBL_XSI_Arnold_Lightsmith_autoInspectState(false);
+					 scriptEditorVerbose(false);
+					 autoInspectState(false);
 
 					var progressBar = XSIUIToolkit.ProgressBar;
 					progressBar.Maximum = 100;
@@ -173,17 +173,17 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 					progressBar.Visible = true;
 
 					// Activating Renderer.
-					 sIBL_XSI_Arnold_Lightsmith_activateArnoldRenderer();
+					 setRenderer();
 					progressBar.Increment();
 
 					// Hide Default Light.
 					if(hideDefaultLight)
-						sIBL_XSI_Arnold_Lightsmith_hideDefautLight();
+						hideDefautLight();
 					progressBar.Increment();
 
 					// Linear Workflow Activation.
 					if(activateLinearWorkflow)
-						sIBL_XSI_Arnold_Lightsmith_activateColorManagement(useArnoldGammaCorrection, selectedPasses);
+						activateSceneColorManagement(useArnoldGammaCorrection, selectedPasses);
 					progressBar.Increment();
 
 					// Creates The Lightsmith Lights.
@@ -200,17 +200,17 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 						if(clips(i).FullName.match(clipMaskPattern))
 							clipsMaskCount++;
 					}
-					var clipName = lightName + "_" + sIBL_XSI_Arnold_Lightsmith_setPadding(clipsCount.toString(), 3);
-					var clipMaskName = lightName + "_" + sIBL_XSI_Arnold_Lightsmith_setPadding(clipsMaskCount.toString(), 3);
-					var lightFileClip = sIBL_XSI_Arnold_Lightsmith_getClip(lightFilePath, clipName);
+					var clipName = lightName + "_" + setPadding(clipsCount.toString(), 3);
+					var clipMaskName = lightName + "_" + setPadding(clipsMaskCount.toString(), 3);
+					var lightFileClip = getClip(lightFilePath, clipName);
 					if(lightMaskFilePath)
-						var lightFileMaskClip = sIBL_XSI_Arnold_Lightsmith_getClip(lightMaskFilePath, clipMaskName + "_Mask");
+						var lightFileMaskClip = getClip(lightMaskFilePath, clipMaskName + "_Mask");
 					else
 						var lightFileMaskClip = null;
 					if(connectToLights)
-						sIBL_XSI_Arnold_Lightsmith_connectToLights(lightFileClip, lightFileMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFramePath, lightObjectFrameColor, texturedLight);
+						connectToLights(lightFileClip, lightFileMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFramePath, lightObjectFrameColor, texturedLight);
 					else
-						sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(sIBL_XSI_Arnold_Lightsmith_getNonClashingName(lightName), lightFileClip, lightFileMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFramePath, lightObjectFrameColor, lightScale, lightShape, createLight, texturedLight);
+						getLightsmithLight(getNonClashingName(lightName), lightFileClip, lightFileMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFramePath, lightObjectFrameColor, lightScale, lightShape, createLight, texturedLight);
 					DeleteUnusedImageClips();
 					progressBar.Increment();
 
@@ -218,21 +218,21 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 
 					SetCurrentLayer(layer);
 
-					sIBL_XSI_Arnold_Lightsmith_scriptEditorVerbose(true);
-					sIBL_XSI_Arnold_Lightsmith_autoInspectState(true);
+					scriptEditorVerbose(true);
+					autoInspectState(true);
 
 					LogMessage("sIBL_GUI | Ibl file import finished!");
 
-					if(sIBL_XSI_Arnold_Lightsmith_commandExists("sIBL_XSI_postProcessCommand"))
+					if(commandExists("sIBL_XSI_postProcessCommand"))
 					{
 						LogMessage("sIBL_GUI | Executing overall postprocess Command!");
 						sIBL_XSI_postProcessCommand();
 					}
 
-					if(sIBL_XSI_Arnold_Lightsmith_commandExists(" sIBL_XSI_Arnold_Lightsmith_postProcessCommand"))
+					if(commandExists(" postProcessCommand"))
 					{
 						LogMessage("sIBL_GUI | Executing Template specific postprocess Command!");
-						sIBL_XSI_Arnold_Lightsmith_postProcessCommand();
+						postProcessCommand();
 					}
 				}
 				else
@@ -240,8 +240,8 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 					// Restoring Active Layer.
 					SetCurrentLayer(layer);
 
-					sIBL_XSI_Arnold_Lightsmith_scriptEditorVerbose(true);
-					sIBL_XSI_Arnold_Lightsmith_autoInspectState(true);
+					scriptEditorVerbose(true);
+					autoInspectState(true);
 
 					LogMessage("sIBL_GUI | No Pass selected, import canceled!");
 				}
@@ -256,50 +256,50 @@ function sIBL_XSI_Arnold_Lightsmith_setup(resourcesDirectory,
 	}
 	catch (error)
 	{
-		sIBL_XSI_Arnold_Lightsmith_scriptEditorVerbose(true);
-		sIBL_XSI_Arnold_Lightsmith_autoInspectState(true);
+		scriptEditorVerbose(true);
+		autoInspectState(true);
 
 		LogMessage("sIBL_GUI | Ibl file import Failed!", siError);
 		throw (error)
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getPasses()
+function getPasses()
 {
 	var passes = new ActiveXObject("XSI.Collection");
 	passes.SetAsText("Passes.List.*");
 
-	var sIBL_GUI_Passes_Chooser = Application.ActiveSceneRoot.AddCustomProperty("sIBL_GUI_Passes_Chooser", false);
+	var passesChooser_customProperty = Application.ActiveSceneRoot.AddCustomProperty("passesChooser_customProperty", false);
 
 	var passParameters = []
 	for(var i = 0; i < passes.count; i++)
 	{
-		passParameters[i] = sIBL_GUI_Passes_Chooser.AddParameter3(passes.item(i).name, siBool, true);
+		passParameters[i] = passesChooser_customProperty.AddParameter3(passes.item(i).name, siBool, true);
 	}
 
-	var sIBL_GUI_Passes_Chooser_Layout = sIBL_GUI_Passes_Chooser.PPGLayout;
+	var passesChooser_customProperty_layout = passesChooser_customProperty.PPGLayout;
 
-	sIBL_GUI_Passes_Chooser_Layout.AddGroup("Scene Passes");
+	passesChooser_customProperty_layout.AddGroup("Scene Passes");
 	for(var i = 0; i < passes.count; i++)
 	{
-		sIBL_GUI_Passes_Chooser_Layout.AddItem(passes.item(i).name);
+		passesChooser_customProperty_layout.AddItem(passes.item(i).name);
 	}
-	sIBL_GUI_Passes_Chooser_Layout.EndGroup();
-	sIBL_GUI_Passes_Chooser_Layout.AddRow();
-	sIBL_GUI_Passes_Chooser_Layout.AddGroup("", false, 100);
-	sIBL_GUI_Passes_Chooser_Layout.EndGroup();
-	sIBL_GUI_Passes_Chooser_Layout.AddGroup("Options");
-	var button = sIBL_GUI_Passes_Chooser_Layout.AddButton("ToggleAll", "Toggle All");
+	passesChooser_customProperty_layout.EndGroup();
+	passesChooser_customProperty_layout.AddRow();
+	passesChooser_customProperty_layout.AddGroup("", false, 100);
+	passesChooser_customProperty_layout.EndGroup();
+	passesChooser_customProperty_layout.AddGroup("Options");
+	var button = passesChooser_customProperty_layout.AddButton("ToggleAll", "Toggle All");
 	button.SetAttribute(siUICX, 96)
-	button = sIBL_GUI_Passes_Chooser_Layout.AddButton("UnToggleAll", "UnToggle All");
+	button = passesChooser_customProperty_layout.AddButton("UnToggleAll", "UnToggle All");
 	button.SetAttribute(siUICX, 96)
-	sIBL_GUI_Passes_Chooser_Layout.EndGroup();
-	sIBL_GUI_Passes_Chooser_Layout.EndRow();
+	passesChooser_customProperty_layout.EndGroup();
+	passesChooser_customProperty_layout.EndRow();
 
-	sIBL_GUI_Passes_Chooser_Layout.Logic = ToggleAll_OnClicked.toString() + UnToggleAll_OnClicked.toString();
-	sIBL_GUI_Passes_Chooser_Layout.Language = "JScript";
+	passesChooser_customProperty_layout.Logic = ToggleAll_OnClicked.toString() + UnToggleAll_OnClicked.toString();
+	passesChooser_customProperty_layout.Language = "JScript";
 
-	var returnValue = InspectObj(sIBL_GUI_Passes_Chooser, "", "sIBL GUI Passes Chooser", siModal, false);
+	var returnValue = InspectObj(passesChooser_customProperty, "", "sIBL GUI Passes Chooser", siModal, false);
 
 	if(!returnValue)
 	{
@@ -311,12 +311,12 @@ function sIBL_XSI_Arnold_Lightsmith_getPasses()
 				selectedPasses[selectedPasses.length] = "Passes." + passParameters[i].name;
 			}
 		}
-		 sIBL_XSI_Arnold_Lightsmith_deleteRequestedProperties("sIBL_GUI_Passes_Chooser");
+		 deleteRequestedProperties("passesChooser_customProperty");
 		return selectedPasses;
 	}
 	else
 	{
-		 sIBL_XSI_Arnold_Lightsmith_deleteRequestedProperties("sIBL_GUI_Passes_Chooser");
+		 deleteRequestedProperties("passesChooser_customProperty");
 		return null;
 	}
 }
@@ -341,7 +341,7 @@ function UnToggleAll_OnClicked()
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_hideDefautLight()
+function hideDefautLight()
 {
 	var defaultLight = Application.ActiveSceneRoot.FindChild("light");
 
@@ -352,7 +352,7 @@ function sIBL_XSI_Arnold_Lightsmith_hideDefautLight()
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getArnoldParametersProperty(object)
+function getArnoldParametersProperty(object)
 {
 	var customProperty = object.AddProperty("arnold_parameters", false, "Arnold Parameters");
 
@@ -368,7 +368,7 @@ function sIBL_XSI_Arnold_Lightsmith_getArnoldParametersProperty(object)
 	return customProperty
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getArnoldVisibilityProperty(object)
+function getArnoldVisibilityProperty(object)
 {
 	var customProperty = object.AddProperty("arnold_visibility", false, "Arnold Visibility");
 
@@ -382,7 +382,7 @@ function sIBL_XSI_Arnold_Lightsmith_getArnoldVisibilityProperty(object)
 	return customProperty
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getArnoldLightDecayFilterProperty(object)
+function getArnoldLightDecayFilterProperty(object)
 {
 	var customProperty = object.AddProperty("light_decay", false, "Arnold Light Decay Filter");
 
@@ -399,9 +399,9 @@ function sIBL_XSI_Arnold_Lightsmith_getArnoldLightDecayFilterProperty(object)
 	return customProperty
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getLightControls(object)
+function getLightControls(object)
 {
-	var lightControlsProperty = object.AddCustomProperty("Lightsmith_Controls", false);
+	var lightControlsProperty = object.AddCustomProperty("Controls", false);
 
 	lightControlsProperty.AddParameter3("redColor", siDouble, 1) ;
 	lightControlsProperty.AddParameter3("greenColor", siDouble, 1) ;
@@ -430,17 +430,17 @@ function sIBL_XSI_Arnold_Lightsmith_getLightControls(object)
 	return lightControlsProperty;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getLight(clip, name, shape, scaleX, scaleY)
+function getLight(clip, name, shape, scaleX, scaleY)
 {
 	var light = ActiveSceneRoot.AddPrimitive("Light_Box.Preset", name + "_Light");
 	var subComponents = ["SX", "SY", "SZ"];
 	for(var i = 0; i < subComponents.length; i++)
 		light.Primitives("light").Parameters("LightAreaXform" + subComponents[i]).value = 1;
 
-	var lightShader = CreateShaderFromPreset(sIBL_XSI_Arnold_Lightsmith_getShadersPath() + "Shaders/Light/arnold_quad_light", light);
+	var lightShader = CreateShaderFromPreset(getShadersPath() + "Shaders/Light/arnold_quad_light", light);
 	SIConnectShaderToCnxPoint(lightShader, light + ".LightShader", false);
 
-	var colorMathBasicIntensityShader = sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(lightShader, clip, name);
+	var colorMathBasicIntensityShader = getLightShaderBranch(lightShader, clip, name);
 	SIConnectShaderToCnxPoint(colorMathBasicIntensityShader, lightShader + ".color", false);
 
 	lightShader.Parameters("normalize").value = 0;
@@ -451,9 +451,9 @@ function sIBL_XSI_Arnold_Lightsmith_getLight(clip, name, shape, scaleX, scaleY)
 	globalKinematics("scly").value = scaleY;
 
 	var parameters = ["sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
-	sIBL_XSI_Arnold_Lightsmith_lockParameters(light, parameters)
+	lockParameters(light, parameters)
 
-	var lightDecayFilterProperty = sIBL_XSI_Arnold_Lightsmith_getArnoldLightDecayFilterProperty(light);
+	var lightDecayFilterProperty = getArnoldLightDecayFilterProperty(light);
 	lightDecayFilterProperty.Parameters("decay_type").value = "quadratic";
 
 	lightShader.Parameters("name").value = name + "_Arnold_Quad_Light";
@@ -461,13 +461,13 @@ function sIBL_XSI_Arnold_Lightsmith_getLight(clip, name, shape, scaleX, scaleY)
 	return light;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getClip(file, name)
+function getClip(file, name)
 {
 	var file = Application.CreateImageClip2(file, name + "_Clip");
 	return file;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getClipShaderBranch(container, clip, name)
+function getClipShaderBranch(container, clip, name)
 {
 	var imageShader = CreateShaderFromProgID("Softimage.txt2d-image-explicit.1", container);
 	SIConnectShaderToCnxPoint(clip, imageShader + ".tex", false);
@@ -477,9 +477,9 @@ function sIBL_XSI_Arnold_Lightsmith_getClipShaderBranch(container, clip, name)
 	return imageShader;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(container, clip, name)
+function getLightShaderBranch(container, clip, name)
 {
-	var imageShader = sIBL_XSI_Arnold_Lightsmith_getClipShaderBranch(container, clip, name);
+	var imageShader = getClipShaderBranch(container, clip, name);
 
 	var colorMathBasicSpectrumShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1", container);
 	var subComponents = ["red", "green", "blue"];
@@ -507,9 +507,9 @@ function sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(container, clip, name)
 	return colorMathBasicIntensityShader;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getSupportShaderBranch(container, inputShader, connectionPorts, clip, name)
+function getSupportShaderBranch(container, inputShader, connectionPorts, clip, name)
 {
-	var colorMathBasicIntensityShader = sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(container, clip, name);
+	var colorMathBasicIntensityShader = getLightShaderBranch(container, clip, name);
 
 	var colorMathBasicModulationShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1", container);
 	var subComponents = ["red", "green", "blue"];
@@ -539,7 +539,7 @@ function sIBL_XSI_Arnold_Lightsmith_getSupportShaderBranch(container, inputShade
 	return colorMathBasicModulationShader;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_connectDriverToMaterialShaders(driver, driven)
+function connectDriverToMaterialShaders(driver, driven)
 {
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
@@ -550,7 +550,7 @@ function sIBL_XSI_Arnold_Lightsmith_connectDriverToMaterialShaders(driver, drive
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_connectDriverToLightShaders(driver, driven)
+function connectDriverToLightShaders(driver, driven)
 {
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
@@ -560,19 +560,19 @@ function sIBL_XSI_Arnold_Lightsmith_connectDriverToLightShaders(driver, driven)
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHeight, lightObject, lightObjectFrame, lightObjectFrameColor, scale, shape, createLight, texturedLight)
+function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHeight, lightObject, lightObjectFrame, lightObjectFrameColor, scale, shape, createLight, texturedLight)
 {
 	var lightRoot = ActiveSceneRoot.AddPrimitive("Null", name + "_Root");
-	lightRoot.Primitives("null").Parameters("size").value = sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(3 * ((lightWidth + lightHeight)/2), 0.1);
+	lightRoot.Primitives("null").Parameters("size").value = truncFloatNumber(3 * ((lightWidth + lightHeight)/2), 0.1);
 	lightRoot.Primitives("null").Parameters("primary_icon").value = 5;
 
 	var lightHook = ActiveSceneRoot.AddPrimitive("Null", name + "_Hook");
-	lightHook.Primitives("null").Parameters("size").value = sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(2.5 * ((lightWidth + lightHeight)/2), 0.1);
+	lightHook.Primitives("null").Parameters("size").value = truncFloatNumber(2.5 * ((lightWidth + lightHeight)/2), 0.1);
 	lightHook.Primitives("null").Parameters("primary_icon").value = 5;
 	lightRoot.addChild(lightHook)
 
 	var lightGeometries = ActiveSceneRoot.AddPrimitive("Null", name + "_Geometries");
-	lightGeometries.Primitives("null").Parameters("size").value = sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(2 * ((lightWidth + lightHeight)/2), 0.1);
+	lightGeometries.Primitives("null").Parameters("size").value = truncFloatNumber(2 * ((lightWidth + lightHeight)/2), 0.1);
 	lightGeometries.Primitives("null").Parameters("primary_icon").value = 5;
 	lightHook.addChild(lightGeometries)
 
@@ -584,21 +584,21 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 	var lightSupport = ObjImport(lightObject, 1, 0, false, true, false, true);
 	lightSupport = lightSupport(0);
 	lightSupport.Kinematics.Local.Parameters("posz").value = depthOffset;
-	var lightSupportParametersProperty = sIBL_XSI_Arnold_Lightsmith_getArnoldParametersProperty(lightSupport);
+	var lightSupportParametersProperty = getArnoldParametersProperty(lightSupport);
 	if(lightMaskClip != null)
 		lightSupportParametersProperty.Parameters("opaque").value = 0;
-	var lightSupportVisibilityProperty = sIBL_XSI_Arnold_Lightsmith_getArnoldVisibilityProperty(lightSupport);
+	var lightSupportVisibilityProperty = getArnoldVisibilityProperty(lightSupport);
 	var lightFrame = ObjImport(lightObjectFrame, 1, 0, false, true, false, true);
 	lightFrame = lightFrame(0);
 	lightFrame.Kinematics.Local.Parameters("posz").value = depthOffset;
-	sIBL_XSI_Arnold_Lightsmith_getArnoldParametersProperty(lightFrame);
-	sIBL_XSI_Arnold_Lightsmith_getArnoldVisibilityProperty(lightFrame);
+	getArnoldParametersProperty(lightFrame);
+	getArnoldVisibilityProperty(lightFrame);
 	lightGeometries.addChild(lightSupport)
 	lightGeometries.addChild(lightFrame)
 
 	var parameters = ["sclx", "scly", "sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
-	sIBL_XSI_Arnold_Lightsmith_lockParameters(lightSupport, parameters)
-	sIBL_XSI_Arnold_Lightsmith_lockParameters(lightFrame, parameters)
+	lockParameters(lightSupport, parameters)
+	lockParameters(lightFrame, parameters)
 
 	var directionConstraint = ApplyCns("Direction", lightRoot, lightTarget);
 	var constraints = lightRoot.Kinematics.Constraints;
@@ -614,26 +614,26 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 	}
 
 	var lightSupportMaterial = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", name + "_Material", "", lightSupport);
-	sIBL_XSI_Arnold_Lightsmith_getSupportShaderBranch(lightSupportMaterial, lightSupportMaterial + "." + name + "_Material", ["color"], lightClip, name);
+	getSupportShaderBranch(lightSupportMaterial, lightSupportMaterial + "." + name + "_Material", ["color"], lightClip, name);
 	if(lightMaskClip != null)
 	{
-		var lightMaskShader = sIBL_XSI_Arnold_Lightsmith_getClipShaderBranch(lightSupportMaterial, lightMaskClip, name + "_Mask");
+		var lightMaskShader = getClipShaderBranch(lightSupportMaterial, lightMaskClip, name + "_Mask");
 		SIConnectShaderToCnxPoint(lightMaskShader, lightSupportMaterial + "." + name + "_Material.transparency", false);
 		lightSupportMaterial.Shaders(0).Parameters("inverttrans").value = 1;
 	}
 
-	var lightFrameMaterial = SICreateMaterial(sIBL_XSI_Arnold_Lightsmith_getShadersPath() + "Shaders/Material/standard.Preset", name + "_Frame_Material", "", lightFrame);
+	var lightFrameMaterial = SICreateMaterial(getShadersPath() + "Shaders/Material/standard.Preset", name + "_Frame_Material", "", lightFrame);
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
 		lightFrameMaterial.shaders(0).Parameters("Kd_color").Parameters(subComponents[i]).value = lightObjectFrameColor[i];
 	lightFrameMaterial.Shaders(0).Parameters("Kd").value = 1;
 
-	var lightControlsProperty = sIBL_XSI_Arnold_Lightsmith_getLightControls(lightHook);
-	sIBL_XSI_Arnold_Lightsmith_connectDriverToMaterialShaders(lightControlsProperty, lightSupportMaterial)
+	var lightControlsProperty = getLightControls(lightHook);
+	connectDriverToMaterialShaders(lightControlsProperty, lightSupportMaterial)
 
 	if(createLight)
 	{
-		var light = sIBL_XSI_Arnold_Lightsmith_getLight(lightClip, name, shape, lightWidth, lightHeight);
+		var light = getLight(lightClip, name, shape, lightWidth, lightHeight);
 		lightHook.addChild(light);
 
 		lightSupportVisibilityProperty.Parameters("diffuse").value = 0;
@@ -647,8 +647,8 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 			DisconnectAndDeleteOrUnnestShaders(light.GetAllShaders().Filter("", "", "*_Image")(0), light.Primitives("light"));
 			DisconnectAndDeleteOrUnnestShaders(light.AllImageClips.Filter("", "", "*_Clip")(0), light.Primitives("light"));
 
-			var lightNormalizationFactor = sIBL_XSI_Arnold_Lightsmith_getNormalizationFactor(lightColor);
-			lightColor = sIBL_XSI_Arnold_Lightsmith_normalizeArray(lightColor);
+			var lightNormalizationFactor = getNormalizationFactor(lightColor);
+			lightColor = normalizeArray(lightColor);
 			lightColorExponent = GetCurrentPass().Properties("Arnold Render Options").Parameters("light_gamma").value;
 			lightColor = [Math.pow(lightColor[0], 1 / lightColorExponent), Math.pow(lightColor[1], 1 / lightColorExponent), Math.pow(lightColor[2], 1 / lightColorExponent)];
 			lightNormalizationFactor = Math.pow(lightNormalizationFactor, 1 / lightColorExponent);
@@ -660,7 +660,7 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 			}
 			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("affect_specular").value = 0;
 		}
-		sIBL_XSI_Arnold_Lightsmith_connectDriverToLightShaders(lightControlsProperty, light);
+		connectDriverToLightShaders(lightControlsProperty, light);
 	}
 
 	var parameters = ["sclx", "scly", "sclz"];
@@ -679,12 +679,12 @@ function sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(name, lightClip, lightMas
 	return lightGroup;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, texturedLights)
+function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, texturedLights)
 {
-	var sceneSIBLGroup = Application.ActiveSceneRoot.FindChild("sIBL");
-	if(sceneSIBLGroup != null)
+	var controlsGroup = Application.ActiveSceneRoot.FindChild("sIBL");
+	if(controlsGroup != null)
 	{
-		var sIBLLights = sceneSIBLGroup.FindChildren("*", siLightPrimType)
+		var sIBLLights = controlsGroup.FindChildren("*", siLightPrimType)
 		for( var i=0; i<sIBLLights.count; i++ )
 		{
 			var sIBLLight = sIBLLights.item(i);
@@ -729,13 +729,13 @@ function sIBL_XSI_Arnold_Lightsmith_connectToLights(lightClip, lightMaskClip, li
 					lightIntensity = lightShader.Parameters("intensity").value;
 				}
 
-				sIBL_XSI_Arnold_Lightsmith_deleteLightShaders(sIBLLight);
+				deleteLightShaders(sIBLLight);
 
 				var subComponents = ["SX", "SY", "SZ"];
 				for(var j = 0; j < subComponents.length; j++)
 					sIBLLight.Primitives("light").Parameters("LightAreaXform" + subComponents[j]).value = 1;
 
-				var colorMathBasicIntensityShader = sIBL_XSI_Arnold_Lightsmith_getLightShaderBranch(lightShaderRoot, lightClip, sIBLLight.FullName);
+				var colorMathBasicIntensityShader = getLightShaderBranch(lightShaderRoot, lightClip, sIBLLight.FullName);
 				SIConnectShaderToCnxPoint(colorMathBasicIntensityShader, lightShader + ".color", false);
 				lightShader.Parameters("name").value = sIBLLight.FullName + "_" + lightShader.ProgId.split(".")[1];
 				if(!texturedLights)
@@ -747,7 +747,7 @@ function sIBL_XSI_Arnold_Lightsmith_connectToLights(lightClip, lightMaskClip, li
 				for(var j = 0; j < subComponents.length; j++)
 					colorMathBasicIntensityShader.shaders(0).Parameters("input2").Parameters(subComponents[j]).value = lightColor[j];
 
-				var light = sIBL_XSI_Arnold_Lightsmith_getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, 1, "", false)
+				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, 1, "", false)
 				var lightRoot = light.FindChild("*_Root");
 				sIBLLight.addChild(lightRoot);
 
@@ -769,13 +769,13 @@ function sIBL_XSI_Arnold_Lightsmith_connectToLights(lightClip, lightMaskClip, li
 				var lightHookProperties = lightRoot.FindChild("*_Hook").Properties;
 				var lightHookProperty = null;
 				for(var j = 0; j < lightHookProperties.count; j++)
-					if(lightHookProperties.item(j).Name == "Lightsmith_Controls")
+					if(lightHookProperties.item(j).Name == "Controls")
 					{
 						lightHookProperty = lightHookProperties.item(j);
 						break;
 					}
 
-				sIBL_XSI_Arnold_Lightsmith_connectDriverToLightShaders(lightHookProperty, sIBLLight);
+				connectDriverToLightShaders(lightHookProperty, sIBLLight);
 				var colorAverage = (lightColor[0] + lightColor[1] + lightColor[2]) / 3;
 				var shader = lightSupport.Material.Shaders(0).Shaders.Filter("", "", "*_User_Color_Math_Basic")(0).shaders(0);
 				for(var j = 0; j < subComponents.length; j++)
@@ -790,14 +790,14 @@ function sIBL_XSI_Arnold_Lightsmith_connectToLights(lightClip, lightMaskClip, li
 		XSIUIToolkit.Msgbox( "sIBL_GUI | No 'sIBL' group found, skipping Lightsmith lights creation!", siMsgOkOnly, "sIBL_GUI " );
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getNonClashingName(name)
+function getNonClashingName(name)
 {
 	var existingObjects = Application.ActiveSceneRoot.FindChildren("*" + name + "_*_Support");
 	var existingObjectsCount = existingObjects.count + 1;
-	return name + "_" + sIBL_XSI_Arnold_Lightsmith_setPadding(existingObjectsCount.toString(), 3);
+	return name + "_" + setPadding(existingObjectsCount.toString(), 3);
 }
 
-function sIBL_XSI_Arnold_Lightsmith_deleteLightShaders(light)
+function deleteLightShaders(light)
 {
 	var shaders = light.GetAllShaders();
 	var e = new Enumerator(shaders);
@@ -816,7 +816,7 @@ function sIBL_XSI_Arnold_Lightsmith_deleteLightShaders(light)
 	DeleteUnusedShaders(light.Primitives("light"));
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getNormalizationFactor(array)
+function getNormalizationFactor(array)
 {
 	var normalizationFactor = 0;
 	for(var i = 0; i < array.length; i++)
@@ -825,15 +825,15 @@ function sIBL_XSI_Arnold_Lightsmith_getNormalizationFactor(array)
 	return normalizationFactor;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_normalizeArray(array)
+function normalizeArray(array)
 {
-	normalizationFactor = sIBL_XSI_Arnold_Lightsmith_getNormalizationFactor(array);
+	normalizationFactor = getNormalizationFactor(array);
 	for(var i = 0; i < array.length; i++)
 		array[i] = array[i] / normalizationFactor;
 	return array;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_lockParameters(object, parameters)
+function lockParameters(object, parameters)
 {
 	var globalKinematics = object.Kinematics.Global.Parameters;
 	for(var i = 0; i < parameters.length; i++)
@@ -844,7 +844,7 @@ function sIBL_XSI_Arnold_Lightsmith_lockParameters(object, parameters)
 		localKinematics(parameters[i]).SetLock(siLockLevelManipulation);
 }
 
-function sIBL_XSI_Arnold_Lightsmith_arnoldRendererExists()
+function arnoldRendererExists()
 {
 	var e = new Enumerator(Application.Renderers);
 	for(; !e.atEnd(); e.moveNext())
@@ -853,7 +853,7 @@ function sIBL_XSI_Arnold_Lightsmith_arnoldRendererExists()
 	return false
 }
 
-function sIBL_XSI_Arnold_Lightsmith_activateArnoldRenderer()
+function setRenderer()
 {
 	SetValue("Passes.RenderOptions.Renderer", "Arnold Render");
 
@@ -864,7 +864,7 @@ function sIBL_XSI_Arnold_Lightsmith_activateArnoldRenderer()
 	SetValue("Views.ViewA.RenderRegion.UsePassOptions,Views.ViewB.RenderRegion.UsePassOptions,Views.ViewC.RenderRegion.UsePassOptions,Views.ViewD.RenderRegion.UsePassOptions", Array(true, true, true, true));
 }
 
-function sIBL_XSI_Arnold_Lightsmith_activateColorManagement(useArnoldGammaCorrection, passes)
+function activateSceneColorManagement(useArnoldGammaCorrection, passes)
 {
 	if(useArnoldGammaCorrection)
 	{
@@ -893,18 +893,18 @@ function sIBL_XSI_Arnold_Lightsmith_activateColorManagement(useArnoldGammaCorrec
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getPluginPath()
+function getPluginPath()
 {
 	var plugin = Application.plugins("Arnold Shaders");
 	return plugin.OriginPath.replace(/\\/g, "/");
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getShadersPath()
+function getShadersPath()
 {
-	return sIBL_XSI_Arnold_Lightsmith_getPluginPath() + "../../Data/DSPresets/";
+	return getPluginPath() + "../../Data/DSPresets/";
 }
 
-function sIBL_XSI_Arnold_Lightsmith_objectExists(object)
+function objectExists(object)
 {
 	var seekedObject = Application.ActiveSceneRoot.FindChild(object);
 	if(seekedObject != null)
@@ -913,7 +913,7 @@ function sIBL_XSI_Arnold_Lightsmith_objectExists(object)
 		return false
 }
 
-function sIBL_XSI_Arnold_Lightsmith_commandExists(command)
+function commandExists(command)
 {
 	var commands = Application.Commands;
 
@@ -927,7 +927,7 @@ function sIBL_XSI_Arnold_Lightsmith_commandExists(command)
 	return false
 }
 
-function sIBL_XSI_Arnold_Lightsmith_addToDisplayLayer(layerName, object)
+function addToDisplayLayer(layerName, object)
 {
 	var sceneLayers = ActiveProject.ActiveScene.Layers;
 	var layerExists = false;
@@ -947,7 +947,7 @@ function sIBL_XSI_Arnold_Lightsmith_addToDisplayLayer(layerName, object)
 		MoveToLayer("Layers." + layerName, object);
 }
 
-function sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(number, truncValue)
+function truncFloatNumber(number, truncValue)
 {
 	if(truncValue != 0)
 		return Math.round(number / truncValue) * truncValue;
@@ -955,19 +955,19 @@ function sIBL_XSI_Arnold_Lightsmith_truncFloatNumber(number, truncValue)
 		return number;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_scriptEditorVerbose(verboseState)
+function scriptEditorVerbose(verboseState)
 {
 	Application.Preferences.SetPreferenceValue("scripting.cmdlog", verboseState);
 	Application.Preferences.SetPreferenceValue("scripting.msglog", verboseState);
 	Application.Preferences.SetPreferenceValue("scripting.msglogverbose", verboseState);
 }
 
-function sIBL_XSI_Arnold_Lightsmith_autoInspectState(autoInspectState)
+function autoInspectState(autoInspectState)
 {
 	Application.Preferences.SetPreferenceValue("Interaction.autoinspect", autoInspectState);
 }
 
-function sIBL_XSI_Arnold_Lightsmith_setPadding(data, padding)
+function setPadding(data, padding)
 {
 	affix="0";
 	while( data.length < padding )
@@ -975,13 +975,13 @@ function sIBL_XSI_Arnold_Lightsmith_setPadding(data, padding)
 	return data;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getRequestedPropertiesAsCollection(propertyType)
+function getRequestedPropertiesAsCollection(propertyType)
 {
-	var properties = sIBL_XSI_Arnold_Lightsmith_getByClassIDAsCollection("{76332571-D242-11d0-B69C-00AA003B3EA6}");
+	var properties = getByClassIDAsCollection("{76332571-D242-11d0-B69C-00AA003B3EA6}");
 
 	if(properties.count != 0)
 	{
-		var propertiesListAsStringArray = sIBL_XSI_Arnold_Lightsmith_getCollectionAsStringArray(properties);
+		var propertiesListAsStringArray = getCollectionAsStringArray(properties);
 
 		var regexPattern = new RegExp(propertyType + "\\w*");
 
@@ -998,7 +998,7 @@ function sIBL_XSI_Arnold_Lightsmith_getRequestedPropertiesAsCollection(propertyT
 		var requestedPropertiesAsCollection = new ActiveXObject("XSI.Collection");
 
 		if(requestedProperties.length != 0)
-			requestedPropertiesAsCollection = sIBL_XSI_Arnold_Lightsmith_getStringArrayAsCollection(requestedProperties);
+			requestedPropertiesAsCollection = getStringArrayAsCollection(requestedProperties);
 
 		return requestedPropertiesAsCollection;
 	}
@@ -1008,15 +1008,15 @@ function sIBL_XSI_Arnold_Lightsmith_getRequestedPropertiesAsCollection(propertyT
 	}
 }
 
-function sIBL_XSI_Arnold_Lightsmith_deleteRequestedProperties(propertyType)
+function deleteRequestedProperties(propertyType)
 {
-	var requestedProperties = sIBL_XSI_Arnold_Lightsmith_getRequestedPropertiesAsCollection(propertyType);
+	var requestedProperties = getRequestedPropertiesAsCollection(propertyType);
 
 	for(var i = 0; i < requestedProperties.count; i++)
 		DeleteObj(requestedProperties.item(i));
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getByClassIDAsCollection(currentClassID)
+function getByClassIDAsCollection(currentClassID)
 {
 	var nodesByClassID = new ActiveXObject("XSI.Collection");
 
@@ -1025,7 +1025,7 @@ function sIBL_XSI_Arnold_Lightsmith_getByClassIDAsCollection(currentClassID)
 	return nodesByClassID;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getCollectionAsStringArray(currentCollection)
+function getCollectionAsStringArray(currentCollection)
 {
 	var collectionObjectsAsString = currentCollection.GetAsText();
 	var collectionObjects = collectionObjectsAsString.split(",");
@@ -1033,7 +1033,7 @@ function sIBL_XSI_Arnold_Lightsmith_getCollectionAsStringArray(currentCollection
 	return collectionObjects;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getStringArrayAsCollection(currentStringArray)
+function getStringArrayAsCollection(currentStringArray)
 {
 	var stringArrayAsCollection = new ActiveXObject("XSI.Collection");
 	stringArrayAsCollection.SetAsText(currentStringArray);
@@ -1041,14 +1041,14 @@ function sIBL_XSI_Arnold_Lightsmith_getStringArrayAsCollection(currentStringArra
 	return stringArrayAsCollection;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_extendCollection(initialCollection, extensionCollection)
+function extendCollection(initialCollection, extensionCollection)
 {
 	for(var i = 0; i < extensionCollection.Count; i++)
 		initialCollection.Add(extensionCollection(i));
 	return initialCollection;
 }
 
-function sIBL_XSI_Arnold_Lightsmith_getMatchingObjectsByClassID(classID, pattern, matchExact)
+function getMatchingObjectsByClassID(classID, pattern, matchExact)
 {
 	var objectsByClassID = new ActiveXObject("XSI.Collection");
 	objectsByClassID = FindObjects(null, classID);
