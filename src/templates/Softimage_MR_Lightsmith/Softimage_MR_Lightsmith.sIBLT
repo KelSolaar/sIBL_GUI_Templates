@@ -70,20 +70,20 @@ var Constants = new __constants();
 
 function __data()
 {
-	this.resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
-	this.lightName= "@LightsmithName";
-	this.lightFilePath = resourcesDirectory + "/" + "@LightsmithFile";
+	this.Data.resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+	this.Data.lightName= "@LightsmithName";
+	this.Data.lightFilePath = Data.resourcesDirectory + "/" + "@LightsmithFile";
 	if("@LightsmithMaskFile" != "-1")
-		this.lightMaskFilePath =  resourcesDirectory + "/" + "@LightsmithMaskFile";
+		this.Data.lightMaskFilePath =  Data.resourcesDirectory + "/" + "@LightsmithMaskFile";
 	else
-		this.lightMaskFilePath = null;
-	this.lightHeight = @LightsmithHeight;
-	this.lightWidth = @LightsmithWidth;
-	this.lightColor = [@LightsmithColor];
-	this.lightObjectPath = resourcesDirectory + "/" + "@LightsmithObjectFile";
-	this.lightObjectFramePath = resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
-	this.lightObjectFrameColor = [@LightsmithObjectFrameColor];
-	this.lightShape = "@LightsmithShape";
+		this.Data.lightMaskFilePath = null;
+	this.Data.lightHeight = @LightsmithHeight;
+	this.Data.lightWidth = @LightsmithWidth;
+	this.Data.lightColor = [@LightsmithColor];
+	this.Data.lightObjectPath = Data.resourcesDirectory + "/" + "@LightsmithObjectFile";
+	this.Data.lightObjectFramePath = Data.resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
+	this.Data.lightObjectFrameColor = [@LightsmithObjectFrameColor];
+	this.Data.lightShape = "@LightsmithShape";
 }
 var Data = new __data();
 
@@ -101,24 +101,24 @@ function __options()
 var Options = new __options();
 
 var proceedSetup = true;
-if(lightName == "-1")
+if(Data.lightName == "-1")
 {
 	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
 	if (result == siMsgNo )
 		proceedSetup = false;
 }
 if(proceedSetup)
-	setup(resourcesDirectory,
-							lightName,
-							lightFilePath,
-							lightMaskFilePath,
-							lightHeight,
-							lightWidth,
-							lightColor,
-							lightObjectPath,
-							lightObjectFramePath,
-							lightObjectFrameColor,
-							lightShape,
+	setup(Data.resourcesDirectory,
+							Data.lightName,
+							Data.lightFilePath,
+							Data.lightMaskFilePath,
+							Data.lightHeight,
+							Data.lightWidth,
+							Data.lightColor,
+							Data.lightObjectPath,
+							Data.lightObjectFramePath,
+							Data.lightObjectFrameColor,
+							Data.lightShape,
 							lightScale,
 							createLight,
 							texturedLight,
@@ -130,17 +130,17 @@ if(proceedSetup)
 else
 	LogMessage("sIBL_GUI | Ibl file import aborted!");
 
-function setup(resourcesDirectory,
-							lightName,
-							lightFilePath,
-							lightMaskFilePath,
-							lightHeight,
-							lightWidth,
-							lightColor,
-							lightObjectPath,
-							lightObjectFramePath,
-							lightObjectFrameColor,
-							lightShape,
+function setup(Data.resourcesDirectory,
+							Data.lightName,
+							Data.lightFilePath,
+							Data.lightMaskFilePath,
+							Data.lightHeight,
+							Data.lightWidth,
+							Data.lightColor,
+							Data.lightObjectPath,
+							Data.lightObjectFramePath,
+							Data.lightObjectFrameColor,
+							Data.lightShape,
 							lightScale,
 							createLight,
 							texturedLight,
@@ -214,8 +214,8 @@ function setup(resourcesDirectory,
 
 				// Creates The Lightsmith Lights.
 				// Prepares ImageClips.
-				var clipPattern = new RegExp(lightName + "_[0-9]+_Clip");
-				var clipMaskPattern = new RegExp(lightName + "_[0-9]+_Mask_Clip");
+				var clipPattern = new RegExp(Data.lightName + "_[0-9]+_Clip");
+				var clipMaskPattern = new RegExp(Data.lightName + "_[0-9]+_Mask_Clip");
 				var clipsCount = 1;
 				var clipsMaskCount = 1;
 				var clips = ActiveProject.ActiveScene.ImageClips;
@@ -226,17 +226,17 @@ function setup(resourcesDirectory,
 					if(clips(i).FullName.match(clipMaskPattern))
 						clipsMaskCount++;
 				}
-				var clipName = lightName + "_" + setPadding(clipsCount.toString(), 3);
-				var clipMaskName = lightName + "_" + setPadding(clipsMaskCount.toString(), 3);
-				var lightFileClip = getClip(lightFilePath, clipName);
-				if(lightMaskFilePath)
-					var lightFileMaskClip = getClip(lightMaskFilePath, clipMaskName + "_Mask");
+				var clipName = Data.lightName + "_" + setPadding(clipsCount.toString(), 3);
+				var clipMaskName = Data.lightName + "_" + setPadding(clipsMaskCount.toString(), 3);
+				var lightFileClip = getClip(Data.lightFilePath, clipName);
+				if(Data.lightMaskFilePath)
+					var lightFileMaskClip = getClip(Data.lightMaskFilePath, clipMaskName + "_Mask");
 				else
 					var lightFileMaskClip = null;
 				if(connectToLights)
-					var processedLights = connectToLights(lightFileClip, lightFileMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFramePath, lightObjectFrameColor, texturedLight);
+					var processedLights = connectToLights(lightFileClip, lightFileMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightObjectFrameColor, texturedLight);
 				else
-					getLightsmithLight(getNonClashingName(lightName), lightFileClip, lightFileMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFramePath, lightObjectFrameColor, lightScale, lightShape, createLight, texturedLight);
+					getLightsmithLight(getNonClashingName(Data.lightName), lightFileClip, lightFileMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightObjectFrameColor, lightScale, Data.lightShape, createLight, texturedLight);
 				DeleteUnusedImageClips();
 				progressBar.Increment();
 
@@ -527,19 +527,19 @@ function connectDriverToLightShaders(driver, driven)
 	}
 }
 
-function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHeight, lightObject, lightObjectFrame, lightObjectFrameColor, scale, shape, createLight, texturedLight)
+function getLightsmithLight(name, lightClip, lightMaskClip, Data.lightWidth, Data.lightHeight, lightObject, lightObjectFrame, Data.lightObjectFrameColor, scale, shape, createLight, texturedLight)
 {
 	var lightRoot = ActiveSceneRoot.AddPrimitive("Null", name + "_Root");
-	lightRoot.Primitives("null").Parameters("size").value = truncFloatNumber(3 * ((lightWidth + lightHeight)/2), 0.1);
+	lightRoot.Primitives("null").Parameters("size").value = truncFloatNumber(3 * ((Data.lightWidth + Data.lightHeight)/2), 0.1);
 	lightRoot.Primitives("null").Parameters("primary_icon").value = 5;
 
 	var lightHook = ActiveSceneRoot.AddPrimitive("Null", name + "_Hook");
-	lightHook.Primitives("null").Parameters("size").value = truncFloatNumber(2.5 * ((lightWidth + lightHeight)/2), 0.1);
+	lightHook.Primitives("null").Parameters("size").value = truncFloatNumber(2.5 * ((Data.lightWidth + Data.lightHeight)/2), 0.1);
 	lightHook.Primitives("null").Parameters("primary_icon").value = 5;
 	lightRoot.addChild(lightHook)
 
 	var lightGeometries = ActiveSceneRoot.AddPrimitive("Null", name + "_Geometries");
-	lightGeometries.Primitives("null").Parameters("size").value = truncFloatNumber(2 * ((lightWidth + lightHeight)/2), 0.1);
+	lightGeometries.Primitives("null").Parameters("size").value = truncFloatNumber(2 * ((Data.lightWidth + Data.lightHeight)/2), 0.1);
 	lightGeometries.Primitives("null").Parameters("primary_icon").value = 5;
 	lightHook.addChild(lightGeometries)
 
@@ -586,14 +586,14 @@ function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHei
 	var lightFrameMaterial = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Lambert.Preset", name + "_Frame_Material", "", lightFrame);
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
-		lightFrameMaterial.shaders(0).Parameters("diffuse").Parameters(subComponents[i]).value = lightObjectFrameColor[i];
+		lightFrameMaterial.shaders(0).Parameters("diffuse").Parameters(subComponents[i]).value = Data.lightObjectFrameColor[i];
 
 	var lightControlsProperty = getLightControls(lightHook);
 	connectDriverToMaterialShaders(lightControlsProperty, lightSupportMaterial)
 
 	if(createLight)
 	{
-		var light = getLight(lightClip, name, shape, lightWidth, lightHeight);
+		var light = getLight(lightClip, name, shape, Data.lightWidth, Data.lightHeight);
 		lightHook.addChild(light);
 		lightSupport.Properties("visibility").Parameters("fgsamp").value = 0;
 
@@ -605,13 +605,13 @@ function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHei
 			DisconnectAndDeleteOrUnnestShaders(light.GetAllShaders().Filter("", "", "*_Image")(0), light.Primitives("light"));
 			DisconnectAndDeleteOrUnnestShaders(light.AllImageClips.Filter("", "", "*_Clip")(0), light.Primitives("light"));
 
-			var lightNormalizationFactor = getNormalizationFactor(lightColor);
-			lightColor = normalizeArray(lightColor);
+			var lightNormalizationFactor = getNormalizationFactor(Data.lightColor);
+			Data.lightColor = normalizeArray(Data.lightColor);
 			for(var i = 0; i < subComponents.length; i++)
 			{
 				lightControlsProperty.Parameters(subComponents[i] + "Intensity").value = lightNormalizationFactor;
-				lightControlsProperty.Parameters(subComponents[i] + "Color").value = lightColor[i];
-				lightSupportMaterial.GetAllShaders().Filter("", "", "*_Modulation_Color_Math_Basic")(0).Parameters("input2").Parameters(subComponents[i]).value = (1 / lightNormalizationFactor) * (1 / lightColor[i]);
+				lightControlsProperty.Parameters(subComponents[i] + "Color").value = Data.lightColor[i];
+				lightSupportMaterial.GetAllShaders().Filter("", "", "*_Modulation_Color_Math_Basic")(0).Parameters("input2").Parameters(subComponents[i]).value = (1 / lightNormalizationFactor) * (1 / Data.lightColor[i]);
 			}
 		}
 		connectDriverToLightShaders(lightControlsProperty, light);
@@ -633,7 +633,7 @@ function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHei
 	return lightGroup;
 }
 
-function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, texturedLights)
+function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, lightObjectFrame, Data.lightObjectFrameColor, texturedLights)
 {
 	var controlsGroup = Application.ActiveSceneRoot.FindChild("sIBL");
 	if(controlsGroup != null)
@@ -660,7 +660,7 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 				}
 				var lightShaderRoot = sIBLLight.Primitives("light").Parameters("LightShader");
 				var lightShader = lightShaderRoot.NestedObjects(0);
-				var lightColor = [1, 1, 1];
+				var Data.lightColor = [1, 1, 1];
 				var lightIntensity = 1;
 				var hasLightControls = false;
 				var lightColorSource = lightShader.Parameters("color").Source;
@@ -670,7 +670,7 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 					if(lightColorSource.name.match(pattern))
 					{
 						hasLightControls = true;
-						lightColor = [lightColorSource.shaders(0).Parameters("input2").Parameters("red").value, lightColorSource.shaders(0).Parameters("input2").Parameters("green").value, lightColorSource.shaders(0).Parameters("input2").Parameters("blue").value];
+						Data.lightColor = [lightColorSource.shaders(0).Parameters("input2").Parameters("red").value, lightColorSource.shaders(0).Parameters("input2").Parameters("green").value, lightColorSource.shaders(0).Parameters("input2").Parameters("blue").value];
 						lightIntensity = (lightColorSource.Parameters("input2").Parameters("red").value + lightColorSource.Parameters("input2").Parameters("green").value + lightColorSource.Parameters("input2").Parameters("blue").value) / 3;
 					}
 					else
@@ -679,7 +679,7 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 				if(!hasLightControls)
 				{
 					// Softimage Has Issue Retrieving The Values In Object Model Here.
-					lightColor = [GetValue(lightShader.Parameters("color").fullName + ".red"), GetValue(lightShader.Parameters("color").fullName + ".green"), GetValue(lightShader.Parameters("color").fullName + ".blue")];
+					Data.lightColor = [GetValue(lightShader.Parameters("color").fullName + ".red"), GetValue(lightShader.Parameters("color").fullName + ".green"), GetValue(lightShader.Parameters("color").fullName + ".blue")];
 					lightIntensity = lightShader.Parameters("intensity").value;
 				}
 
@@ -702,15 +702,15 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 				}
 				subComponents = ["red", "green", "blue"];
 				for(var j = 0; j < subComponents.length; j++)
-					colorMathBasicIntensityShader.shaders(0).Parameters("input2").Parameters(subComponents[j]).value = lightColor[j];
+					colorMathBasicIntensityShader.shaders(0).Parameters("input2").Parameters(subComponents[j]).value = Data.lightColor[j];
 
-				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, 1, "", false)
+				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, lightObjectFrame, Data.lightObjectFrameColor, 1, "", false)
 				var lightRoot = light.FindChild("*_Root");
 				sIBLLight.addChild(lightRoot);
 
 				DeleteObj("B:" + light);
 
-				var averagedSupportSize = (lightWidth + lightHeight) / 2;
+				var averagedSupportSize = (Data.lightWidth + Data.lightHeight) / 2;
 				var parameters = ["sclx", "scly", "sclz"];
 				var globalKinematics = lightRoot.Kinematics.Global.Parameters;
 				for(var j = 0; j < parameters.length; j++)
@@ -733,11 +733,11 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 					}
 
 				connectDriverToLightShaders(lightHookProperty, sIBLLight);
-				var colorAverage = (lightColor[0] + lightColor[1] + lightColor[2]) / 3;
+				var colorAverage = (Data.lightColor[0] + Data.lightColor[1] + Data.lightColor[2]) / 3;
 				var shader = lightSupport.Material.Shaders(0).Shaders.Filter("", "", "*_User_Color_Math_Basic")(0).shaders(0);
 				for(var j = 0; j < subComponents.length; j++)
 				{
-					lightHookProperty.Parameters(subComponents[j] + "Color").value = lightColor[j];
+					lightHookProperty.Parameters(subComponents[j] + "Color").value = Data.lightColor[j];
 					shader.Parameters("input2").Parameters(subComponents[j]).value = (1 / lightIntensity) * (1 / colorAverage);
 				}
 			}

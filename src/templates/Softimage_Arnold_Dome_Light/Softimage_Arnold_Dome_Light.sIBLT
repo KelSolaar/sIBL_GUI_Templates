@@ -25,7 +25,7 @@ Sun|SUNu = @SUNu
 Sun|SUNv = @SUNv
 Sun|SUNcolor = @SUNcolor
 Sun|SUNmulti = @SUNmulti
-Lights|DynamicLights = @dynamicLights
+Lights|DynamicLights = @Data.dynamicLights
 Header|Height = @Height
 Header|North = @North
 
@@ -78,20 +78,20 @@ var Constants = new __constants();
 
 function __data()
 {
-	this.backgroundFilePath = "@BGfile";
-	this.reflectionFilePath = "@REFfile";
-	this.reflectionMultiplier = @REFmulti;
-	this.reflectionGamma = @REFgamma;
-	this.lightingFilePath = "@EVfile";
-	this.lightingMultiplier = @EVmulti;
-	this.lightingGamma = @EVgamma;
-	this.sunU = @SUNu;
-	this.sunV = @SUNv;
-	this.sunColor = [@SUNcolor];
-	this.sunMultiplier = @SUNmulti;
-	this.dynamicLights = "@dynamicLights";
-	this.height = @Height;
-	this.north = @North;
+	this.Data.backgroundFilePath = "@BGfile";
+	this.Data.reflectionFilePath = "@REFfile";
+	this.Data.reflectionMultiplier = @REFmulti;
+	this.Data.reflectionGamma = @REFgamma;
+	this.Data.lightingFilePath = "@EVfile";
+	this.Data.lightingMultiplier = @EVmulti;
+	this.Data.lightingGamma = @EVgamma;
+	this.Data.sunU = @SUNu;
+	this.Data.sunV = @SUNv;
+	this.Data.sunColor = [@SUNcolor];
+	this.Data.sunMultiplier = @SUNmulti;
+	this.Data.dynamicLights = "@Data.dynamicLights";
+	this.Data.height = @Height;
+	this.Data.north = @North;
 }
 var Data = new __data();
 
@@ -117,27 +117,27 @@ function __options()
 var Options = new __options();
 
 var proceedSetup = true;
-if(backgroundFilePath == "-1" || reflectionFilePath == "-1" || lightingFilePath == "-1")
+if(Data.backgroundFilePath == "-1" || Data.reflectionFilePath == "-1" || Data.lightingFilePath == "-1")
 {
 	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
 	if (result == siMsgNo )
 		proceedSetup = false;
 }
 if(proceedSetup)
-	setup(backgroundFilePath,
-						reflectionFilePath,
-						reflectionMultiplier,
-						reflectionGamma,
-						lightingFilePath,
-						lightingMultiplier,
-						lightingGamma,
-						sunU,
-						sunV,
-						sunColor,
-						sunMultiplier,
-						dynamicLights,
-						height,
-						north,
+	setup(Data.backgroundFilePath,
+						Data.reflectionFilePath,
+						Data.reflectionMultiplier,
+						Data.reflectionGamma,
+						Data.lightingFilePath,
+						Data.lightingMultiplier,
+						Data.lightingGamma,
+						Data.sunU,
+						Data.sunV,
+						Data.sunColor,
+						Data.sunMultiplier,
+						Data.dynamicLights,
+						Data.height,
+						Data.north,
 						createBackground,
 						createReflection,
 						createLighting,
@@ -157,20 +157,20 @@ if(proceedSetup)
 else
 	LogMessage("sIBL_GUI | Ibl file import aborted!");
 
-function setup(backgroundFilePath,
-							reflectionFilePath,
-							reflectionMultiplier,
-							reflectionGamma,
-							lightingFilePath,
-							lightingMultiplier,
-							lightingGamma,
-							sunU,
-							sunV,
-							sunColor,
-							sunMultiplier,
-							dynamicLights,
-							height,
-							north,
+function setup(Data.backgroundFilePath,
+							Data.reflectionFilePath,
+							Data.reflectionMultiplier,
+							Data.reflectionGamma,
+							Data.lightingFilePath,
+							Data.lightingMultiplier,
+							Data.lightingGamma,
+							Data.sunU,
+							Data.sunV,
+							Data.sunColor,
+							Data.sunMultiplier,
+							Data.dynamicLights,
+							Data.height,
+							Data.north,
 							createBackground,
 							createReflection,
 							createLighting,
@@ -233,12 +233,12 @@ function setup(backgroundFilePath,
 					progressBar.Visible = true;
 
 					// Defines Sun And Dynamic Lights Existence From Ibl file.
-					if(sunU != -1 && sunV != -1)
+					if(Data.sunU != -1 && Data.sunV != -1)
 						var sunExists = true;
 					else
 						var sunExists = false;
 
-					if(dynamicLights != -1)
+					if(Data.dynamicLights != -1)
 						var dynamicLightsExists = true
 					else
 						var dynamicLightsExists = false
@@ -260,7 +260,7 @@ function setup(backgroundFilePath,
 					progressBar.Increment();
 
 					// Environment Shaders Creation.
-					getEnvironment(createBackground, createLighting, createReflection, backgroundFilePath, lightingFilePath, reflectionFilePath, useDualSkydomeSetup, useReflectionForLighting, selectedPasses);
+					getEnvironment(createBackground, createLighting, createReflection, Data.backgroundFilePath, Data.lightingFilePath, Data.reflectionFilePath, useDualSkydomeSetup, useReflectionForLighting, selectedPasses);
 					progressBar.Increment();
 
 					// Feedback Creation.
@@ -274,7 +274,7 @@ function setup(backgroundFilePath,
 						{
 							if(objectExists("sIBL_Feedback"))
 							{
-								getSun(sunLightType, sunU, sunV, sunColor, sunMultiplier, feedbackRadius);
+								getSun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius);
 							}
 						}
 					}
@@ -285,7 +285,7 @@ function setup(backgroundFilePath,
 					{
 						if(createLights)
 						{
-							getDynamicLights(dynamicLightsType, dynamicLights, feedbackRadius);
+							getDynamicLights(dynamicLightsType, Data.dynamicLights, feedbackRadius);
 						}
 					}
 					progressBar.Increment();
@@ -530,7 +530,7 @@ function getEnvironmentShaderBranch(container, imageSource, flipHorizontal, flip
 	return colorBooleanSwitchShader
 }
 
-function getEnvironment(createBackground, createLighting, createReflection, backgroundFilePath, lightingFilePath, reflectionFilePath, useDualSkydomeSetup, useReflectionForLighting, passes)
+function getEnvironment(createBackground, createLighting, createReflection, Data.backgroundFilePath, Data.lightingFilePath, Data.reflectionFilePath, useDualSkydomeSetup, useReflectionForLighting, passes)
 {
 	var pass = passes[0];
 
@@ -554,7 +554,7 @@ function getEnvironment(createBackground, createLighting, createReflection, back
 
 	if(createBackground)
 	{
-		var backgroundSource = Application.CreateImageClip2(backgroundFilePath, "sIBL_Background_Clip");
+		var backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, "sIBL_Background_Clip");
 
 		ports = ["camera"];
 		getEnvironmentShaderBranch(pass, backgroundSource, false, false, raySwitchShader, ports, "sIBL_Background");
@@ -563,9 +563,9 @@ function getEnvironment(createBackground, createLighting, createReflection, back
 	if(createLighting)
 	{
 		if(useReflectionForLighting)
-			var sourceImage = reflectionFilePath;
+			var sourceImage = Data.reflectionFilePath;
 		else
-			var sourceImage = lightingFilePath;
+			var sourceImage = Data.lightingFilePath;
 
 		var lightingSource = Application.CreateImageClip2(sourceImage, "sIBL_Lighting_Clip");
 
@@ -577,7 +577,7 @@ function getEnvironment(createBackground, createLighting, createReflection, back
 
 	if(createReflection)
 	{
-		var reflectionSource = Application.CreateImageClip2(reflectionFilePath, "sIBL_Reflection_Clip");
+		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, "sIBL_Reflection_Clip");
 
 		if(useDualSkydomeSetup)
 			getSkydomeLight(reflectionSource, "sIBL_Specular_Skydome", false, true );
@@ -847,21 +847,21 @@ function getLight(parent, constraintParent, type, name, scale, intensity, color,
 	lightShader.Parameters("name").value = "sIBL_Arnold_" + shaderType + "_Light";
 }
 
-function getSun(sunLightType, sunU, sunV, sunColor, sunMultiplier, feedbackRadius)
+function getSun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius)
 {
 	var controlsGroup = getControlsGroup();
 	var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
 
-	getLight(controlsGroup, feedback, sunLightType, "sIBL_Sun", feedbackRadius / 15, sunMultiplier, sunColor, sunU, sunV)
+	getLight(controlsGroup, feedback, sunLightType, "sIBL_Sun", feedbackRadius / 15, Data.sunMultiplier, Data.sunColor, Data.sunU, Data.sunV)
 }
 
-function getDynamicLights(dynamicLightsType, dynamicLights, feedbackRadius)
+function getDynamicLights(dynamicLightsType, Data.dynamicLights, feedbackRadius)
 {
 	var controlsGroup = getControlsGroup();
 	var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
-	var dynamicLights = dynamicLights.split("|");
-	for(var i = 0; i < dynamicLights.length; i += 8)
-		getLight(controlsGroup, feedback, dynamicLightsType, "sIBL_DKL_" + dynamicLights[i + 1], feedbackRadius / 15, parseFloat(dynamicLights[i + 5]), [parseFloat(dynamicLights[i + 2]), parseFloat(dynamicLights[i + 3]), parseFloat(dynamicLights[i + 4])], parseFloat(dynamicLights[i + 6]), parseFloat(dynamicLights[i + 7]))
+	var Data.dynamicLights = Data.dynamicLights.split("|");
+	for(var i = 0; i < Data.dynamicLights.length; i += 8)
+		getLight(controlsGroup, feedback, dynamicLightsType, "sIBL_DKL_" + Data.dynamicLights[i + 1], feedbackRadius / 15, parseFloat(Data.dynamicLights[i + 5]), [parseFloat(Data.dynamicLights[i + 2]), parseFloat(Data.dynamicLights[i + 3]), parseFloat(Data.dynamicLights[i + 4])], parseFloat(Data.dynamicLights[i + 6]), parseFloat(Data.dynamicLights[i + 7]))
 }
 
 function bridgeControlsAndShaders(pass, slot)
