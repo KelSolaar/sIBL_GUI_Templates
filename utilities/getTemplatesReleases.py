@@ -68,7 +68,7 @@ def getTemplatesReleases():
 	osWalker = OsWalker()
 	osWalker.root = TEMPLATES_PATH
 	templates = osWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
-	for template in sorted(templates.keys()):
+	for template in sorted(templates):
 		sectionsFileParser = SectionsFileParser(templates[template])
 		sectionsFileParser.read() and sectionsFileParser.parse()
 

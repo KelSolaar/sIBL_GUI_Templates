@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 0.9.5 | String | Template Release
-Date = @Date | 2 April 2011 | String | Date
+Release = @Release | 2.0.0 | String | Template
+ReleaseDate = @Date | 2 April 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -25,11 +25,12 @@ Lightsmith1|LSheight = @LightsmithHeight
 Lightsmith1|LScolor = @LightsmithColor
 Lightsmith1|LSobjectfile = @LightsmithObjectFile
 Lightsmith1|LSframefile = @LightsmithObjectFrameFile
-Lightsmith1|LSObjectFrameColor = @LightsmithObjectFrameColor
+Lightsmith1|LSframecolor = @LightsmithObjectFrameColor
 Lightsmith1|LSscale = @LightsmithScale
 Lightsmith1|LSshape = @LightsmithShape
 
 [Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
 lightScale = @lightScale | 1 | Float | Light Scale
 createLight = @createLight | 1 | Boolean | Create Light
 texturedLight = @texturedLight | 0 | Boolean | Textured Light
@@ -64,27 +65,47 @@ function __constants()
 	this.packagePrefix = this.prefix + this.package;
 	this.packageRendererPrefix = this.prefix + this.package + this.renderer;
 	this.title = "Lightsmith";
-	this.controlsTitle = "[ " + this.title + " Controls ]";
+	this.controlsTitle = this.title.replace(" ", "_") + "_Controls";
 	this.defaultGamma = 2.2;
+	if(commandExists("sIBL_XSI_preProcessCommand"))
+		this.globalPreProcessCommand = function() {sIBL_XSI_preProcessCommand();};
+	else
+		this.globalPreProcessCommand = null;
+	if(commandExists("sIBL_XSI_postProcessCommand"))
+		this.globalPostProcessCommand = function() {sIBL_XSI_postProcessCommand();};
+	else
+		this.globalPostProcessCommand = null;
+	if(commandExists("sIBL_XSI_Arnold_Lightsmith_preProcessCommand"))
+		this.localPreProcessCommand = function() {sIBL_XSI_Arnold_Lightsmith_preProcessCommand();};
+	else
+		this.localPreProcessCommand = null;
+	if(commandExists("sIBL_XSI_Arnold_Lightsmith_postProcessCommand"))
+		this.localPostProcessCommand = function() {sIBL_XSI_Arnold_Lightsmith_postProcessCommand();};
+	else
+		this.localPostProcessCommand = null;
 }
 var Constants = new __constants();
 
 function __data()
 {
-	this.Data.resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
-	this.Data.lightName= "@LightsmithName";
-	this.Data.lightFilePath = Data.resourcesDirectory + "/" + "@LightsmithFile";
+	this.resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+	this.lightName= "@LightsmithName";
+	this.lightFilePath = this.resourcesDirectory + "/" + "@LightsmithFile";
 	if("@LightsmithMaskFile" != "-1")
-		this.Data.lightMaskFilePath =  Data.resourcesDirectory + "/" + "@LightsmithMaskFile";
+		this.lightMaskFilePath =  this.resourcesDirectory + "/" + "@LightsmithMaskFile";
 	else
-		this.Data.lightMaskFilePath = null;
-	this.Data.lightHeight = @LightsmithHeight;
-	this.Data.lightWidth = @LightsmithWidth;
-	this.Data.lightColor = [@LightsmithColor];
-	this.Data.lightObjectPath = Data.resourcesDirectory + "/" + "@LightsmithObjectFile";
-	this.Data.lightObjectFramePath = Data.resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
-	this.Data.lightObjectFrameColor = [@LightsmithObjectFrameColor];
-	this.Data.lightShape = "@LightsmithShape";
+		this.lightMaskFilePath = null;
+	this.lightHeight = @LightsmithHeight;
+	this.lightWidth = @LightsmithWidth;
+	this.lightColor = [@LightsmithColor];
+	for(var i = 0; i < this.lightColor.length; i++)  
+    	this.lightColor[i] = this.lightColor[i] / 255;
+    this.lightObjectPath = this.resourcesDirectory + "/" + "@LightsmithObjectFile";
+	this.lightObjectFramePath = this.resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
+	this.lightObjectFrameColor = [@LightsmithObjectFrameColor];
+	for(var i = 0; i < this.lightObjectFrameColor.length; i++)  
+    	this.lightObjectFrameColor[i] = this.lightObjectFrameColor[i] / 255;
+    this.lightShape = "@LightsmithShape";
 }
 var Data = new __data();
 
@@ -104,67 +125,31 @@ var Options = new __options();
 var proceedSetup = true;
 if(Data.lightName == "-1")
 {
-	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	var result = XSIUIToolkit.Msgbox(Constants.applicationName + " | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, Constants.applicationName);
 	if (result == siMsgNo )
 		proceedSetup = false;
 }
 if(proceedSetup)
-	setup(Data.resourcesDirectory,
-							Data.lightName,
-							Data.lightFilePath,
-							Data.lightMaskFilePath,
-							Data.lightHeight,
-							Data.lightWidth,
-							Data.lightColor,
-							Data.lightObjectPath,
-							Data.lightObjectFramePath,
-							Data.lightObjectFrameColor,
-							Data.lightShape,
-							lightScale,
-							createLight,
-							texturedLight,
-							connectToLights,
-							showPassesDialog,
-							hideDefaultLight,
-							activateLinearWorkflow,
-							useArnoldGammaCorrection);
+	setup();
 else
-	LogMessage("sIBL_GUI | Ibl file import aborted!");
+	LogMessage(Constants.applicationName + " | '" + Constants.title + "' file import aborted!");
 
-function setup(Data.resourcesDirectory,
-							Data.lightName,
-							Data.lightFilePath,
-							Data.lightMaskFilePath,
-							Data.lightHeight,
-							Data.lightWidth,
-							Data.lightColor,
-							Data.lightObjectPath,
-							Data.lightObjectFramePath,
-							Data.lightObjectFrameColor,
-							Data.lightShape,
-							lightScale,
-							createLight,
-							texturedLight,
-							connectToLights,
-							showPassesDialog,
-							hideDefaultLight,
-							activateLinearWorkflow,
-							useArnoldGammaCorrection)
+function setup()
 {
 	try
 	{
 		if(arnoldRendererExists())
 		{
-			if(commandExists("sIBL_XSI_preProcessCommand"))
+			if(Constants.globalPreProcessCommand)
 			{
-				LogMessage("sIBL_GUI | Executing overall preprocess Command!");
-				sIBL_XSI_preProcessCommand();
+				LogMessage(Constants.applicationName + " | Executing overall preprocess Command!");
+				Constants.globalPreProcessCommand()
 			}
 
-			if(commandExists(" preProcessCommand"))
+			if(Constants.localPreProcessCommand)
 			{
-				LogMessage("sIBL_GUI | Executing Template specific preprocess Command!");
-				 preProcessCommand();
+				LogMessage(Constants.applicationName + " | Executing Template specific preprocess Command!");
+				 Constants.localPreProcessCommand()
 			}
 
 			// Storing Active Layer.
@@ -172,7 +157,7 @@ function setup(Data.resourcesDirectory,
 
 			var selectedPasses = [];
 
-			if(showPassesDialog)
+			if(Options.showPassesDialog)
 				selectedPasses = getPasses();
 			else
 				selectedPasses[0] = GetCurrentPass();
@@ -181,7 +166,7 @@ function setup(Data.resourcesDirectory,
 			{
 				if(selectedPasses.length != 0)
 				{
-					LogMessage("sIBL_GUI | Starting Ibl file import!");
+					LogMessage(Constants.applicationName + " | Starting '" + Constants.title + "' file import!");
 
 					 scriptEditorVerbose(false);
 					 autoInspectState(false);
@@ -190,7 +175,7 @@ function setup(Data.resourcesDirectory,
 					progressBar.Maximum = 100;
 					progressBar.CancelEnabled = false;
 
-					progressBar.Caption = "sIBL_GUI | Importing Ibl file!";
+					progressBar.Caption = Constants.applicationName + " | Importing '" + Constants.title + "' file!";
 
 					progressBar.Step = 4;
 					progressBar.Visible = true;
@@ -200,13 +185,13 @@ function setup(Data.resourcesDirectory,
 					progressBar.Increment();
 
 					// Hide Default Light.
-					if(hideDefaultLight)
+					if(Options.hideDefaultLight)
 						hideDefautLight();
 					progressBar.Increment();
 
 					// Linear Workflow Activation.
-					if(activateLinearWorkflow)
-						activateSceneColorManagement(useArnoldGammaCorrection, selectedPasses);
+					if(Options.activateLinearWorkflow)
+						activateSceneColorManagement(selectedPasses);
 					progressBar.Increment();
 
 					// Creates The Lightsmith Lights.
@@ -230,10 +215,10 @@ function setup(Data.resourcesDirectory,
 						var lightFileMaskClip = getClip(Data.lightMaskFilePath, clipMaskName + "_Mask");
 					else
 						var lightFileMaskClip = null;
-					if(connectToLights)
-						connectToLights(lightFileClip, lightFileMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightObjectFrameColor, texturedLight);
+					if(Options.connectToLights)
+						connectToLights(lightFileClip, lightFileMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightObjectFrameColor, Options.texturedLight);
 					else
-						getLightsmithLight(getNonClashingName(Data.lightName), lightFileClip, lightFileMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightObjectFrameColor, lightScale, Data.lightShape, createLight, texturedLight);
+						getLightsmithLight(getNonClashingName(Data.lightName), lightFileClip, lightFileMaskClip, Data.lightWidth, Data.lightHeight, Data.lightColor, Data.lightObjectPath, Data.lightObjectFramePath, Data.lightObjectFrameColor, Options.lightScale, Data.lightShape, Options.createLight, Options.texturedLight);
 					DeleteUnusedImageClips();
 					progressBar.Increment();
 
@@ -244,18 +229,18 @@ function setup(Data.resourcesDirectory,
 					scriptEditorVerbose(true);
 					autoInspectState(true);
 
-					LogMessage("sIBL_GUI | Ibl file import finished!");
+					LogMessage(Constants.applicationName + " | '" + Constants.title + "' file import finished!");
 
-					if(commandExists("sIBL_XSI_postProcessCommand"))
+					if(Constants.globalPostProcessCommand)
 					{
-						LogMessage("sIBL_GUI | Executing overall postprocess Command!");
-						sIBL_XSI_postProcessCommand();
+						LogMessage(Constants.applicationName + " | Executing overall postprocess Command!");
+						Constants.globalPostProcessCommand()
 					}
 
-					if(commandExists(" postProcessCommand"))
+					if(Constants.localPostProcessCommand)
 					{
-						LogMessage("sIBL_GUI | Executing Template specific postprocess Command!");
-						postProcessCommand();
+						LogMessage(Constants.applicationName + " | Executing Template specific postprocess Command!");
+						Constants.localPostProcessCommand()
 					}
 				}
 				else
@@ -266,13 +251,13 @@ function setup(Data.resourcesDirectory,
 					scriptEditorVerbose(true);
 					autoInspectState(true);
 
-					LogMessage("sIBL_GUI | No Pass selected, import canceled!");
+					LogMessage(Constants.applicationName + " | No Pass selected, import canceled!");
 				}
 			}
 		}
 		else
 		{
-			var errorMessage = "sIBL_GUI | Arnold renderer is not available, aborting Loader Script import!"
+			var errorMessage = Constants.applicationName + " | Arnold renderer is not available, aborting Loader Script import!"
 			XSIUIToolkit.Msgbox(errorMessage, siMsgCritical);
 			throw (new Error(errorMessage));
 		}
@@ -282,7 +267,7 @@ function setup(Data.resourcesDirectory,
 		scriptEditorVerbose(true);
 		autoInspectState(true);
 
-		LogMessage("sIBL_GUI | Ibl file import Failed!", siError);
+		LogMessage(Constants.applicationName + " | '" + Constants.title + "' file import failed!", siError);
 		throw (error)
 	}
 }
@@ -322,7 +307,7 @@ function getPasses()
 	passesChooser_customProperty_layout.Logic = ToggleAll_OnClicked.toString() + UnToggleAll_OnClicked.toString();
 	passesChooser_customProperty_layout.Language = "JScript";
 
-	var returnValue = InspectObj(passesChooser_customProperty, "", "sIBL GUI Passes Chooser", siModal, false);
+	var returnValue = InspectObj(passesChooser_customProperty, "", Constants.applicationName + " Passes Chooser", siModal, false);
 
 	if(!returnValue)
 	{
@@ -395,12 +380,12 @@ function getArnoldVisibilityProperty(object)
 {
 	var customProperty = object.AddProperty("arnold_visibility", false, "Arnold Visibility");
 
-	customProperty.AddParameter2("camera",    siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("shadows",   siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
+	customProperty.AddParameter2("camera", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
+	customProperty.AddParameter2("shadows", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
 	customProperty.AddParameter2("reflected", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
 	customProperty.AddParameter2("refracted", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("diffuse",   siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("glossy",    siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
+	customProperty.AddParameter2("diffuse", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
+	customProperty.AddParameter2("glossy", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
 
 	return customProperty
 }
@@ -424,31 +409,31 @@ function getArnoldLightDecayFilterProperty(object)
 
 function getLightControls(object)
 {
-	var lightControlsProperty = object.AddCustomProperty("Controls", false);
+	var lightControlsProperty = object.AddCustomProperty(Constants.controlsTitle, false);
 
-	lightControlsProperty.AddParameter3("redColor", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("greenColor", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("blueColor", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("alphaColor", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("color", siInt4, 4) ;
-	lightControlsProperty.AddParameter3("redIntensity", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("greenIntensity", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("blueIntensity", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("alphaIntensity", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("intensity", siInt4, 4) ;
-	lightControlsProperty.AddParameter3("redOverride", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("greenOverride", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("blueOverride", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("alphaOverride", siDouble, 1) ;
-	lightControlsProperty.AddParameter3("override", siInt4, 4) ;
+	lightControlsProperty.AddParameter3("redColor", siDouble, 1);
+	lightControlsProperty.AddParameter3("greenColor", siDouble, 1);
+	lightControlsProperty.AddParameter3("blueColor", siDouble, 1);
+	lightControlsProperty.AddParameter3("alphaColor", siDouble, 1);
+	lightControlsProperty.AddParameter3("color", siInt4, 4);
+	lightControlsProperty.AddParameter3("redIntensity", siDouble, 1);
+	lightControlsProperty.AddParameter3("greenIntensity", siDouble, 1);
+	lightControlsProperty.AddParameter3("blueIntensity", siDouble, 1);
+	lightControlsProperty.AddParameter3("alphaIntensity", siDouble, 1);
+	lightControlsProperty.AddParameter3("intensity", siInt4, 4);
+	lightControlsProperty.AddParameter3("redOverride", siDouble, 1);
+	lightControlsProperty.AddParameter3("greenOverride", siDouble, 1);
+	lightControlsProperty.AddParameter3("blueOverride", siDouble, 1);
+	lightControlsProperty.AddParameter3("alphaOverride", siDouble, 1);
+	lightControlsProperty.AddParameter3("override", siInt4, 4);
 	var lightControlsPropertyLayout = lightControlsProperty.PPGLayout ;
-	lightControlsPropertyLayout.AddGroup("General Controls") ;
-		lightControlsPropertyLayout.AddColor("redColor", "Color", true) ;
-		lightControlsPropertyLayout.AddColor("redIntensity", "Intensity", true) ;
-	lightControlsPropertyLayout.EndGroup() ;
-	lightControlsPropertyLayout.AddGroup("Others Controls") ;
-		lightControlsPropertyLayout.AddColor("redOverride", "Override", true) ;
-	lightControlsPropertyLayout.EndGroup() ;
+	lightControlsPropertyLayout.AddGroup("General Controls");
+		lightControlsPropertyLayout.AddColor("redColor", "Color", true);
+		lightControlsPropertyLayout.AddColor("redIntensity", "Intensity", true);
+	lightControlsPropertyLayout.EndGroup();
+	lightControlsPropertyLayout.AddGroup("Others Controls");
+		lightControlsPropertyLayout.AddColor("redOverride", "Override", true);
+	lightControlsPropertyLayout.EndGroup();
 
 	return lightControlsProperty;
 }
@@ -583,19 +568,19 @@ function connectDriverToLightShaders(driver, driven)
 	}
 }
 
-function getLightsmithLight(name, lightClip, lightMaskClip, Data.lightWidth, Data.lightHeight, lightObject, lightObjectFrame, Data.lightObjectFrameColor, scale, shape, createLight, texturedLight)
+function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHeight, lightColor, lightObject, lightObjectFrame, lightObjectFrameColor, scale, shape, createLight, texturedLight)
 {
 	var lightRoot = ActiveSceneRoot.AddPrimitive("Null", name + "_Root");
-	lightRoot.Primitives("null").Parameters("size").value = truncFloatNumber(3 * ((Data.lightWidth + Data.lightHeight)/2), 0.1);
+	lightRoot.Primitives("null").Parameters("size").value = truncFloatNumber(3 * ((lightWidth + lightHeight)/2), 0.1);
 	lightRoot.Primitives("null").Parameters("primary_icon").value = 5;
 
 	var lightHook = ActiveSceneRoot.AddPrimitive("Null", name + "_Hook");
-	lightHook.Primitives("null").Parameters("size").value = truncFloatNumber(2.5 * ((Data.lightWidth + Data.lightHeight)/2), 0.1);
+	lightHook.Primitives("null").Parameters("size").value = truncFloatNumber(2.5 * ((lightWidth + lightHeight)/2), 0.1);
 	lightHook.Primitives("null").Parameters("primary_icon").value = 5;
 	lightRoot.addChild(lightHook)
 
 	var lightGeometries = ActiveSceneRoot.AddPrimitive("Null", name + "_Geometries");
-	lightGeometries.Primitives("null").Parameters("size").value = truncFloatNumber(2 * ((Data.lightWidth + Data.lightHeight)/2), 0.1);
+	lightGeometries.Primitives("null").Parameters("size").value = truncFloatNumber(2 * ((lightWidth + lightHeight)/2), 0.1);
 	lightGeometries.Primitives("null").Parameters("primary_icon").value = 5;
 	lightHook.addChild(lightGeometries)
 
@@ -648,7 +633,7 @@ function getLightsmithLight(name, lightClip, lightMaskClip, Data.lightWidth, Dat
 	var lightFrameMaterial = SICreateMaterial(getShadersPath() + "Shaders/Material/standard.Preset", name + "_Frame_Material", "", lightFrame);
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
-		lightFrameMaterial.shaders(0).Parameters("Kd_color").Parameters(subComponents[i]).value = Data.lightObjectFrameColor[i];
+		lightFrameMaterial.shaders(0).Parameters("Kd_color").Parameters(subComponents[i]).value = lightObjectFrameColor[i];
 	lightFrameMaterial.Shaders(0).Parameters("Kd").value = 1;
 
 	var lightControlsProperty = getLightControls(lightHook);
@@ -656,7 +641,7 @@ function getLightsmithLight(name, lightClip, lightMaskClip, Data.lightWidth, Dat
 
 	if(createLight)
 	{
-		var light = getLight(lightClip, name, shape, Data.lightWidth, Data.lightHeight);
+		var light = getLight(lightClip, name, shape, lightWidth, lightHeight);
 		lightHook.addChild(light);
 
 		lightSupportVisibilityProperty.Parameters("diffuse").value = 0;
@@ -670,16 +655,16 @@ function getLightsmithLight(name, lightClip, lightMaskClip, Data.lightWidth, Dat
 			DisconnectAndDeleteOrUnnestShaders(light.GetAllShaders().Filter("", "", "*_Image")(0), light.Primitives("light"));
 			DisconnectAndDeleteOrUnnestShaders(light.AllImageClips.Filter("", "", "*_Clip")(0), light.Primitives("light"));
 
-			var lightNormalizationFactor = getNormalizationFactor(Data.lightColor);
-			Data.lightColor = normalizeArray(Data.lightColor);
+			var lightNormalizationFactor = getNormalizationFactor(lightColor);
+			lightColor = normalizeArray(lightColor);
 			lightColorExponent = GetCurrentPass().Properties("Arnold Render Options").Parameters("light_gamma").value;
-			Data.lightColor = [Math.pow(Data.lightColor[0], 1 / lightColorExponent), Math.pow(Data.lightColor[1], 1 / lightColorExponent), Math.pow(Data.lightColor[2], 1 / lightColorExponent)];
+			lightColor = [Math.pow(lightColor[0], 1 / lightColorExponent), Math.pow(lightColor[1], 1 / lightColorExponent), Math.pow(lightColor[2], 1 / lightColorExponent)];
 			lightNormalizationFactor = Math.pow(lightNormalizationFactor, 1 / lightColorExponent);
 			for(var i = 0; i < subComponents.length; i++)
 			{
 				lightControlsProperty.Parameters(subComponents[i] + "Intensity").value = lightNormalizationFactor;
-				lightControlsProperty.Parameters(subComponents[i] + "Color").value = Data.lightColor[i];
-				lightSupportMaterial.GetAllShaders().Filter("", "", "*_Modulation_Color_Math_Basic")(0).Parameters("input2").Parameters(subComponents[i]).value = (1 / lightNormalizationFactor) * (1 / Data.lightColor[i]);
+				lightControlsProperty.Parameters(subComponents[i] + "Color").value = lightColor[i];
+				lightSupportMaterial.GetAllShaders().Filter("", "", "*_Modulation_Color_Math_Basic")(0).Parameters("input2").Parameters(subComponents[i]).value = (1 / lightNormalizationFactor) * (1 / lightColor[i]);
 			}
 			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("affect_specular").value = 0;
 		}
@@ -702,9 +687,9 @@ function getLightsmithLight(name, lightClip, lightMaskClip, Data.lightWidth, Dat
 	return lightGroup;
 }
 
-function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, lightObjectFrame, Data.lightObjectFrameColor, texturedLights)
+function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, texturedLights)
 {
-	var controlsGroup = Application.ActiveSceneRoot.FindChild("sIBL");
+	var controlsGroup = Application.ActiveSceneRoot.FindChild(Constants.prefix);
 	if(controlsGroup != null)
 	{
 		var sIBLLights = controlsGroup.FindChildren("*", siLightPrimType)
@@ -715,7 +700,7 @@ function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHe
 			var proceedSetup = true;
 			if(lightSupport)
 			{
-				var result = XSIUIToolkit.Msgbox( "sIBL_GUI | '" + sIBLLight + "' light has already a Lightsmith setup! Would you like to replace it?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+				var result = XSIUIToolkit.Msgbox(Constants.applicationName + " | '" + sIBLLight + "' light has already a Lightsmith setup! Would you like to replace it?", siMsgYesNo | siMsgQuestion, Constants.applicationName);
 				if (result == siMsgNo )
 					proceedSetup = false;
 			}
@@ -729,7 +714,7 @@ function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHe
 				}
 				var lightShaderRoot = sIBLLight.Primitives("light").Parameters("LightShader");
 				var lightShader = lightShaderRoot.NestedObjects(0);
-				var Data.lightColor = [1, 1, 1];
+				var lightColor = [1, 1, 1];
 				var lightIntensity = 1;
 				var hasLightControls = false;
 				var lightColorSource = lightShader.Parameters("color").Source;
@@ -739,7 +724,7 @@ function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHe
 					if(lightColorSource.name.match(pattern))
 					{
 						hasLightControls = true;
-						Data.lightColor = [lightColorSource.shaders(0).Parameters("input2").Parameters("red").value, lightColorSource.shaders(0).Parameters("input2").Parameters("green").value, lightColorSource.shaders(0).Parameters("input2").Parameters("blue").value];
+						lightColor = [lightColorSource.shaders(0).Parameters("input2").Parameters("red").value, lightColorSource.shaders(0).Parameters("input2").Parameters("green").value, lightColorSource.shaders(0).Parameters("input2").Parameters("blue").value];
 						lightIntensity = (lightColorSource.Parameters("input2").Parameters("red").value + lightColorSource.Parameters("input2").Parameters("green").value + lightColorSource.Parameters("input2").Parameters("blue").value) / 3;
 					}
 					else
@@ -748,7 +733,7 @@ function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHe
 				if(!hasLightControls)
 				{
 					// Softimage Has Issue Retrieving The Values In Object Model Here.
-					Data.lightColor = [GetValue(lightShader.Parameters("color").fullName + ".red"), GetValue(lightShader.Parameters("color").fullName + ".green"), GetValue(lightShader.Parameters("color").fullName + ".blue")];
+					lightColor = [GetValue(lightShader.Parameters("color").fullName + ".red"), GetValue(lightShader.Parameters("color").fullName + ".green"), GetValue(lightShader.Parameters("color").fullName + ".blue")];
 					lightIntensity = lightShader.Parameters("intensity").value;
 				}
 
@@ -768,15 +753,15 @@ function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHe
 				}
 				subComponents = ["red", "green", "blue"];
 				for(var j = 0; j < subComponents.length; j++)
-					colorMathBasicIntensityShader.shaders(0).Parameters("input2").Parameters(subComponents[j]).value = Data.lightColor[j];
+					colorMathBasicIntensityShader.shaders(0).Parameters("input2").Parameters(subComponents[j]).value = lightColor[j];
 
-				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, Data.lightWidth, Data.lightHeight, Data.lightObjectPath, lightObjectFrame, Data.lightObjectFrameColor, 1, "", false)
+				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, 1, "", false)
 				var lightRoot = light.FindChild("*_Root");
 				sIBLLight.addChild(lightRoot);
 
 				DeleteObj("B:" + light);
 
-				var averagedSupportSize = (Data.lightWidth + Data.lightHeight) / 2;
+				var averagedSupportSize = (lightWidth + lightHeight) / 2;
 				var parameters = ["sclx", "scly", "sclz"];
 				var globalKinematics = lightRoot.Kinematics.Global.Parameters;
 				for(var j = 0; j < parameters.length; j++)
@@ -799,18 +784,18 @@ function connectToLights(lightClip, lightMaskClip, Data.lightWidth, Data.lightHe
 					}
 
 				connectDriverToLightShaders(lightHookProperty, sIBLLight);
-				var colorAverage = (Data.lightColor[0] + Data.lightColor[1] + Data.lightColor[2]) / 3;
+				var colorAverage = (lightColor[0] + lightColor[1] + lightColor[2]) / 3;
 				var shader = lightSupport.Material.Shaders(0).Shaders.Filter("", "", "*_User_Color_Math_Basic")(0).shaders(0);
 				for(var j = 0; j < subComponents.length; j++)
 				{
-					lightHookProperty.Parameters(subComponents[j] + "Color").value = Data.lightColor[j];
+					lightHookProperty.Parameters(subComponents[j] + "Color").value = lightColor[j];
 					shader.Parameters("input2").Parameters(subComponents[j]).value = (1 / lightIntensity) * (1 / colorAverage);
 				}
 			}
 		}
 	}
 	else
-		XSIUIToolkit.Msgbox( "sIBL_GUI | No 'sIBL' group found, skipping Lightsmith lights creation!", siMsgOkOnly, "sIBL_GUI " );
+		XSIUIToolkit.Msgbox(Constants.applicationName + " | No 'sIBL' group found, skipping Lightsmith lights creation!", siMsgOkOnly, Constants.applicationName);
 }
 
 function getNonClashingName(name)
@@ -887,12 +872,12 @@ function setRenderer()
 	SetValue("Views.ViewA.RenderRegion.UsePassOptions,Views.ViewB.RenderRegion.UsePassOptions,Views.ViewC.RenderRegion.UsePassOptions,Views.ViewD.RenderRegion.UsePassOptions", Array(true, true, true, true));
 }
 
-function activateSceneColorManagement(useArnoldGammaCorrection, passes)
+function activateSceneColorManagement(passes)
 {
-	if(useArnoldGammaCorrection)
+	if(Options.useArnoldGammaCorrection)
 	{
 		var nativeColorManagement = false;
-		var gammaValue = 2.2;
+		var gammaValue = Constants.defaultGamma;
 	}
 	else
 	{

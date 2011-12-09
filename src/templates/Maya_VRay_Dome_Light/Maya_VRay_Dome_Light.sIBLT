@@ -222,7 +222,7 @@ class Setup(object):
 			mel.eval("%s_postProcessCallback();" % Constants.packageRendererPrefix)
 
 	def storeSessionAttributes(self):
-		for attribute in self.storedSessionAttributes.keys():
+		for attribute in self.storedSessionAttributes:
 			if len(cmds.ls(attribute)):
 				self.storedSessionAttributes[attribute]= cmds.getAttr(attribute)
 

@@ -85,10 +85,10 @@ class Data(object):
 	lightMaskFilePath =  "@LightsmithMaskFile" != "-1" and os.path.join(resourcesDirectory, "@LightsmithMaskFile") or None
 	lightHeight = float(@LightsmithHeight)
 	lightWidth = float(@LightsmithWidth)
-	lightColor = [@LightsmithColor]
+	lightColor = [float(color) / 255 for color in (@LightsmithColor)]
 	lightObjectPath = os.path.join(resourcesDirectory, "@LightsmithObjectFile")
 	lightObjectFramePath = os.path.join(resourcesDirectory, "@LightsmithObjectFrameFile")
-	lightObjectFrameColor = [@LightsmithObjectFrameColor]
+	lightObjectFrameColor = [float(color) / 255 for color in (@LightsmithObjectFrameColor)]
 	lightShape = "@LightsmithShape"
 
 class Options(object):

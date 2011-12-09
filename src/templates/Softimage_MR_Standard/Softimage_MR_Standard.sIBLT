@@ -2,8 +2,8 @@
 Name = @Name | Softimage Mental Ray Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_MR_Standard_Template_Manual.html | String | Help File
-Release = @Release | 1.1.3 | String | Template Release
-Date = @Date | 11 March 2011 | String | Date
+Release = @Release | 2.0.0 | String | Template
+ReleaseDate = @Date | 11 March 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -25,11 +25,12 @@ Sun|SUNu = @SUNu
 Sun|SUNv = @SUNv
 Sun|SUNcolor = @SUNcolor
 Sun|SUNmulti = @SUNmulti
-Lights|DynamicLights = @Data.dynamicLights
+Lights|DynamicLights = @dynamicLights
 Header|Height = @Height
 Header|North = @North
 
 [Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
 createBackground = @createBackground | 1 | Boolean | Create / Update Background
 createReflection = @createReflection | 1 | Boolean | Create / Update Reflection
 createLighting = @createLighting | 1 | Boolean | Create / Update Lighting
@@ -73,27 +74,43 @@ function __constants()
 	this.packagePrefix = this.prefix + this.package;
 	this.packageRendererPrefix = this.prefix + this.package + this.renderer;
 	this.title = "Smart IBL";
-	this.controlsTitle = "[ " + this.title + " Controls ]";
+	this.controlsTitle = this.title.replace(" ", "_") + "_Controls";
 	this.defaultGamma = 2.2;
+	if(commandExists("sIBL_XSI_preProcessCommand"))
+		this.globalPreProcessCommand = function() {sIBL_XSI_preProcessCommand();};
+	else
+		this.globalPreProcessCommand = null;
+	if(commandExists("sIBL_XSI_postProcessCommand"))
+		this.globalPostProcessCommand = function() {sIBL_XSI_postProcessCommand();};
+	else
+		this.globalPostProcessCommand = null;
+	if(commandExists("sIBL_XSI_MR_preProcessCommand"))
+		this.localPreProcessCommand = function() {sIBL_XSI_MR_preProcessCommand();};
+	else
+		this.localPreProcessCommand = null;
+	if(commandExists("sIBL_XSI_MR_postProcessCommand"))
+		this.localPostProcessCommand = function() {sIBL_XSI_MR_postProcessCommand();};
+	else
+		this.localPostProcessCommand = null;
 }
 var Constants = new __constants();
 
 function __data()
 {
-	this.Data.backgroundFilePath = "@BGfile";
-	this.Data.reflectionFilePath = "@REFfile";
-	this.Data.reflectionMultiplier = @REFmulti;
-	this.Data.reflectionGamma = @REFgamma;
-	this.Data.lightingFilePath = "@EVfile";
-	this.Data.lightingMultiplier = @EVmulti;
-	this.Data.lightingGamma = @EVgamma;
-	this.Data.sunU = @SUNu;
-	this.Data.sunV = @SUNv;
-	this.Data.sunColor = [@SUNcolor];
-	this.Data.sunMultiplier = @SUNmulti;
-	this.Data.dynamicLights = "@Data.dynamicLights";
-	this.Data.height = @Height;
-	this.Data.north = @North;
+	this.backgroundFilePath = "@BGfile";
+	this.reflectionFilePath = "@REFfile";
+	this.reflectionMultiplier = @REFmulti;
+	this.reflectionGamma = @REFgamma;
+	this.lightingFilePath = "@EVfile";
+	this.lightingMultiplier = @EVmulti;
+	this.lightingGamma = @EVgamma;
+	this.sunU = @SUNu;
+	this.sunV = @SUNv;
+	this.sunColor = [@SUNcolor];
+	this.sunMultiplier = @SUNmulti;
+	this.dynamicLights = "@dynamicLights";
+	this.height = @Height;
+	this.north = @North;
 }
 var Data = new __data();
 
@@ -123,91 +140,29 @@ var Options = new __options();
 var proceedSetup = true;
 if(Data.backgroundFilePath == "-1" || Data.reflectionFilePath == "-1" || Data.lightingFilePath == "-1")
 {
-	var result = XSIUIToolkit.Msgbox( "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, "sIBL_GUI " ) ;
+	var result = XSIUIToolkit.Msgbox(Constants.applicationName + " | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?", siMsgYesNo | siMsgQuestion, Constants.applicationName);
 	if (result == siMsgNo )
 		proceedSetup = false;
 }
 if(proceedSetup)
-	setup(Data.backgroundFilePath,
-				Data.reflectionFilePath,
-				Data.reflectionMultiplier,
-				Data.reflectionGamma,
-				Data.lightingFilePath,
-				Data.lightingMultiplier,
-				Data.lightingGamma,
-				Data.sunU,
-				Data.sunV,
-				Data.sunColor,
-				Data.sunMultiplier,
-				Data.dynamicLights,
-				Data.height,
-				Data.north,
-				createBackground,
-				createReflection,
-				createLighting,
-				createSun,
-				createLights,
-				showPassesDialog,
-				updateScene,
-				overrideTweaks,
-				displayFeedback,
-				feedbackRadius,
-				sunLightType,
-				dynamicLightsType,
-				hideLights,
-				createGround,
-				shadowCatcher,
-				physicalSun,
-				activateFinalGather,
-				activateColorManagement);
+	setup();
 else
-	LogMessage("sIBL_GUI | Ibl file import aborted!");
+	LogMessage(Constants.applicationName + " | '" + Constants.title + "' file import aborted!");
 
-function setup(Data.backgroundFilePath,
-					Data.reflectionFilePath,
-					Data.reflectionMultiplier,
-					Data.reflectionGamma,
-					Data.lightingFilePath,
-					Data.lightingMultiplier,
-					Data.lightingGamma,
-					Data.sunU,
-					Data.sunV,
-					Data.sunColor,
-					Data.sunMultiplier,
-					Data.dynamicLights,
-					Data.height,
-					Data.north,
-					createBackground,
-					createReflection,
-					createLighting,
-					createSun,
-					createLights,
-					showPassesDialog,
-					updateScene,
-					overrideTweaks,
-					displayFeedback,
-					feedbackRadius,
-					sunLightType,
-					dynamicLightsType,
-					hideLights,
-					createGround,
-					shadowCatcher,
-					physicalSun,
-					activateFinalGather,
-					activateColorManagement)
+function setup()
 {
 	try
 	{
-		if(commandExists("sIBL_XSI_preProcessCommand"))
+		if(Constants.globalPreProcessCommand)
 		{
-			LogMessage("sIBL_GUI | Executing overall preprocess Command!");
-			sIBL_XSI_preProcessCommand();
+			LogMessage(Constants.applicationName + " | Executing overall preprocess Command!");
+			Constants.globalPreProcessCommand()
 		}
 
-		if(commandExists("preProcessCommand"))
+		if(Constants.localPreProcessCommand)
 		{
-			LogMessage("sIBL_GUI | Executing Template specific preprocess Command!");
-			preProcessCommand();
+			LogMessage(Constants.applicationName + " | Executing Template specific preprocess Command!");
+			Constants.localPreProcessCommand()
 		}
 
 		// Storing Active Layer.
@@ -215,7 +170,7 @@ function setup(Data.backgroundFilePath,
 
 		var selectedPasses = [];
 
-		if(showPassesDialog)
+		if(Options.showPassesDialog)
 			selectedPasses = getPasses();
 		else
 			selectedPasses[0] = GetCurrentPass();
@@ -240,12 +195,12 @@ function setup(Data.backgroundFilePath,
 				else
 					var dynamicLightsExists = false
 
-				if(updateScene)
+				if(Options.updateScene)
 				{
-					LogMessage("sIBL_GUI | Starting sIBL related nodes update!");
-					progressBar.Caption = "sIBL_GUI | Updating Scene!";
+					LogMessage(Constants.applicationName + " | Starting '" + Constants.prefix + "' related nodes update!");
+					progressBar.Caption = Constants.applicationName + " | Updating Scene!";
 
-					var controlsGroup = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL", true);
+					var controlsGroup = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix, true);
 					controlsGroup = controlsGroup(0);
 
 					if(controlsGroup != null)
@@ -257,27 +212,27 @@ function setup(Data.backgroundFilePath,
 						progressBar.Visible = true;
 
 						// Scene Cleanup.
-						update_environmentDeletion(overrideTweaks, createBackground, createLighting, createReflection, createSun, createLights, sunExists, dynamicLightsExists, createGround)
+						update_environmentDeletion(sunExists, dynamicLightsExists)
 						progressBar.Increment();
 
-						// Defines Updated sIBL_Feedback Radius From Scene Extent.
-						feedbackRadius = update_getExtendedFeedbackRadius(feedbackRadius);
+						// Defines Updated Feedback Radius From Scene Extent.
+						Options.feedbackRadius = update_getExtendedFeedbackRadius();
 
 						// Environment Shaders Update.
-						update_environmentShaders(createBackground, createLighting, createReflection, Data.backgroundFilePath, Data.lightingFilePath, Data.reflectionFilePath, selectedPasses, overrideTweaks);
+						update_environmentShaders(selectedPasses);
 						progressBar.Increment();
 
 						// Feedback Update.
-						if(overrideTweaks)
-							update_feedback(feedbackRadius, createBackground, displayFeedback);
+						if(Options.overrideTweaks)
+							update_feedback();
 						progressBar.Increment();
 
 						// Sun Update.
 						if(sunExists)
 						{
-							if(createSun)
+							if(Options.createSun)
 							{
-								update_sun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius, overrideTweaks);
+								update_sun();
 							}
 						}
 						progressBar.Increment();
@@ -285,16 +240,16 @@ function setup(Data.backgroundFilePath,
 						// Dynamic Lights Update.
 						if(dynamicLightsExists)
 						{
-							if(createLights)
+							if(Options.createLights)
 							{
-								update_dynamicsLights(dynamicLightsType, Data.dynamicLights, feedbackRadius);
+								update_dynamicsLights();
 							}
 						}
 						progressBar.Increment();
 
-						if(createGround)
+						if(Options.createGround)
 						{
-							update_ground(feedbackRadius, shadowCatcher, overrideTweaks);
+							update_ground();
 						}
 						progressBar.Increment();
 
@@ -302,14 +257,14 @@ function setup(Data.backgroundFilePath,
 					}
 					else
 					{
-						LogMessage("sIBL_GUI | No sIBL group found, aborting scene update!", siWarning);
+						LogMessage(Constants.applicationName + " | No '" + Constants.prefix + "' group found, aborting scene update!", siWarning);
 					}
 
 				}
 				else
 				{
-					LogMessage("sIBL_GUI | Starting Ibl file import!");
-					progressBar.Caption = "sIBL_GUI | Importing Ibl file!";
+					LogMessage(Constants.applicationName + " | Starting '" + Constants.title + "' file import!");
+					progressBar.Caption = Constants.applicationName + " | Importing '" + Constants.title + "' file!";
 
 					scriptEditorVerbose(false);
 					autoInspectState(false);
@@ -321,34 +276,34 @@ function setup(Data.backgroundFilePath,
 					environmentDeletion();
 					progressBar.Increment();
 
-					// Defines sIBL_Feedback Radius From Scene Extent.
-					feedbackRadius = getExtendedFeedbackRadius(feedbackRadius);
+					// Defines Feedback Radius From Scene Extent.
+					Options.feedbackRadius = getExtendedFeedbackRadius();
 
 					// Activating Renderer.
 					setRenderer();
 					progressBar.Increment();
 
 					// Lights Hide.
-					if(hideLights)
+					if(Options.hideLights)
 						hideSceneLights();
 					progressBar.Increment();
 
 					// Environment Shaders Creation.
-					getEnvironmentShaders(createBackground, createLighting, createReflection, Data.backgroundFilePath, Data.lightingFilePath, Data.reflectionFilePath, selectedPasses);
+					getEnvironmentShaders(selectedPasses);
 					progressBar.Increment();
 
 					// Feedback Creation.
-					getFeedback(feedbackRadius, createBackground, displayFeedback);
+					getFeedback();
 					progressBar.Increment();
 
 					// Sun Creation.
 					if(sunExists)
 					{
-						if(createSun)
+						if(Options.createSun)
 						{
-							if(objectExists("sIBL_Feedback"))
+							if(objectExists(Constants.prefix + "_Feedback"))
 							{
-								getSun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius, physicalSun);
+								getSun();
 							}
 						}
 					}
@@ -357,32 +312,32 @@ function setup(Data.backgroundFilePath,
 					// Dynamic Lights Creation.
 					if(dynamicLightsExists)
 					{
-						if(createLights)
+						if(Options.createLights)
 						{
-							getDynamicLights(dynamicLightsType, Data.dynamicLights, feedbackRadius);
+							getDynamicLights();
 						}
 					}
 					progressBar.Increment();
 
 					// Shaders / Feedback Connection.
-					var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
+					var feedback = Application.ActiveSceneRoot.FindChild(Constants.prefix + "_Feedback");
 					if(feedback != null)
-						connectFeedbackToShaders(feedback, createBackground, createLighting, createReflection, selectedPasses);
+						connectFeedbackToShaders(feedback, selectedPasses);
 					progressBar.Increment();
 
 					// Ground Creation.
-					if(createGround)
-						getGround(feedbackRadius, shadowCatcher);
+					if(Options.createGround)
+						getGround();
 					progressBar.Increment();
 
 					// Final Gather Activation.
-					if(activateFinalGather)
+					if(Options.activateFinalGather)
 						activateSceneFinalGather(selectedPasses);
 					progressBar.Increment();
 
 					// Linear Workflow Activation.
-					if(activateColorManagement)
-						activateSceneColorManagement(createBackground, selectedPasses);
+					if(Options.activateColorManagement)
+						activateSceneColorManagement(selectedPasses);
 					progressBar.Increment();
 
 					progressBar.Visible = false;
@@ -393,21 +348,21 @@ function setup(Data.backgroundFilePath,
 				scriptEditorVerbose(true);
 				autoInspectState(true);
 
-				if(updateScene)
-					LogMessage("sIBL_GUI | Ibl file update finished!");
+				if(Options.updateScene)
+					LogMessage(Constants.applicationName + " | '" + Constants.title + "' file update finished!");
 				else
-					LogMessage("sIBL_GUI | Ibl file import finished!");
+					LogMessage(Constants.applicationName + " | '" + Constants.title + "' file import finished!");
 
-				if(commandExists("sIBL_XSI_postProcessCommand"))
+				if(Constants.globalPostProcessCommand)
 				{
-					LogMessage("sIBL_GUI | Executing overall postprocess Command!");
-					sIBL_XSI_postProcessCommand();
+					LogMessage(Constants.applicationName + " | Executing overall postprocess Command!");
+					Constants.globalPostProcessCommand()
 				}
 
-				if(commandExists("postProcessCommand"))
+				if(Constants.localPostProcessCommand)
 				{
-					LogMessage("sIBL_GUI | Executing Template specific postprocess Command!");
-					postProcessCommand();
+					LogMessage(Constants.applicationName + " | Executing Template specific postprocess Command!");
+					Constants.localPostProcessCommand()
 				}
 			}
 			else
@@ -418,7 +373,7 @@ function setup(Data.backgroundFilePath,
 				scriptEditorVerbose(true);
 				autoInspectState(true);
 
-				LogMessage("sIBL_GUI | No Pass selected, import canceled!");
+				LogMessage(Constants.applicationName + " | No Pass selected, import canceled!");
 			}
 		}
 	}
@@ -427,7 +382,7 @@ function setup(Data.backgroundFilePath,
 		scriptEditorVerbose(true);
 		autoInspectState(true);
 
-		LogMessage("sIBL_GUI | Ibl file import Failed!", siError);
+		LogMessage(Constants.applicationName + " | '" + Constants.title + "' file import failed!", siError);
 		throw (error)
 	}
 }
@@ -467,7 +422,7 @@ function getPasses()
 	passesChooser_customProperty_layout.Logic = ToggleAll_OnClicked.toString() + UnToggleAll_OnClicked.toString();
 	passesChooser_customProperty_layout.Language = "JScript";
 
-	var returnValue = InspectObj(passesChooser_customProperty, "", "sIBL GUI Passes Chooser", siModal, false);
+	var returnValue = InspectObj(passesChooser_customProperty, "", Constants.applicationName + " Passes Chooser", siModal, false);
 
 	if(!returnValue)
 	{
@@ -519,50 +474,50 @@ function hideSceneLights()
 	}
 }
 
-function update_environmentDeletion(overrideTweaks, createBackground, createLighting, createReflection, createSun, createLights, sunExists, dynamicLightsExists, createGround)
+function update_environmentDeletion(sunExists, dynamicLightsExists)
 {
 	try
 	{
-		// sIBL Clip Shaders Deletion.
-		if(overrideTweaks)
+		// Clip Shaders Deletion.
+		if(Options.overrideTweaks)
 		{
-			if(!createLighting)
-				DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL_Lighting_Clip", true));
-			if(!createReflection)
-				DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL_Reflection_Clip", true));
+			if(!Options.createLighting)
+				DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix + "_Lighting_Clip", true));
+			if(!Options.createReflection)
+				DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix + "_Reflection_Clip", true));
 		}
 
-		// sIBL Environment Shaders Deletion.
-		if(overrideTweaks)
+		// Environment Shaders Deletion.
+		if(Options.overrideTweaks)
 		{
-			if(!createBackground)
-				DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Background_Mib_Lookup_Spherical", true));
-			if(!createLighting)
+			if(!Options.createBackground)
+				DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Background_Mib_Lookup_Spherical", true));
+			if(!Options.createLighting)
 			{
 			}
-			DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Lighting_Mib_Lookup_Spherical", true));
-			if(!createReflection)
-				DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Reflection_Mib_Lookup_Spherical", true));
+			DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Lighting_Mib_Lookup_Spherical", true));
+			if(!Options.createReflection)
+				DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Reflection_Mib_Lookup_Spherical", true));
 		}
 
-		if(overrideTweaks)
+		if(Options.overrideTweaks)
 		{
-			if(!createSun)
-				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_Sun", true));
+			if(!Options.createSun)
+				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_Sun", true));
 		}
 
-		if(overrideTweaks)
+		if(Options.overrideTweaks)
 		{
-			if(!createLights)
-				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_DKL_", false));
+			if(!Options.createLights)
+				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_DKL_", false));
 		}
 
-		if(overrideTweaks)
+		if(Options.overrideTweaks)
 		{
-			if(!createGround)
+			if(!Options.createGround)
 			{
-				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_Ground", true));
-				DeleteObj(getMatchingObjectsByClassID("{479F2E10-3900-11D1-B0B3-00A024C79287}", "sIBL_Ground_Layer", true));
+				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_Ground", true));
+				DeleteObj(getMatchingObjectsByClassID("{479F2E10-3900-11D1-B0B3-00A024C79287}", Constants.prefix + "_Ground_Layer", true));
 			}
 		}
 	}
@@ -575,24 +530,24 @@ function environmentDeletion()
 {
 	try
 	{
-		// sIBL Transform Group Deletion.
-		var controlsGroup = Application.ActiveSceneRoot.FindChild("sIBL");
+		// Transform Group Deletion.
+		var controlsGroup = Application.ActiveSceneRoot.FindChild(Constants.prefix);
 		if(controlsGroup != null)
 		{
-			Application.DeleteObj("B:sIBL");
+			Application.DeleteObj("B:" + Constants.prefix);
 		}
 
-		// sIBL Clips Deletion.
-		DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL", false));
+		// Clips Deletion.
+		DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix, false));
 
-		// sIBL Shaders Deletion.
-		DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL", false));
+		// Shaders Deletion.
+		DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix, false));
 
-		// sIBL Environment Shader Stack Parameters Deletion.
+		// Environment Shader Stack Parameters Deletion.
 		passesEnvironmentShaderStackParametersDeletion()
 
-		// sIBL Display Layers Deletion.
-		DeleteObj(getMatchingObjectsByClassID("{479F2E10-3900-11D1-B0B3-00A024C79287}", "sIBL", false));
+		// Display Layers Deletion.
+		DeleteObj(getMatchingObjectsByClassID("{479F2E10-3900-11D1-B0B3-00A024C79287}", Constants.prefix, false));
 	}
 	catch (error)
 	{
@@ -649,11 +604,11 @@ function getEnvironmentShaderBranch(pass, inputShader, imageSource, connectionPo
 	lookupSphericalShader.Parameters("name").value = name + "_Mib_Lookup_Spherical";
 }
 
-function update_environmentShaders(createBackground, createLighting, createReflection, Data.backgroundFilePath, Data.lightingFilePath, Data.reflectionFilePath, passes, overrideTweaks)
+function update_environmentShaders(passes)
 {
 	var pass = passes[0];
 
-	var raytype = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Raytype", true);
+	var raytype = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Raytype", true);
 	raytype = raytype(0);
 
 	var subComponents = ["red", "green", "blue"];
@@ -661,9 +616,9 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 	if(raytype != null)
 	{
 		var ports = ["eye"];
-		if(createBackground)
+		if(Options.createBackground)
 		{
-			var backgroundSource = getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL_Background_Clip", true);
+			var backgroundSource = getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix + "_Background_Clip", true);
 			if(backgroundSource != 0)
 			{
 				backgroundSource = backgroundSource(0);
@@ -671,16 +626,16 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 			}
 			else
 			{
-				backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, "sIBL_Background_Clip");
+				backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, Constants.prefix + "_Background_Clip");
 			}
 
-			var backgroundLookupSphericalShader = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Background_Mib_Lookup_Spherical", true);
+			var backgroundLookupSphericalShader = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Background_Mib_Lookup_Spherical", true);
 			if(backgroundLookupSphericalShader == 0)
-				getEnvironmentShaderBranch(pass, raytype, backgroundSource, ports, "sIBL_Background");
+				getEnvironmentShaderBranch(pass, raytype, backgroundSource, ports, Constants.prefix + "_Background");
 		}
 		else
 		{
-			if(overrideTweaks)
+			if(Options.overrideTweaks)
 			{
 				for(var j = 0; j < subComponents.length; j++)
 					raytype.Parameters(ports[i]).Parameters(subComponents[j]).value = 0;
@@ -688,9 +643,9 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 		}
 
 		ports = ["fg", "photon"];
-		if(createLighting)
+		if(Options.createLighting)
 		{
-			var lightingSource = getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL_Lighting_Clip", true);
+			var lightingSource = getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix + "_Lighting_Clip", true);
 			if(lightingSource != 0)
 			{
 				lightingSource = lightingSource(0);
@@ -698,16 +653,16 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 			}
 			else
 			{
-				lightingSource = Application.CreateImageClip2(Data.lightingFilePath, "sIBL_Lighting_Clip");
+				lightingSource = Application.CreateImageClip2(Data.lightingFilePath, Constants.prefix + "_Lighting_Clip");
 			}
 
-			var lightingLookupSphericalShader = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Lighting_Mib_Lookup_Spherical", true);
+			var lightingLookupSphericalShader = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Lighting_Mib_Lookup_Spherical", true);
 			if(lightingLookupSphericalShader == 0)
-				getEnvironmentShaderBranch(pass, raytype, lightingSource, ports, "sIBL_Lighting");
+				getEnvironmentShaderBranch(pass, raytype, lightingSource, ports, Constants.prefix + "_Lighting");
 		}
 		else
 		{
-			if(overrideTweaks)
+			if(Options.overrideTweaks)
 			{
 				for(var i = 0; i < ports.length; i++)
 				{
@@ -718,9 +673,9 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 		}
 
 		ports = ["reflection", "refraction"];
-		if(createReflection)
+		if(Options.createReflection)
 		{
-			var reflectionSource = getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", "sIBL_Reflection_Clip", true);
+			var reflectionSource = getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix + "_Reflection_Clip", true);
 			if(reflectionSource != 0)
 			{
 				reflectionSource = reflectionSource(0);
@@ -728,16 +683,16 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 			}
 			else
 			{
-				reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, "sIBL_Reflection_Clip");
+				reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, Constants.prefix + "_Reflection_Clip");
 			}
 
-			var reflectionLookupSphericalShader = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", "sIBL_Reflection_Mib_Lookup_Spherical", true);
+			var reflectionLookupSphericalShader = getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix + "_Reflection_Mib_Lookup_Spherical", true);
 			if(reflectionLookupSphericalShader == 0)
-				getEnvironmentShaderBranch(pass, raytype, reflectionSource, ports, "sIBL_Reflection");
+				getEnvironmentShaderBranch(pass, raytype, reflectionSource, ports, Constants.prefix + "_Reflection");
 		}
 		else
 		{
-			if(overrideTweaks)
+			if(Options.overrideTweaks)
 			{
 				for(var i = 0; i < ports.length; i++)
 				{
@@ -753,11 +708,11 @@ function update_environmentShaders(createBackground, createLighting, createRefle
 	}
 	else
 	{
-		LogMessage("sIBL_GUI | No sIBL_Raytype found, skipping environment related Shaders updates!", siWarning);
+		LogMessage(Constants.applicationName + " | No '" + Constants.prefix + "'_Raytype found, skipping environment related Shaders updates!", siWarning);
 	}
 }
 
-function getEnvironmentShaders(createBackground, createLighting, createReflection, Data.backgroundFilePath, Data.lightingFilePath, Data.reflectionFilePath, passes)
+function getEnvironmentShaders(passes)
 {
 	var pass = passes[0];
 
@@ -769,10 +724,10 @@ function getEnvironmentShaders(createBackground, createLighting, createReflectio
 	SIConnectShaderToCnxPoint(raytype , pass + ".EnvironmentShaderStack", false);
 
 	var ports = ["eye", "refraction"];
-	if(createBackground)
+	if(Options.createBackground)
 	{
-		var backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, "sIBL_Background_Clip");
-		getEnvironmentShaderBranch(pass, raytype, backgroundSource, ports, "sIBL_Background");
+		var backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, Constants.prefix + "_Background_Clip");
+		getEnvironmentShaderBranch(pass, raytype, backgroundSource, ports, Constants.prefix + "_Background");
 	}
 	else
 	{
@@ -784,10 +739,10 @@ function getEnvironmentShaders(createBackground, createLighting, createReflectio
 	}
 
 	ports = ["fg", "photon"];
-	if(createLighting)
+	if(Options.createLighting)
 	{
-		var lightingSource = Application.CreateImageClip2(Data.lightingFilePath, "sIBL_Lighting_Clip");
-		getEnvironmentShaderBranch(pass, raytype, lightingSource, ports, "sIBL_Lighting");
+		var lightingSource = Application.CreateImageClip2(Data.lightingFilePath, Constants.prefix + "_Lighting_Clip");
+		getEnvironmentShaderBranch(pass, raytype, lightingSource, ports, Constants.prefix + "_Lighting");
 	}
 	else
 	{
@@ -799,10 +754,10 @@ function getEnvironmentShaders(createBackground, createLighting, createReflectio
 	}
 
 	ports = ["reflection"];
-	if(createReflection)
+	if(Options.createReflection)
 	{
-		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, "sIBL_Reflection_Clip");
-		getEnvironmentShaderBranch(pass, raytype, reflectionSource, ports, "sIBL_Reflection");
+		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, Constants.prefix + "_Reflection_Clip");
+		getEnvironmentShaderBranch(pass, raytype, reflectionSource, ports, Constants.prefix + "_Reflection");
 	}
 	else
 	{
@@ -817,12 +772,12 @@ function getEnvironmentShaders(createBackground, createLighting, createReflectio
 	for(var i = 1; i < passes.length; i++)
 		SIConnectShaderToCnxPoint(raytype , passes[i] + ".EnvironmentShaderStack", false);
 
-	raytype.Parameters("name").value = "sIBL_Raytype";
+	raytype.Parameters("name").value = Constants.prefix + "_Raytype";
 }
 
-function getSIBLControls(controlsGroup)
+function getControls(controlsGroup)
 {
-	var controls_customProperty = controlsGroup.AddCustomProperty("Smart_IBL_Controls", false);
+	var controls_customProperty = controlsGroup.AddCustomProperty(Constants.controlsTitle, false);
 
 	// Render Togglers Parameters.
 	controls_customProperty.AddParameter3("Background_Toggle", siBool, true);
@@ -857,12 +812,12 @@ function getSIBLControls(controlsGroup)
 
 function getControlsGroup()
 {
-	var controlsGroup = Application.ActiveSceneRoot.FindChild("sIBL");
+	var controlsGroup = Application.ActiveSceneRoot.FindChild(Constants.prefix);
 
 	if(controlsGroup == null)
 	{
 		var null_ = ActiveSceneRoot.AddPrimitive("Null", "helperNull");
-		var controlsGroup = Application.CreateTransformGroup("sIBL", "B:" + null_);
+		var controlsGroup = Application.CreateTransformGroup(Constants.prefix, "B:" + null_);
 
 		var locks = ["sclx", "scly", "sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
 		var globalKinematics = controlsGroup.Kinematics.Global.Parameters;
@@ -875,28 +830,28 @@ function getControlsGroup()
 
 		DeleteObj(null_);
 
-		getSIBLControls(controlsGroup)
+		getControls(controlsGroup)
 	}
 
 	return controlsGroup
 }
 
-function getFeedbackGeometry(feedbackRadius, displayFeedback)
+function getFeedbackGeometry()
 {
-	var feedback = ActiveSceneRoot.AddGeometry("Sphere", "NurbsSurface", "sIBL_Feedback");
+	var feedback = ActiveSceneRoot.AddGeometry("Sphere", "NurbsSurface", Constants.prefix + "_Feedback");
 	feedback.properties("visibility").Parameters("rendvis").value = 0;
 
-	if(!displayFeedback)
+	if(!Options.displayFeedback)
 		feedback.properties("visibility").Parameters("viewvis").value = 0;
 
-	CreateProjection(feedback, siTxtUV, siTxtDefaultPlanarXY, null, "sIBL_Texture_Projection");
+	CreateProjection(feedback, siTxtUV, siTxtDefaultPlanarXY, null, Constants.prefix + "_Texture_Projection");
 
 	var globalKinematics = feedback.Kinematics.Global.Parameters;
 	globalKinematics("sclx").value = -globalKinematics("sclx").value;
 	ResetTransform(feedback, siCtr, siSRT, siXYZ);
-	globalKinematics("sclx").value = feedbackRadius;
-	globalKinematics("scly").value = feedbackRadius;
-	globalKinematics("sclz").value = feedbackRadius;
+	globalKinematics("sclx").value = Options.feedbackRadius;
+	globalKinematics("scly").value = Options.feedbackRadius;
+	globalKinematics("sclz").value = Options.feedbackRadius;
 
 	ApplyTopoOp("Inverse", feedback, 3, siImmediateOperation);
 
@@ -913,18 +868,18 @@ function getFeedbackGeometry(feedbackRadius, displayFeedback)
 		localKinematics(locks[i]).SetLock(siLockLevelManipulation);
 	}
 
-	addToDisplayLayer("sIBL_Feedback_Layer", feedback);
+	addToDisplayLayer(Constants.prefix + "_Feedback_Layer", feedback);
 
 	return feedback;
 }
 
-function update_feedback(feedbackRadius, createBackground, displayFeedback)
+function update_feedback()
 {
-	var feedback = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_Feedback", true);
+	var feedback = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_Feedback", true);
 
-	if(feedback == 0 && overrideTweaks)
+	if(feedback == 0 && Options.overrideTweaks)
 	{
-		getFeedback(feedbackRadius, createBackground, displayFeedback);
+		getFeedback();
 	}
 	else
 	{
@@ -935,38 +890,38 @@ function update_feedback(feedbackRadius, createBackground, displayFeedback)
 			globalKinematics("roty").value = 0;
 
 			//Not Working After The Feedback Has Been Frozen.
-			//globalKinematics("sclx").value = -feedbackRadius;
-			//globalKinematics("scly").value = feedbackRadius;
-			//globalKinematics("sclz").value = feedbackRadius;
+			//globalKinematics("sclx").value = -Options.feedbackRadius;
+			//globalKinematics("scly").value = Options.feedbackRadius;
+			//globalKinematics("sclz").value = Options.feedbackRadius;
 
-			if(!displayFeedback)
+			if(!Options.displayFeedback)
 				feedback.properties("visibility").Parameters("viewvis").value = 0;
 			else
 				feedback.properties("visibility").Parameters("viewvis").value = 1;
 		}
 		else
 		{
-			LogMessage("sIBL_GUI | No Feedback found, skipping Feedback related updates!", siWarning);
+			LogMessage(Constants.applicationName + " | No Feedback found, skipping Feedback related updates!", siWarning);
 		}
 	}
 }
 
-function getFeedback(feedbackRadius, createBackground, displayFeedback)
+function getFeedback()
 {
 	var controlsGroup = getControlsGroup();
-	var feedback = getFeedbackGeometry(feedbackRadius, displayFeedback);
+	var feedback = getFeedbackGeometry();
 
 	controlsGroup.AddChild(feedback);
 
-	var feedbackMaterial = SICreateMaterial("Shaders/Material/Constant.Preset", "sIBL_Feedback_Material", null, null, false);
+	var feedbackMaterial = SICreateMaterial("Shaders/Material/Constant.Preset", Constants.prefix + "_Feedback_Material", null, null, false);
 
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
 		feedbackMaterial.Parameters("Surface").NestedObjects(0).Parameters("transparency").Parameters(subComponents[i]).value = 0.5;
 
 	AssignMaterial(feedbackMaterial + "," + feedback);
-	if(createBackground)
-		SIConnectShaderToCnxPoint("Clips.sIBL_Background_Clip", feedbackMaterial + ".sIBL_Feedback_Material.color");
+	if(Options.createBackground)
+		SIConnectShaderToCnxPoint("Clips." + Constants.prefix + "_Background_Clip", feedbackMaterial + "." + Constants.prefix + "_Feedback_Material.color");
 
 	return feedback
 }
@@ -998,15 +953,15 @@ function update_lightsConstraints(light, scale, uCoordinate, vCoordinate)
 	}
 }
 
-function update_sun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius, overrideTweaks)
+function update_sun()
 {
-	var sun = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_Sun", true);
+	var sun = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_Sun", true);
 
-	if(sun == 0 && overrideTweaks)
+	if(sun == 0 && Options.overrideTweaks)
 	{
-		if(objectExists("sIBL_Feedback"))
+		if(objectExists(Constants.prefix + "_Feedback"))
 		{
-			getSun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius, physicalSun);
+			getSun();
 		}
 	}
 	else
@@ -1014,37 +969,39 @@ function update_sun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunM
 		sun = sun(0);
 		if(sun != null)
 		{
-			update_lightsConstraints(sun, feedbackRadius / 15, Data.sunU, Data.sunV)
+			update_lightsConstraints(sun, Options.feedbackRadius / 15, Data.sunU, Data.sunV)
 		}
 		else
 		{
-			LogMessage("sIBL_GUI | No Sun found, skipping Sun related updates!", siWarning);
+			LogMessage(Constants.applicationName + " | No Sun found, skipping Sun related updates!", siWarning);
 		}
 	}
-}function update_dynamicsLights(dynamicLightsType, Data.dynamicLights, feedbackRadius)
-{
-	var sceneDynamicLights = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_DKL_", false);
+}
 
-	if(sceneDynamicLights == 0 && overrideTweaks)
+function update_dynamicsLights()
+{
+	var sceneDynamicLights = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_DKL_", false);
+
+	if(sceneDynamicLights == 0 && Options.overrideTweaks)
 	{
-		if(objectExists("sIBL_Feedback"))
+		if(objectExists(Constants.prefix + "_Feedback"))
 		{
-			getDynamicLights(dynamicLightsType, Data.dynamicLights, feedbackRadius);
+			getDynamicLights();
 		}
 	}
 	else
 	{
-		var Data.dynamicLights = Data.dynamicLights.split("|");
+		var dynamicLights = Data.dynamicLights.split("|");
 
 		for(var i = 0; i < sceneDynamicLights.Count; i++)
 		{
-			for(var j = 0; j < Data.dynamicLights.length; j += 8)
+			for(var j = 0; j < dynamicLights.length; j += 8)
 			{
-				var regexPattern = new RegExp(Data.dynamicLights[j + 1].replace(/\s/g, "_"));
+				var regexPattern = new RegExp(dynamicLights[j + 1].replace(/\s/g, "_"));
 
 				if(sceneDynamicLights(i).name.match(regexPattern))
 				{
-					update_lightsConstraints(sceneDynamicLights(i), feedbackRadius / 15, Data.dynamicLights[j + 6], Data.dynamicLights[j + 7])
+					update_lightsConstraints(sceneDynamicLights(i), Options.feedbackRadius / 15, dynamicLights[j + 6], dynamicLights[j + 7])
 				}
 			}
 		}
@@ -1113,13 +1070,13 @@ function getLight(parent, constraintParent, type, name, scale, physicalSun, inte
 
 	var surfaceConstraint = ApplyCns("Surface", light, constraintParent);
 
-	if(objectExists("sIBL_Lights_Target"))
+	if(objectExists(Constants.prefix + "_Lights_Target"))
 	{
-		var lightTarget = Application.ActiveSceneRoot.FindChild("sIBL_Lights_Target");
+		var lightTarget = Application.ActiveSceneRoot.FindChild(Constants.prefix + "_Lights_Target");
 	}
 	else
 	{
-		var lightTarget = ActiveSceneRoot.AddPrimitive("Null", "sIBL_Lights_Target");
+		var lightTarget = ActiveSceneRoot.AddPrimitive("Null", Constants.prefix + "_Lights_Target");
 	}
 
 	parent.AddChild(lightTarget)
@@ -1143,59 +1100,59 @@ function getLight(parent, constraintParent, type, name, scale, physicalSun, inte
 		}
 	}
 
-	addToDisplayLayer("sIBL_Lighting_Layer", lightTarget);
+	addToDisplayLayer(Constants.prefix + "_Lighting_Layer", lightTarget);
 
-	addToDisplayLayer("sIBL_Lighting_Layer", light);
+	addToDisplayLayer(Constants.prefix + "_Lighting_Layer", light);
 }
 
-function getSun(sunLightType, Data.sunU, Data.sunV, Data.sunColor, Data.sunMultiplier, feedbackRadius, physicalSun)
+function getSun()
 {
 	var controlsGroup = getControlsGroup();
-	var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
+	var feedback = Application.ActiveSceneRoot.FindChild(Constants.prefix + "_Feedback");
 
-	getLight(controlsGroup, feedback, sunLightType, "sIBL_Sun", feedbackRadius / 10, physicalSun, Data.sunMultiplier, Data.sunColor, Data.sunU, Data.sunV)
+	getLight(controlsGroup, feedback, Options.sunLightType, Constants.prefix + "_Sun", Options.feedbackRadius / 10, Options.physicalSun, Data.sunMultiplier, Data.sunColor, Data.sunU, Data.sunV)
 }
 
-function getDynamicLights(dynamicLightsType, Data.dynamicLights, feedbackRadius)
+function getDynamicLights()
 {
 	var controlsGroup = getControlsGroup();
-	var feedback = Application.ActiveSceneRoot.FindChild("sIBL_Feedback");
-	var Data.dynamicLights = Data.dynamicLights.split("|");
-	for(var i = 0; i < Data.dynamicLights.length; i += 8)
-		getLight(controlsGroup, feedback, dynamicLightsType, "sIBL_DKL_" + Data.dynamicLights[i + 1], feedbackRadius / 15, false, parseFloat(Data.dynamicLights[i + 5]), [parseFloat(Data.dynamicLights[i + 2]), parseFloat(Data.dynamicLights[i + 3]), parseFloat(Data.dynamicLights[i + 4])], parseFloat(Data.dynamicLights[i + 6]), parseFloat(Data.dynamicLights[i + 7]))
+	var feedback = Application.ActiveSceneRoot.FindChild(Constants.prefix + "_Feedback");
+	var dynamicLights = Data.dynamicLights.split("|");
+	for(var i = 0; i < dynamicLights.length; i += 8)
+		getLight(controlsGroup, feedback, Options.dynamicLightsType, Constants.prefix + "_DKL_" + dynamicLights[i + 1], Options.feedbackRadius / 15, false, parseFloat(dynamicLights[i + 5]), [parseFloat(dynamicLights[i + 2]), parseFloat(dynamicLights[i + 3]), parseFloat(dynamicLights[i + 4])], parseFloat(dynamicLights[i + 6]), parseFloat(dynamicLights[i + 7]))
 }
 
 function bridgeControlsAndShaders(pass, slot)
 {
-	AddExpr(pass + ".sIBL_" + slot + "_Color_Switch.switch", "1-(sIBL.Smart_IBL_Controls." + slot + "_Toggle)", true);
+	AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Switch.switch", "1-('" + Constants.prefix + "'." + Constants.controlsTitle + "." + slot + "_Toggle)", true);
 
 	var components = ["red", "green", "blue"];
 	for(var i = 0; i < components.length; i++)
 	{
-		AddExpr(pass + ".sIBL_" + slot + "_Color_Math_Basic.input2." + components[i], "sIBL.Smart_IBL_Controls." + slot + "_Gain", true);
-		AddExpr(pass + ".sIBL_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], "sIBL.Smart_IBL_Controls." + slot + "_Gamma", true);
+		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gain", true);
+		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gamma", true);
 	}
 }
 
-function connectFeedbackToShaders(feedback, connectToBackground, connectToLighting, connectToReflection, passes)
+function connectFeedbackToShaders(feedback, passes)
 {
 	var pass = passes[0];
 
-	if(connectToBackground)
+	if(Options.createBackground)
 	{
-		SetExpr(pass + ".sIBL_Background_Mib_Lookup_Spherical.rotate", "(" + feedback + ".kine.global.roty / 2 )  * PI / 180 + ( 67.5 * PI / 180 )");
+		SetExpr(pass + "." + Constants.prefix + "_Background_Mib_Lookup_Spherical.rotate", "(" + feedback + ".kine.global.roty / 2 )  * PI / 180 + ( 67.5 * PI / 180 )");
 		bridgeControlsAndShaders(pass, "Background");
 	}
 
-	if(connectToLighting)
+	if(Options.createLighting)
 	{
-		SetExpr(pass + ".sIBL_Lighting_Mib_Lookup_Spherical.rotate", "(" + feedback + ".kine.global.roty / 2 )  * PI / 180 + ( 67.5 * PI / 180 )");
+		SetExpr(pass + "." + Constants.prefix + "_Lighting_Mib_Lookup_Spherical.rotate", "(" + feedback + ".kine.global.roty / 2 )  * PI / 180 + ( 67.5 * PI / 180 )");
 		bridgeControlsAndShaders(pass, "Lighting");
 	}
 
-	if(connectToReflection)
+	if(Options.createReflection)
 	{
-		SetExpr(pass + ".sIBL_Reflection_Mib_Lookup_Spherical.rotate", "(" + feedback + ".kine.global.roty / 2 )  * PI / 180 + ( 67.5 * PI / 180 )");
+		SetExpr(pass + "." + Constants.prefix + "_Reflection_Mib_Lookup_Spherical.rotate", "(" + feedback + ".kine.global.roty / 2 )  * PI / 180 + ( 67.5 * PI / 180 )");
 		bridgeControlsAndShaders(pass, "Reflection");
 	}
 }
@@ -1220,7 +1177,7 @@ function activateSceneFinalGather(passes)
 	}
 }
 
-function activateSceneColorManagement(createBackground, passes)
+function activateSceneColorManagement(passes)
 {
 	Application.Preferences.SetPreferenceValue("Display.color_management_source", 0);
 	Application.Preferences.SetPreferenceValue("Display.color_management_render_region", true);
@@ -1235,37 +1192,37 @@ function activateSceneColorManagement(createBackground, passes)
 	}
 
 	// Adjust Background Gamma Color Because Of The Color Management.
-	if(createBackground)
+	if(Options.createBackground)
 	{
-		var Smart_IBL_Controls_Property = getRequestedPropertiesAsCollection("Smart_IBL_Controls");
-		Smart_IBL_Controls_Property.item(0).Background_Gamma.value = 1 / 2.2;
+		var Smart_IBL_Controls_Property = getRequestedPropertiesAsCollection(Constants.controlsTitle);
+		Smart_IBL_Controls_Property.item(0).Background_Gamma.value = 1 / Constants.defaultGamma;
 	}
 }
 
-function update_ground(feedbackRadius, shadowCatcher, overrideTweaks)
+function update_ground()
 {
-	var ground = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", "sIBL_Ground", true);
-	if(ground == 0 && overrideTweaks)
-		getGround(feedbackRadius, shadowCatcher);
+	var ground = getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_Ground", true);
+	if(ground == 0 && Options.overrideTweaks)
+		getGround();
 }
 
-function getGround(feedbackRadius, shadowCatcher)
+function getGround()
 {
 	var controlsGroup = getControlsGroup();
 
-	var ground = ActiveSceneRoot.AddGeometry("Grid", "MeshSurface", "sIBL_Ground");
+	var ground = ActiveSceneRoot.AddGeometry("Grid", "MeshSurface", Constants.prefix + "_Ground");
 	controlsGroup.AddChild(ground)
 
 	var globalKinematics = ground.Kinematics.Global.Parameters;
 	var subComponents = ["sclx", "scly", "sclz"];
 	for(var i = 0; i < subComponents.length; i++)
-		globalKinematics(subComponents[i]).value = (feedbackRadius * Math.sqrt(2)) / 2;
+		globalKinematics(subComponents[i]).value = (Options.feedbackRadius * Math.sqrt(2)) / 2;
 
 	ResetTransform(ground, siCtr, siSRT, siXYZ);
 
-	if(shadowCatcher)
+	if(Options.shadowCatcher)
 	{
-		var groundMaterial = SICreateMaterial("Shaders/Material/mental images/mip_Matte_Shadow.Preset", "sIBL_Ground_Material", null, null, false);
+		var groundMaterial = SICreateMaterial("Shaders/Material/mental images/mip_Matte_Shadow.Preset", Constants.prefix + "_Ground_Material", null, null, false);
 
 		var constantShader = CreateShaderFromProgID("Softimage.material-constant.1.0", groundMaterial);
 
@@ -1273,14 +1230,14 @@ function getGround(feedbackRadius, shadowCatcher)
 		for(var i = 0; i < subComponents.length; i++)
 			constantShader.Parameters("transparency").Parameters(subComponents[i]).value = 1;
 
-		constantShader.Parameters("Name").value = "sIBL_Ground_Constant";
+		constantShader.Parameters("Name").value = Constants.prefix + "_Ground_Constant";
 
-		SIConnectShaderToCnxPoint(constantShader, groundMaterial + ".sIBL_Ground_Material.background");
+		SIConnectShaderToCnxPoint(constantShader, groundMaterial + "." + Constants.prefix + "_Ground_Material.background");
 
 		AssignMaterial(groundMaterial + "," + ground);
 	}
 
-	addToDisplayLayer("sIBL_Ground_Layer", ground);
+	addToDisplayLayer(Constants.prefix + "_Ground_Layer", ground);
 }
 
 function objectExists(object)
@@ -1356,13 +1313,13 @@ function truncFloatNumber(number, truncValue)
 		return number;
 }
 
-function getExtendedFeedbackRadius(feedbackRadius)
+function getExtendedFeedbackRadius()
 {
 	var sceneExtent = getSceneExtent();
 	sceneExtent = (sceneExtent + (sceneExtent*50/100))/4;
 
-	if(sceneExtent < feedbackRadius)
-		return feedbackRadius;
+	if(sceneExtent < Options.feedbackRadius)
+		return Options.feedbackRadius;
 	else
 		return truncFloatNumber(sceneExtent,10);
 }
