@@ -64,38 +64,61 @@ DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 // Template path: @Path
 // Template last modified: @Date
 // sIBL_GUI
-var backgroundFilePath = "@BGfile";
-var reflectionFilePath = "@REFfile";
-var reflectionMultiplier = @REFmulti;
-var reflectionGamma = @REFgamma;
-var lightingFilePath = "@EVfile";
-var lightingMultiplier = @EVmulti;
-var lightingGamma = @EVgamma;
-var sunU = @SUNu;
-var sunV = @SUNv;
-var sunColor = [@SUNcolor];
-var sunMultiplier = @SUNmulti;
-var dynamicLights = "@dynamicLights";
-var height = @Height;
-var north = @North;
-var createBackground = @createBackground;
-var createReflection = @createReflection;
-var createLighting = @createLighting;
-var createSun = @createSun;
-var createLights = @createLights;
-var showPassesDialog = @showPassesDialog;
-var updateScene = @updateScene;
-var overrideTweaks = @overrideTweaks;
-var displayFeedback = @displayFeedback;
-var feedbackRadius = 100;
-var sunLightType = "@sunLightType";
-var dynamicLightsType = "@dynamicLightsType";
-var hideLights = @hideLights;
-var createGround = @createGround;
-var shadowCatcher = @shadowCatcher;
-var physicalSun = @physicalSun;
-var activateFinalGather = @activateFinalGather;
-var activateColorManagement = @activateColorManagement;
+function __constants()
+{
+	this.applicationName = "sIBL_GUI";
+	this.prefix = "@sceneSetupPrefix";
+	this.package = "@Software".replace(" ", "_");
+	this.renderer = "@Renderer".replace(" ", "_");
+	this.packagePrefix = this.prefix + this.package;
+	this.packageRendererPrefix = this.prefix + this.package + this.renderer;
+	this.title = "Smart IBL";
+	this.controlsTitle = "[ " + this.title + " Controls ]";
+	this.defaultGamma = 2.2;
+}
+var Constants = new __constants();
+
+function __data()
+{
+	this.backgroundFilePath = "@BGfile";
+	this.reflectionFilePath = "@REFfile";
+	this.reflectionMultiplier = @REFmulti;
+	this.reflectionGamma = @REFgamma;
+	this.lightingFilePath = "@EVfile";
+	this.lightingMultiplier = @EVmulti;
+	this.lightingGamma = @EVgamma;
+	this.sunU = @SUNu;
+	this.sunV = @SUNv;
+	this.sunColor = [@SUNcolor];
+	this.sunMultiplier = @SUNmulti;
+	this.dynamicLights = "@dynamicLights";
+	this.height = @Height;
+	this.north = @North;
+}
+var Data = new __data();
+
+function __options()
+{
+	this.createBackground = @createBackground;
+	this.createReflection = @createReflection;
+	this.createLighting = @createLighting;
+	this.createSun = @createSun;
+	this.createLights = @createLights;
+	this.showPassesDialog = @showPassesDialog;
+	this.updateScene = @updateScene;
+	this.overrideTweaks = @overrideTweaks;
+	this.displayFeedback = @displayFeedback;
+	this.feedbackRadius = 100;
+	this.sunLightType = "@sunLightType";
+	this.dynamicLightsType = "@dynamicLightsType";
+	this.hideLights = @hideLights;
+	this.createGround = @createGround;
+	this.shadowCatcher = @shadowCatcher;
+	this.physicalSun = @physicalSun;
+	this.activateFinalGather = @activateFinalGather;
+	this.activateColorManagement = @activateColorManagement;
+}
+var Options = new __options();
 
 var proceedSetup = true;
 if(backgroundFilePath == "-1" || reflectionFilePath == "-1" || lightingFilePath == "-1")
@@ -354,7 +377,7 @@ function setup(backgroundFilePath,
 
 					// Final Gather Activation.
 					if(activateFinalGather)
-						activateFinalGather(selectedPasses);
+						activateSceneFinalGather(selectedPasses);
 					progressBar.Increment();
 
 					// Linear Workflow Activation.
@@ -1193,7 +1216,7 @@ function setRenderer()
 	SetValue("Passes.RenderOptions.Renderer", "mental ray");
 }
 
-function activateFinalGather(passes)
+function activateSceneFinalGather(passes)
 {
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)

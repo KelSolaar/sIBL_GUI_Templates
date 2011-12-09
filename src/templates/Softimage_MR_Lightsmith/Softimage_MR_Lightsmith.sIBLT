@@ -54,28 +54,51 @@ DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 // Template path: @Path
 // Template last modified: @Date
 // sIBL_GUI
-var resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
-var lightName= "@LightsmithName";
-var lightFilePath = resourcesDirectory + "/" + "@LightsmithFile";
-if("@LightsmithMaskFile" != "-1")
-	var lightMaskFilePath =  resourcesDirectory + "/" + "@LightsmithMaskFile";
-else
-	var lightMaskFilePath = null;
-var lightHeight = @LightsmithHeight;
-var lightWidth = @LightsmithWidth;
-var lightColor = [@LightsmithColor];
-var lightObjectPath = resourcesDirectory + "/" + "@LightsmithObjectFile";
-var lightObjectFramePath = resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
-var lightObjectFrameColor = [@LightsmithObjectFrameColor];
-var lightShape = "@LightsmithShape";
-var lightScale = @lightScale;
-var createLight = @createLight;
-var texturedLight = 0;
-var connectToLights = @connectToLights;
-var showPassesDialog = @showPassesDialog;
-var hideDefaultLight = @hideDefaultLight;
-var activateFinalGather = @activateFinalGather;
-var activateColorManagement = @activateColorManagement;
+function __constants()
+{
+	this.applicationName = "sIBL_GUI";
+	this.prefix = "@sceneSetupPrefix";
+	this.package = "@Software".replace(" ", "_");
+	this.renderer = "@Renderer".replace(" ", "_");
+	this.packagePrefix = this.prefix + this.package;
+	this.packageRendererPrefix = this.prefix + this.package + this.renderer;
+	this.title = "Lightsmith";
+	this.controlsTitle = "[ " + this.title + " Controls ]";
+	this.defaultGamma = 2.2;
+}
+var Constants = new __constants();
+
+function __data()
+{
+	this.resourcesDirectory = "@iblPath".replace(/\\/g,'/').replace(/\/[^\/]*$/, '');
+	this.lightName= "@LightsmithName";
+	this.lightFilePath = resourcesDirectory + "/" + "@LightsmithFile";
+	if("@LightsmithMaskFile" != "-1")
+		this.lightMaskFilePath =  resourcesDirectory + "/" + "@LightsmithMaskFile";
+	else
+		this.lightMaskFilePath = null;
+	this.lightHeight = @LightsmithHeight;
+	this.lightWidth = @LightsmithWidth;
+	this.lightColor = [@LightsmithColor];
+	this.lightObjectPath = resourcesDirectory + "/" + "@LightsmithObjectFile";
+	this.lightObjectFramePath = resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
+	this.lightObjectFrameColor = [@LightsmithObjectFrameColor];
+	this.lightShape = "@LightsmithShape";
+}
+var Data = new __data();
+
+function __options()
+{
+	this.lightScale = @lightScale;
+	this.createLight = @createLight;
+	this.texturedLight = 0;
+	this.connectToLights = @connectToLights;
+	this.showPassesDialog = @showPassesDialog;
+	this.hideDefaultLight = @hideDefaultLight;
+	this.activateFinalGather = @activateFinalGather;
+	this.activateColorManagement = @activateColorManagement;
+}
+var Options = new __options();
 
 var proceedSetup = true;
 if(lightName == "-1")
@@ -181,7 +204,7 @@ function setup(resourcesDirectory,
 
 				// Final Gather Activation.
 				if(activateFinalGather)
-					activateFinalGather(selectedPasses);
+					activateSceneFinalGather(selectedPasses);
 				progressBar.Increment();
 
 				// Linear Workflow Activation.
@@ -783,7 +806,7 @@ function setRenderer()
 	SetValue("Passes.RenderOptions.Renderer", "mental ray");
 }
 
-function activateFinalGather(passes)
+function activateSceneFinalGather(passes)
 {
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)

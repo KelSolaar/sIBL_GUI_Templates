@@ -76,7 +76,6 @@ import sys
 class Constants(object):
 	applicationName = "sIBL_GUI"
 	prefix = "@sceneSetupPrefix"
-	print prefix
 	package = "@Software".replace(" ", "_")
 	renderer = "@Renderer".replace(" ", "_")
 	packagePrefix = "%s_%s" % (prefix, package)
