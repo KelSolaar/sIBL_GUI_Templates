@@ -30,6 +30,7 @@ Lightsmith1|LSscale = @LightsmithScale
 Lightsmith1|LSshape = @LightsmithShape
 
 [Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
 lightScale = @lightScale | 1 | Float | Light Scale
 createLight = @createLight | 1 | Boolean | Create Light
 texturedLight = @texturedLight | 0 | Boolean | Textured Light
@@ -62,7 +63,7 @@ import sys
 
 class Constants(object):
 	applicationName = "sIBL_GUI"
-	prefix = "sIBL"
+	prefix = "@sceneSetupPrefix"
 	package = "@Software".replace(" ", "_")
 	renderer = "@Renderer".replace(" ", "_")
 	packagePrefix = "%s_%s" % (prefix, package)

@@ -2,7 +2,7 @@
 Name = @Name | Softimage Mental Ray Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_MR_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 2.0.0 | String | Template
+Release = @Release | 1.0.0 | String | Template
 ReleaseDate = @Date | 2 April 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
@@ -730,7 +730,7 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 		}
 	}
 	else
-		XSIUIToolkit.Msgbox(Constants.applicationName + " | No 'sIBL' group found, skipping Lightsmith lights creation!", siMsgOkOnly, Constants.applicationName);
+		XSIUIToolkit.Msgbox(Constants.applicationName + " | No '" + Constants.prefix + "' group found, skipping Lightsmith lights creation!", siMsgOkOnly, Constants.applicationName);
 }
 
 function getNonClashingName(name)

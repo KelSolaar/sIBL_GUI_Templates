@@ -24,6 +24,7 @@ Sun|SUNmulti = @SUNmulti
 Lights|DynamicLights = @dynamicLights
 
 [Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
 createBackground = @createBackground | 1 | Boolean | Create Background
 createReflection = @createReflection | 1 | Boolean | Create Reflection
 createLighting = @createLighting | 1 | Boolean | Create Lighting
