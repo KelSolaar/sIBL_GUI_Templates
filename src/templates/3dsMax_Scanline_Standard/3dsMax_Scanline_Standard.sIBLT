@@ -2,7 +2,7 @@
 Name = @Name | 3dsMax Scanline Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/3dsMax_Scanline_Standard_Template_Manual.html | String | Help File
-Release = @Release | 1.0.4 | String | Template Release
+Release = @Release | 2.0.0 | String | Template Release
 Date = @Date | 11 March 2011 | String | Date
 Author = @Author |  Kel Solaar / Dschaga / Jeff Hanna | String | Author
 Email = @Email | christian@cgtechniques.com | String | Email
@@ -55,15 +55,17 @@ Template last modified: @Date
 sIBL_GUI
 */
 
-struct sIBL_data (backgroundFilePath, reflectionFilePath,  lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
-struct sIBL_options (createBackground, createLighting, createReflection,  createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, activateLinearWorkflow)
-struct sIBL_sceneNodes (dataGroup,  lightsGroup, feedback, domeLight)
+struct __constants (prefix)
+struct __data (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
+struct __options (createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, activateLinearWorkflow)
+struct __sceneNodes (dataGroup, lightsGroup, feedback, domeLight)
 
-global sIBL_DATAS =  sIBL_data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
-global sIBL_OPTIONS = sIBL_options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround activateLinearWorkflow:@activateLinearWorkflow
-global sIBL_SCENE_NODES = sIBL_sceneNodes()
+global Constants = __constants prefix:"@sceneSetupPrefix"
+global Datas = __data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
+global UserOptions = __options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround activateLinearWorkflow:@activateLinearWorkflow
+global SceneNodes = __sceneNodes()
 
-fn sIBL_3dsmax_Scanline_getSceneExtent =
+fn getSceneExtent =
 (
 	sceneExtent = 0
 	for object_ in Geometry do
@@ -79,7 +81,7 @@ fn sIBL_3dsmax_Scanline_getSceneExtent =
 	return sceneExtent
 )
 
-fn sIBL_3dsmax_Scanline_truncFloatNumber number truncValue =
+fn truncFloatNumber number truncValue =
 (
 	if truncValue != 0 then
 		return floor(number / truncValue) * truncValue
@@ -87,36 +89,39 @@ fn sIBL_3dsmax_Scanline_truncFloatNumber number truncValue =
 		return number
 )
 
-fn sIBL_3dsmax_Scanline_getExtendedFeedbackRadius feedbackRadius =
+fn getExtendedFeedbackRadius feedbackRadius =
 (
-	sceneExtent = sIBL_3dsmax_Scanline_getSceneExtent()
+	sceneExtent = getSceneExtent()
 	sceneExtent = sceneExtent + (sceneExtent*50/100)
 
 	if sceneExtent < feedbackRadius then
 		return feedbackRadius
 	else
-		return sIBL_3dsmax_Scanline_truncFloatNumber sceneExtent 10
+		return truncFloatNumber sceneExtent 10
 )
 
-fn sIBL_3dsmax_Scanline_getDefaultControllers currentNode =
+fn getDefaultControllers currentNode =
 (
 	currentNode.Transform.controller = prs ()
 	currentNode.rotation.controller = Euler_XYZ ()
 	currentNode.scale.controller = bezier_scale ()
 )
 
-fn sIBL_3dsmax_Scanline_environmentDeletion =
+fn environmentDeletion =
 (
-	-- sIBL Nodes Deletion.
-	delete $sIBL_*
+	-- Nodes Deletion.
+	for object in $* do(
+		if  findString object.name Constants.prefix ==  1 then
+			delete object
+	)
 
-	-- sIBL Environment Map Deletion.
+	-- Environment Map Deletion.
 	environmentMap = undefined
 
 	freeSceneBitmaps()
 )
 
-fn sIBL_3dsmax_Scanline_activateScanlineRender =
+fn activateRenderer =
 (
 	if(IsKindOf renderers.current Default_Scanline_Renderer == False ) then
 	(
@@ -125,22 +130,22 @@ fn sIBL_3dsmax_Scanline_activateScanlineRender =
 	SceneRadiosity.radiosity = Light_Tracer()
 )
 
-fn sIBL_3dsmax_Scanline_hideLights =
+fn hideLights =
 (
 	hide lights
 )
 
-fn sIBL_3dsmax_Scanline_getSIBLGroup =
+fn getControlsGroup =
 (
-	local sIBL_Point = Point name:"sIBL_Point" centermarker:off axistripod:off cross:off Box:off
-	sIBL_SCENE_NODES.dataGroup = group sIBL_Point name:"sIBL_Data"
+	local controlsPoint = Point name:(Constants.prefix + "_Point") centermarker:off axistripod:off cross:off Box:off
+	SceneNodes.dataGroup = group controlsPoint name:(Constants.prefix + "_Data")
 )
 
-fn sIBL_3dsmax_Scanline_getFeedback feedbackRadius createBackground texturePath =
+fn getFeedback feedbackRadius createBackground texturePath =
 (
 	local feedbackSphere = Sphere radius:feedbackRadius segs:32 mapcoords:on backfacecull:on renderable:off
 
-	sIBL_3dsmax_Scanline_getDefaultControllers feedbackSphere
+	getDefaultControllers feedbackSphere
 
 	local normalModifier_ = Normalmodifier()
 	normalModifier_.flip = True
@@ -149,7 +154,7 @@ fn sIBL_3dsmax_Scanline_getFeedback feedbackRadius createBackground texturePath 
 
 	if(createBackground == 1) then
 	(
-		local feedbackShader = StandardMaterial name:"sIBL_FeedbackShader"
+		local feedbackShader = StandardMaterial name:(Constants.prefix + "_FeedbackShader")
 		feedbackShader.selfIllumAmount = 100
 		feedbackShader.diffuse = color 255 255 255
 		feedbackShader.ambient = feedbackShader.diffuse
@@ -163,39 +168,39 @@ fn sIBL_3dsmax_Scanline_getFeedback feedbackRadius createBackground texturePath 
 		showTextureMap feedbackShader True
 	)
 
-	feedbackSphere.parent = sIBL_SCENE_NODES.dataGroup
+	feedbackSphere.parent = SceneNodes.dataGroup
 	setTransformLockFlags feedbackSphere #{1,2,3,4,5}
 
-	feedbackSphere.name = "sIBL_Feedback"
-	sIBL_SCENE_NODES.feedback = feedbackSphere
+	feedbackSphere.name = (Constants.prefix + "_Feedback")
+	SceneNodes.feedback = feedbackSphere
 )
 
-fn sIBL_3dsmax_Scanline_getLightsGroup =
+fn getLightsGroup =
 (
-	local sIBL_Point = Point name:"sIBL_Lights_Point" centermarker:off axistripod:off cross:off Box:off
-	sIBL_SCENE_NODES.lightsGroup = group sIBL_Point name:"sIBL_Lights"
+	local sIBL_Point = Point name:(Constants.prefix + "_Lights_Point") centermarker:off axistripod:off cross:off Box:off
+	SceneNodes.lightsGroup = group sIBL_Point name:(Constants.prefix + "_Lights")
 
-	sIBL_3dsmax_Scanline_getDefaultControllers sIBL_SCENE_NODES.lightsGroup
+	getDefaultControllers SceneNodes.lightsGroup
 
-	sIBL_SCENE_NODES.lightsGroup.parent = sIBL_SCENE_NODES.dataGroup
+	SceneNodes.lightsGroup.parent = SceneNodes.dataGroup
 )
 
-fn sIBL_3dsmax_Scanline_createSkyLight =
+fn createSkyLight =
 (
 	local iblSkylight = Skylight()
 	iblSkylight.sky_mode = 1
 
-	iblSkylight.parent = sIBL_SCENE_NODES.dataGroup
+	iblSkylight.parent = SceneNodes.dataGroup
 
-	iblSkylight.name = "sIBL_SkyLight"
+	iblSkylight.name = (Constants.prefix + "_SkyLight")
 
-	sIBL_SCENE_NODES.domeLight = iblSkylight
+	SceneNodes.domeLight = iblSkylight
 )
 
-fn sIBL_3dsmax_Scanline_getLight lightType lightName lightColor intensity lightDistance uCoordinate vCoordinate =
+fn getLight lightType lightName lightColor intensity lightDistance uCoordinate vCoordinate =
 (
-	if(sIBL_SCENE_NODES.lightsGroup == undefined) then
-		sIBL_3dsmax_Scanline_getLightsGroup()
+	if(SceneNodes.lightsGroup == undefined) then
+		getLightsGroup()
 
 	lightColorTokens = filterstring lightColor ","
 
@@ -207,7 +212,7 @@ fn sIBL_3dsmax_Scanline_getLight lightType lightName lightColor intensity lightD
 	local zPos = lightDistance * (sin((0.5 - vCoordinate) * 180))
 
 	local lightTarget = TargetObject transform:(matrix3 [1,0,0] [0,1,0] [0,0,1] [0,0,0])
-	lightTarget.parent = sIBL_SCENE_NODES.lightsGroup
+	lightTarget.parent = SceneNodes.lightsGroup
 
 	local lightColor = color (lightColorTokens[1] as float) (lightColorTokens[2] as float) (lightColorTokens[3] as float)
 	local lightFalloff = lightDistance + 5
@@ -240,34 +245,34 @@ fn sIBL_3dsmax_Scanline_getLight lightType lightName lightColor intensity lightD
 	light.pos = [(xPos as float),  (yPos as float), (zPos as float)]
 	light.target = lightTarget
 
-	light.parent = sIBL_SCENE_NODES.lightsGroup
+	light.parent = SceneNodes.lightsGroup
 
 	lightTarget.name = lightName + "_Target"
 	light.name = lightName
 )
 
-fn sIBL_3dsmax_Scanline_createSun sunLightType sunColor sunMultiplier lightDistance sunU sunV =
+fn createSun sunLightType sunColor sunMultiplier lightDistance sunU sunV =
 (
-	sIBL_3dsmax_Scanline_getLight sunLightType "sIBL_Sun" sunColor sunMultiplier lightDistance sunU sunV
+	getLight sunLightType (Constants.prefix + "_Sun") sunColor sunMultiplier lightDistance sunU sunV
 )
 
-fn sIBL_3dsmax_Scanline_createDynamicLights dynamicLightsType dynamicLights lightDistance =
+fn createDynamicLights dynamicLightsType dynamicLights lightDistance =
 (
 	local dynamicLightsTokens = filterString dynamicLights "|"
 
 	for i = 1 to dynamicLightsTokens.count by 8 do
 	(
-		local lightName = "sIBL_" + substituteString dynamicLightsTokens[i+1] " " "_"
+		local lightName = Constants.prefix + substituteString dynamicLightsTokens[i+1] " " "_"
 		local lightColor = dynamicLightsTokens[i+2] + "," + dynamicLightsTokens[i+3] + "," + dynamicLightsTokens[i+4]
 		local intensity = dynamicLightsTokens[i+5] as float
 		local uCoordinate = dynamicLightsTokens[i+6] as float
 		local vCoordinate = dynamicLightsTokens[i+7] as float
 
-		sIBL_3dsmax_Scanline_getLight dynamicLightsType lightName lightColor intensity lightDistance uCoordinate vCoordinate
+		getLight dynamicLightsType lightName lightColor intensity lightDistance uCoordinate vCoordinate
 	)
 )
 
-fn sIBL_3dsmax_Scanline_getEnvironmentBranch branchName filePath =
+fn getEnvironmentBranch branchName filePath =
 (
 	local texture = Bitmaptexture()
 	texture.filename = filePath
@@ -280,11 +285,11 @@ fn sIBL_3dsmax_Scanline_getEnvironmentBranch branchName filePath =
 	return texture
 )
 
-fn sIBL_3dsmax_Scanline_setEnvironment createBackground createLighting createReflection backgroundFilePath lightingFilePath reflectionFilePath =
+fn setEnvironment createBackground createLighting createReflection backgroundFilePath lightingFilePath reflectionFilePath =
 (
 	if(createBackground == 1) then
 	(
-		local backgroundBranch = sIBL_3dsmax_Scanline_getEnvironmentBranch "sIBL_Background" backgroundFilePath
+		local backgroundBranch = getEnvironmentBranch (Constants.prefix + "_Background") backgroundFilePath
 		environmentMap = backgroundBranch
 		-- Enforcing The Mapping Type Because Of A Fucking Strange Bug.
 		environmentMap.coordinates.mapping = 0
@@ -292,61 +297,61 @@ fn sIBL_3dsmax_Scanline_setEnvironment createBackground createLighting createRef
 
 	if(createLighting == 1) then
 	(
-		local lightingBranch = sIBL_3dsmax_Scanline_getEnvironmentBranch "sIBL_Lighting" lightingFilePath
-		sIBL_SCENE_NODES.domeLight.sky_color_map = lightingBranch
+		local lightingBranch = getEnvironmentBranch (Constants.prefix + "_Lighting") lightingFilePath
+		SceneNodes.domeLight.sky_color_map = lightingBranch
 	)
 
 	if(createReflection == 1) then
 	(
-		--local reflectionBranch = sIBL_3dsmax_Scanline_getEnvironmentBranch "sIBL_Reflection" reflectionFilePath
+		--local reflectionBranch = getEnvironmentBranch (Constants.prefix + "_Reflection") reflectionFilePath
 		print "sIBL_GUI | This Template doesn't support reflections, reflections shading branch skipped!"
 	)
 )
 
-fn sIBL_3dsmax_Scanline_connectFeedbackToSIBLShaders createBackground createLighting createReflection =
+fn connectFeedbackToSIBLShaders createBackground createLighting createReflection =
 (
 	if(createBackground == 1) then
 	(
-		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] environmentMap.coordinates[#U_Offset] "(Z_Rotation-(pi*2))*2/pi/4"
+		paramWire.connect SceneNodes.feedback.rotation.controller[#Z_Rotation] environmentMap.coordinates[#U_Offset] "(Z_Rotation-(pi*2))*2/pi/4"
 	)
 
 	if(createLighting == 1) then
 	(
-		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] sIBL_SCENE_NODES.domeLight.sky_color_map.coordinates[#U_Offset] "(Z_Rotation-(pi*2))*2/pi/4"
+		paramWire.connect SceneNodes.feedback.rotation.controller[#Z_Rotation] SceneNodes.domeLight.sky_color_map.coordinates[#U_Offset] "(Z_Rotation-(pi*2))*2/pi/4"
 	)
 
 	if(createReflection == 1) then
 		print "sIBL_GUI | This Template doesn't support reflections, reflections branch Visual Feedback connections skipped!"
 )
 
-fn sIBL_3dsmax_Scanline_connectFeedbackToLights =
+fn connectFeedbackToLights =
 (
-	if(sIBL_SCENE_NODES.lightsGroup != undefined) then
+	if(SceneNodes.lightsGroup != undefined) then
 	(
-		paramWire.connect sIBL_SCENE_NODES.feedback.rotation.controller[#Z_Rotation] sIBL_SCENE_NODES.lightsGroup.rotation.controller[#Z_Rotation] "Z_Rotation"
-		paramWire.connect sIBL_SCENE_NODES.feedback.transform.controller[#Scale] sIBL_SCENE_NODES.lightsGroup.transform.controller[#Scale] "Scale"
+		paramWire.connect SceneNodes.feedback.rotation.controller[#Z_Rotation] SceneNodes.lightsGroup.rotation.controller[#Z_Rotation] "Z_Rotation"
+		paramWire.connect SceneNodes.feedback.transform.controller[#Scale] SceneNodes.lightsGroup.transform.controller[#Scale] "Scale"
 	)
 )
 
-fn sIBL_3dsmax_Scanline_createGround currentScale =
+fn createGround currentScale =
 (
 	local currentScale = currentScale * (sqrt 2)
 	local currentPlane = plane typeinCreationMethod:1 length:currentScale width:currentScale
 	currentPlane.backfacecull = on
-	currentPlane.parent = sIBL_SCENE_NODES.dataGroup
+	currentPlane.parent = SceneNodes.dataGroup
 
-	local groundShader = StandardMaterial name:"sIBL_GroundShader"
+	local groundShader = StandardMaterial name:(Constants.prefix + "_GroundShader")
 	currentPlane.material = groundShader
 
-	currentPlane.name =  "sIBL_Ground"
+	currentPlane.name =  (Constants.prefix + "_Ground")
 )
 
-fn sIBL_3dsmax_Scanline_activateLinearWorkflow createBackground =
+fn activateLinearWorkflow createBackground =
 (
 	SceneExposureControl.exposureControl = Logarithmic_Exposure_Control()
 )
 
-fn sIBL_3dsmax_Scanline_setup  =
+fn setup  =
 (
 	if(Default_Scanline_Renderer != undefined) then
 	(
@@ -356,49 +361,49 @@ fn sIBL_3dsmax_Scanline_setup  =
 			sIBL_3dsmax_preProcessCallback()
 		)
 
-		if(sIBL_3dsmax_Scanline_preProcessCallback != undefined) then
+		if(preProcessCallback != undefined) then
 		(
 			print "sIBL_GUI | Executing Template specific preprocess Callback!"
-			sIBL_3dsmax_Scanline_preProcessCallback()
+			preProcessCallback()
 		)
 
 		print "sIBL_GUI | Starting Ibl file import!"
 
-		sIBL_3dsmax_Scanline_environmentDeletion()
+		environmentDeletion()
 
-		sIBL_OPTIONS.feedbackRadius = sIBL_3dsmax_Scanline_getExtendedFeedbackRadius sIBL_OPTIONS.feedbackRadius
+		UserOptions.feedbackRadius = getExtendedFeedbackRadius UserOptions.feedbackRadius
 
-		sIBL_3dsmax_Scanline_activateScanlineRender()
+		activateRenderer()
 
-		if(sIBL_OPTIONS.hideLights == 1) then
-			sIBL_3dsmax_Scanline_hideLights()
+		if(UserOptions.hideLights == 1) then
+			hideLights()
 
-		sIBL_3dsmax_Scanline_getSIBLGroup()
+		getControlsGroup()
 
-		if(sIBL_OPTIONS.displayFeedback == 1) then
-			sIBL_3dsmax_Scanline_getFeedback sIBL_OPTIONS.feedbackRadius  sIBL_OPTIONS.createBackground sIBL_DATAS.backgroundFilePath
+		if(UserOptions.displayFeedback == 1) then
+			getFeedback UserOptions.feedbackRadius  UserOptions.createBackground Datas.backgroundFilePath
 
-		sIBL_3dsmax_Scanline_createSkyLight()
+		createSkyLight()
 
-		sIBL_3dsmax_Scanline_setEnvironment sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection sIBL_DATAS.backgroundFilePath sIBL_DATAS.lightingFilePath sIBL_DATAS.reflectionFilePath
+		setEnvironment UserOptions.createBackground UserOptions.createLighting UserOptions.createReflection Datas.backgroundFilePath Datas.lightingFilePath Datas.reflectionFilePath
 
-		if(sIBL_OPTIONS.displayFeedback == 1) then
-			sIBL_3dsmax_Scanline_connectFeedbackToSIBLShaders  sIBL_OPTIONS.createBackground sIBL_OPTIONS.createLighting sIBL_OPTIONS.createReflection
+		if(UserOptions.displayFeedback == 1) then
+			connectFeedbackToSIBLShaders  UserOptions.createBackground UserOptions.createLighting UserOptions.createReflection
 
-		if(sIBL_OPTIONS.createSun == 1 and sIBL_DATAS.sunU != -1 and sIBL_DATAS.sunV != -1) then
-			sIBL_3dsmax_Scanline_createSun sIBL_OPTIONS.sunLightType sIBL_DATAS.sunColor sIBL_DATAS.sunMultiplier sIBL_OPTIONS.feedbackRadius sIBL_DATAS.sunU sIBL_DATAS.sunV
+		if(UserOptions.createSun == 1 and Datas.sunU != -1 and Datas.sunV != -1) then
+			createSun UserOptions.sunLightType Datas.sunColor Datas.sunMultiplier UserOptions.feedbackRadius Datas.sunU Datas.sunV
 
-		if(sIBL_OPTIONS.createLights == 1 and sIBL_DATAS.dynamicLights != "-1") then
-			sIBL_3dsmax_Scanline_createDynamicLights sIBL_OPTIONS.dynamicLightsType sIBL_DATAS.dynamicLights sIBL_OPTIONS.feedbackRadius
+		if(UserOptions.createLights == 1 and Datas.dynamicLights != "-1") then
+			createDynamicLights UserOptions.dynamicLightsType Datas.dynamicLights UserOptions.feedbackRadius
 
-		if(sIBL_OPTIONS.displayFeedback == 1) then
-			sIBL_3dsmax_Scanline_connectFeedbackToLights()
+		if(UserOptions.displayFeedback == 1) then
+			connectFeedbackToLights()
 
-		if(sIBL_OPTIONS.createGround == 1) then
-			sIBL_3dsmax_Scanline_createGround sIBL_OPTIONS.feedbackRadius
+		if(UserOptions.createGround == 1) then
+			createGround UserOptions.feedbackRadius
 
-		if(sIBL_OPTIONS.activateLinearWorkflow == 1) then
-			sIBL_3dsmax_Scanline_activateLinearWorkflow sIBL_OPTIONS.createBackground
+		if(UserOptions.activateLinearWorkflow == 1) then
+			activateLinearWorkflow UserOptions.createBackground
 
 		print "sIBL_GUI | Ibl file import finished!"
 
@@ -408,10 +413,10 @@ fn sIBL_3dsmax_Scanline_setup  =
 			sIBL_3dsmax_postProcessCallback()
 		)
 
-		if(sIBL_3dsmax_Scanline_postProcessCallback != undefined) then
+		if(postProcessCallback != undefined) then
 		(
 			print "sIBL_GUI | Executing Template specific postprocess Callback!"
-			sIBL_3dsmax_Scanline_postProcessCallback()
+			postProcessCallback()
 		)
 	)
 	else
@@ -419,15 +424,15 @@ fn sIBL_3dsmax_Scanline_setup  =
 )
 
 (
-	local sIBL_proceedSetup = 1
-	if(sIBL_DATAS.backgroundFilePath == "-1" or sIBL_DATAS.reflectionFilePath == "-1" or sIBL_DATAS.lightingFilePath == "-1") then
+	local proceedSetup = 1
+	if(Datas.backgroundFilePath == "-1" or Datas.reflectionFilePath == "-1" or Datas.lightingFilePath == "-1") then
 	(
 		if not queryBox "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" beep:false then
-			sIBL_proceedSetup = 0
+			proceedSetup = 0
 	)
 
-	if(sIBL_proceedSetup == 1)	then
-		sIBL_3dsmax_Scanline_setup()
+	if(proceedSetup == 1)	then
+		setup()
 	else
 		print "sIBL_GUI | Ibl file import aborted!"
 )
