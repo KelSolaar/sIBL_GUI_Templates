@@ -56,12 +56,12 @@ Template last modified: @Date
 sIBL_GUI
 */
 
-struct __constants (prefix)
+struct __constants (applicationName, prefix, title, globalPreProcessCallback, globalPostProcessCallback, localPreProcessCommand, localPostProcessCommand)
 struct __data (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
 struct __options (createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, shadowCatcher, activateLinearWorkflow)
 struct __sceneNodes (dataGroup, lightsGroup, feedback)
 
-global Constants = __constants prefix:"@sceneSetupPrefix"
+global Constants = __constants applicationName:"sIBL_GUI" prefix:"@sceneSetupPrefix" title:"Smart IBL" globalPreProcessCallback:"sIBL_3dsmax_preProcessCallback" globalPostProcessCallback:"sIBL_3dsmax_postProcessCallback" localPreProcessCommand:"sIBL_3dsmax_MR_preProcessCallback" localPostProcessCommand:"sIBL_3dsmax_MR_postProcessCallback"
 global Datas = __data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
 global UserOptions = __options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global SceneNodes = __sceneNodes()
@@ -119,16 +119,13 @@ fn getDefaultControllers currentNode =
 fn environmentDeletion =
 (
 	-- Nodes Deletion.
-	for object in $* do(
-		if  findString object.name Constants.prefix ==  1 then
-			delete object
-	)
-
+	delete (execute ( "$" + Constants.prefix + "*"))
+	
 	-- Environment Map Deletion.
 	environmentMap = undefined
 
 	-- Lens Shader Deletion.
-	if(classOf  renderers.current == mental_ray_renderer) then
+	if(classOf renderers.current == mental_ray_renderer) then
 		renderers.current.Camera_Lens_Shader = undefined
 
 	freeSceneBitmaps()
@@ -400,7 +397,7 @@ fn createGround currentScale shadowCatcher =
 		StandardMaterial name:(Constants.prefix + "_GroundShader")
 	currentPlane.material = groundShader
 
-	currentPlane.name =  (Constants.prefix + "_Ground")
+	currentPlane.name = (Constants.prefix + "_Ground")
 )
 
 fn activateLinearWorkflow createBackground =
@@ -414,7 +411,7 @@ fn activateLinearWorkflow createBackground =
 		environmentMap.eye.gamma = 2.2
 )
 
-fn setup  =
+fn setup =
 (
 	if(not hasProductionShadersSupport()) then
 		try
@@ -424,25 +421,25 @@ fn setup  =
 		)
 		catch
 		(
-			messageBox "sIBL_GUI | Mental Ray Productions Shaders are not available!" title:"sIBL_GUI Error"
+			messageBox (Constants.applicationName + " | Mental Ray Productions Shaders are not available!") title:(Constants.applicationName + " Error")
 			return ()
 		)
 
 	if(mental_ray_renderer != undefined) then
 	(
-		if(sIBL_3dsmax_preProcessCallback != undefined) then
+		if(execute(Constants.globalPreProcessCallback) != undefined) then
 		(
-			print "sIBL_GUI | Executing overall preprocess Callback!"
-			sIBL_3dsmax_preProcessCallback()
+			print (Constants.applicationName + " | Executing overall preprocess Callback!")
+			execute(Constants.globalPreProcessCallback + "()")
 		)
 
-		if(preProcessCallback != undefined) then
+		if(execute(Constants.localPreProcessCommand) != undefined) then
 		(
-			print "sIBL_GUI | Executing Template specific preprocess Callback!"
-			preProcessCallback()
+			print (Constants.applicationName + " | Executing Template specific preprocess Callback!")
+			execute(Constants.localPreProcessCommand + "()")
 		)
 
-		print "sIBL_GUI | Starting Ibl file import!"
+		print (Constants.applicationName + " | Starting '" +  Constants.title + "' file import!")
 
 		environmentDeletion()
 
@@ -480,34 +477,34 @@ fn setup  =
 		if(UserOptions.activateLinearWorkflow == 1) then
 			activateLinearWorkflow UserOptions.createBackground
 
-		print "sIBL_GUI | Ibl file import finished!"
+		print (Constants.applicationName + " | '" +  Constants.title + "' file import finished!")
 
-		if(sIBL_3dsmax_postProcessCallback != undefined) then
+		if(execute(Constants.globalPostProcessCallback) != undefined) then
 		(
-			print "sIBL_GUI | Executing overall postprocess Callback!"
-			sIBL_3dsmax_postProcessCallback()
+			print (Constants.applicationName + " | Executing overall postprocess Callback!")
+			execute(Constants.globalPostProcessCallback + "()")
 		)
 
-		if(postProcessCallback != undefined) then
+		if(execute(Constants.localPostProcessCommand) != undefined) then
 		(
-			print "sIBL_GUI | Executing Template specific postprocess Callback!"
-			postProcessCallback()
+			print (Constants.applicationName + " | Executing Template specific postprocess Callback!")
+			execute(Constants.localPostProcessCommand + "()")
 		)
 	)
 	else
-		messageBox "sIBL_GUI | Mental Ray renderer is not available!" title:"sIBL_GUI Error"
+		messageBox (Constants.applicationName + " | Mental Ray renderer is not available!") title:(Constants.applicationName + " Error")
 )
 
 (
 	local proceedSetup = 1
 	if(Datas.backgroundFilePath == "-1" or Datas.reflectionFilePath == "-1" or Datas.lightingFilePath == "-1") then
 	(
-		if not queryBox "sIBL_GUI | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" beep:false then
+		if not queryBox (Constants.applicationName + " | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?") beep:false then
 			proceedSetup = 0
 	)
 
-	if(proceedSetup == 1)	then
+	if(proceedSetup == 1) then
 		setup()
 	else
-		print "sIBL_GUI | Ibl file import aborted!"
+		print (Constants.applicationName + " | '" +  Constants.title + "' file import aborted!")
 )
