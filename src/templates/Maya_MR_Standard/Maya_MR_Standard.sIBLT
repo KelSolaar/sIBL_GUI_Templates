@@ -54,7 +54,7 @@ photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographi
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | ExecutionCommand
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
@@ -165,7 +165,7 @@ class Setup(object):
 	def __init__(self):
 		if Data.backgroundFile == "-1" or Data.reflectionFile == "-1" or Data.lightingFile == "-1":
 			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s file import canceled!" % Constants.prefix))
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "'%s' file import canceled!" % Constants.title))
 				self.__exit__()
 
 		self.outputCameras = cmds.ls(l=True, type="camera")
@@ -203,7 +203,7 @@ class Setup(object):
 
 		if Options.showCamerasDialog:
 			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "%s file import canceled!" % Constants.title))
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "'%s' file import canceled!" % Constants.title))
 				self.__exit__()
 			self.outputCameras = cmds.optionVar(q="%s_outputCameras" % Constants.prefix) != "" and cmds.optionVar(q="%s_outputCameras" % Constants.prefix).split(",") or None
 			if not self.outputCameras:

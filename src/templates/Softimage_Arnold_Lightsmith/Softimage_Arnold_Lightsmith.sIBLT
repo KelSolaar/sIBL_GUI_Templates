@@ -44,7 +44,7 @@ useArnoldGammaCorrection = @useArnoldGammaCorrection | 1 | Boolean | Use Arnold 
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | $loaderScriptPath | String | ExecutionCommand
+ExecutionCommand = @ExecutionCommand | $loaderScriptPath | String | Execution Command
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 12288 | Integer | Default Port
 
