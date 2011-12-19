@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-**getTemplatesReleases.py
+**listTemplatesReleases.py
 
 **Platform:**
 	Windows, Linux, Mac Os X.
 
 **Description:**
-	Get Templates releases.
+	Lists Templates releases.
 
 **Others:**
 
@@ -46,6 +46,8 @@ __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
+__all__ = ["LOGGER", "LOGGING_CONSOLE_HANDLER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION", "listTemplatesReleases"]
+
 LOGGER = logging.getLogger(Constants.logger)
 
 LOGGING_CONSOLE_HANDLER = logging.StreamHandler(sys.stdout)
@@ -60,9 +62,9 @@ TEMPLATES_EXTENSION = "sIBLT"
 #**********************************************************************************************************************
 #***	Main python code.
 #**********************************************************************************************************************
-def getTemplatesReleases():
+def listTemplatesReleases():
 	"""
-	This definition gets Templates releases.
+	This definition lists Templates releases.
 	"""
 
 	osWalker = OsWalker()
@@ -70,8 +72,10 @@ def getTemplatesReleases():
 	templates = osWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
 	for template in sorted(templates):
 		sectionsFileParser = SectionsFileParser(templates[template])
-		sectionsFileParser.read() and sectionsFileParser.parse()
+		sectionsFileParser.read() and sectionsFileParser.parse(rawSections=("Script",))
 
-		LOGGER.info("{0} | '{1}': '{2}'.".format(getTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parsers.getAttributeCompound("Release", sectionsFileParser.getValue("Release", "Template", encode=True)).value))
+		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parsers.getAttributeCompound("Release", sectionsFileParser.getValue("Release", "Template", encode=True)).value))
 
 if __name__ == "__main__":
+	listTemplatesReleases()
+
