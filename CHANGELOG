@@ -1,52 +1,62 @@
-h1=. sIBL_GUI_Templates - 1.0.6 - Stable
+sIBL_GUI_Templates - 2.0.0 - Stable
+===================================
 
-h2=. Change Log
+Change Log
+==========
 
-h3. 1.0.6 - Stable
+2.0.0 - Stable
+--------------
 
-* Port "Maya_MR_Standard" template code to Python.
-* Port "Maya_VRay_Standard" template code to Python.
-* Port "Maya_VRay_Dome_Light" template code to Python.
-* Port "Maya_RfM_Standard" template code to Python.
-* Port "Maya_MR_Lightsmith" template code to Python.
-* Port "Maya_VRay_Lightsmith" template code to Python.
-* Refactor 3dsMax and Softimage / XSI templates.
-* Most templates now have a prefix attribute exposed allowing customization of the scene setup. 
-* Update documentations / help files.
+-  Port "Maya_MR_Standard" template code to Python.
+-  Port "Maya_VRay_Standard" template code to Python.
+-  Port "Maya_VRay_Dome_Light" template code to Python.
+-  Port "Maya_RfM_Standard" template code to Python.
+-  Port "Maya_MR_Lightsmith" template code to Python.
+-  Port "Maya_VRay_Lightsmith" template code to Python.
+-  Refactor 3dsMax and Softimage / XSI templates.
+-  Most templates now have a prefix attribute exposed allowing customization of the scene setup. 
+-  Update documentations / help files.
 
-h3. 1.0.5 - Stable
+1.0.5 - Stable
+--------------
 
-* Fixed broken transparency support in Softimage Lightsmith templates.
-* Hide scene default light in "Softimage_MR_Lightsmith" and "Softimage_Arnold_Lightsmith" templates.
-* Implemented Ibl Sets compatibility guard.
-* Arnold Renderer templates are now public.
-* Added additional geometries hierarchical control.
+-  Fixed broken transparency support in Softimage Lightsmith templates.
+-  Hide scene default light in "Softimage_MR_Lightsmith" and "Softimage_Arnold_Lightsmith" templates.
+-  Implemented Ibl Sets compatibility guard.
+-  Arnold Renderer templates are now public.
+-  Added additional geometries hierarchical control.
 
-h3. 1.0.4 - Stable
+1.0.4 - Stable
+--------------
 
-* Introduced new Lightsmith templates: "Maya_MR_Lightsmith", "Maya_VRay_Lightsmith", "Softimage_MR_Lightsmith".
-* Reordered templates attributes.
-* Dropped support of Illuminate Labs Turtle Renderer.
+-  Introduced new Lightsmith templates: "Maya_MR_Lightsmith", "Maya_VRay_Lightsmith", "Softimage_MR_Lightsmith".
+-  Reordered templates attributes.
+-  Dropped support of Illuminate Labs Turtle Renderer.
 
-h3. 1.0.3 - Stable
+1.0.3 - Stable
+--------------
 
-* Implemented lights types support in each template, it's now possible to choose between different light types : "Area", "Directional", "Point", "Spot", etc ...
+-  Implemented lights types support in each template, it's now possible to choose between different light types : "Area", "Directional", "Point", "Spot", etc ...
 
-h3. 1.0.2 - Stable
+1.0.2 - Stable
+--------------
 
-* Added new "sIBL_GUI_Templates_gatherFiles.sh" and "sIBL_GUI_Templates_recursiveRemove.py" utilities.
+-  Added new "sIBL_GUI_Templates_gatherFiles.sh" and "sIBL_GUI_Templates_recursiveRemove.py" utilities.
 
-h3. 1.0.1 - Stable
+1.0.1 - Stable
+--------------
 
-* Updated release utilities.
+-  Updated release utilities.
 
-h3. 1.0.0 - Stable
+1.0.0 - Stable
+--------------
 
-* Initial Release of sIBL_GUI_Templates.
+-  Initial Release of sIBL_GUI_Templates.
 
-h2=. About
+About
+-----
 
-sIBL_GUI_Templates by Thomas Mansencal - 2008 - 2011
-Copyright (C) 2008 - 2011 - Thomas Mansencal - "thomas.mansencal@gmail.com":mailto:thomas.mansencal@gmail.com
-This Software Is Released Under Terms Of GNU GPL V3 License: "http://www.gnu.org/licenses/":http://www.gnu.org/licenses/
-"http://www.thomasmansencal.com/":http://www.thomasmansencal.com/
+| sIBL_GUI by Thomas Mansencal – 2008 – 2011
+| Copyright© 2008 – 2011 – Thomas Mansencal – `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
+| This software is released under terms of GNU GPL V3 license: `http://www.gnu.org/licenses/ <http://www.gnu.org/licenses/>`_
+| `http://www.thomasmansencal.com/ <http://www.thomasmansencal.com/>`_
