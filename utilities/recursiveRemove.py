@@ -30,8 +30,10 @@ __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
+__all__ = ["recursiveRemove", "remove"]
+
 #**********************************************************************************************************************
-#***	Main Python code.
+#***	Module classes and definitions.
 #**********************************************************************************************************************
 def recursiveRemove(rootDirectory, pattern):
 	"""
@@ -55,10 +57,11 @@ def remove(item):
 	:param item: Item to delete. ( String )
 	"""
 
-	print("{0} | Removing: '{1}'".format(remove.__name__, item))
+	print("{0} | Removing file: '{1}'".format(remove.__name__, item))
 	try:
 		os.remove(item)
 	except:
-		print("{0} | '{1}' remove failed!".format(remove.__name__, item))
+		print("{0} | '{1}' file removing failed!".format(remove.__name__, item))
 
 if __name__ == "__main__":
+	recursiveRemove(sys.argv[1], sys.argv[2])

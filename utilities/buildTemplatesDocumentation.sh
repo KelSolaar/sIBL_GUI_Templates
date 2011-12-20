@@ -3,9 +3,11 @@ echo ----------------------------------------------------------------
 echo sIBL_GUI_Templates - Build Templates Documentation
 echo ----------------------------------------------------------------
 
-export TEMPLATES=../src/templates
-
 alias python=/Library/Frameworks/Python.framework/Versions/2.7/bin/python
+
+export PROJECT=/Users/KelSolaar/Documents/Developement/sIBL_GUI_Templates
+
+export TEMPLATES=$PROJECT/src/templates
 
 #! 3dsMax_MR_Standard Template documentation building.
 python reStructuredTextToHtml.py "$TEMPLATES/3dsMax_MR_Standard/help/3dsMax_MR_Standard_Template_Manual.rst" "$TEMPLATES/3dsMax_MR_Standard/help/3dsMax_MR_Standard_Template_Manual.html"  "3dsMax MR Standard - Template - Manual - Help File"
