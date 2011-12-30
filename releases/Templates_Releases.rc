@@ -23,10 +23,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_St
 Comment = "Maya Arnold Template: Initial Public Release."
 
 [Maya_MR_Lightsmith]
-Release = 1.0.0
+Release = 1.0.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
-Comment = "Maya Mental Ray Lightsmith Template: Port code to Python."
+Comment = "Maya Mental Ray Lightsmith Template: Fix pre-normalisation code."
 
 [Maya_MR_Standard]
 Release = 2.0.0
@@ -47,10 +47,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome
 Comment = "VRay For Maya Dome Light Template: Port code to Python."
 
 [Maya_VRay_Lightsmith]
-Release = 1.0.0
+Release = 1.0.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Lightsmith/Nightly/Maya_VRay_Lightsmith.zip"
-Comment = "VRay For Maya Ligthsmith Template: Port code to Python."
+Comment = "VRay For Maya Ligthsmith Template: Fix pre-normalisation code."
 
 [Maya_VRay_Standard]
 Release = 2.0.0
@@ -65,10 +65,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Dome Light Template: Template refactor."
 
 [Softimage_Arnold_Lightsmith]
-Release = 1.0.0
+Release = 1.0.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Lightsmith/Nightly/Softimage_Arnold_Lightsmith.zip"
-Comment = "Softimage Arnold Ligthsmith Template: Template refactor."
+Comment = "Softimage Arnold Ligthsmith Template: Fix pre-normalisation code."
 
 [Softimage_Arnold_Standard]
 Release = 2.0.0
@@ -77,10 +77,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Standard Template: Template refactor."
 
 [Softimage_MR_Lightsmith]
-Release = 1.0.0
+Release = 1.0.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Lightsmith/Nightly/Softimage_MR_Lightsmith.zip"
-Comment = "Softimage Mental Ray Ligthsmith Template: Template refactor."
+Comment = "Softimage Mental Ray Ligthsmith Template: Fix pre-normalisation code."
 
 [Softimage_MR_Standard]
 Release = 2.0.0

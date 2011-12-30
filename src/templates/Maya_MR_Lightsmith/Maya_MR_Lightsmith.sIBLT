@@ -2,8 +2,8 @@
 Name = @Name | Maya Mental Ray Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.0 | String | Template Release
-Date = @Date | 14 December 2011 | String | Date
+Release = @Release | 1.0.1 | String | Template Release
+Date = @Date | 30 December 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -23,6 +23,7 @@ Lightsmith1|LSmaskfile = @LightsmithMaskFile
 Lightsmith1|LSwidth = @LightsmithWidth
 Lightsmith1|LSheight = @LightsmithHeight
 Lightsmith1|LScolor = @LightsmithColor
+Lightsmith1|LSmulti = @LightsmithMultiplier
 Lightsmith1|LSobjectfile = @LightsmithObjectFile
 Lightsmith1|LSframefile = @LightsmithObjectFrameFile
 Lightsmith1|LSframecolor = @LightsmithObjectFrameColor
@@ -86,7 +87,7 @@ class Data(object):
 	lightMaskFilePath =  "@LightsmithMaskFile" != "-1" and os.path.join(resourcesDirectory, "@LightsmithMaskFile") or None
 	lightHeight = float(@LightsmithHeight)
 	lightWidth = float(@LightsmithWidth)
-	lightColor = [float(color) / 255 for color in (@LightsmithColor)]
+	lightColor = [float(color) / 255 * @LightsmithMultiplier for color in (@LightsmithColor)]
 	lightObjectPath = os.path.join(resourcesDirectory, "@LightsmithObjectFile")
 	lightObjectFramePath = os.path.join(resourcesDirectory, "@LightsmithObjectFrameFile")
 	lightObjectFrameColor = [float(color) / 255 for color in (@LightsmithObjectFrameColor)]

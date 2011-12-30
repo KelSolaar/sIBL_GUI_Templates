@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.0 | String | Template
-Date = @Date | 14 December 2011 | String | Date
+Release = @Release | 1.0.1 | String | Template
+Date = @Date | 30 December 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -23,6 +23,7 @@ Lightsmith1|LSmaskfile = @LightsmithMaskFile
 Lightsmith1|LSwidth = @LightsmithWidth
 Lightsmith1|LSheight = @LightsmithHeight
 Lightsmith1|LScolor = @LightsmithColor
+Lightsmith1|LSmulti = @LightsmithMultiplier
 Lightsmith1|LSobjectfile = @LightsmithObjectFile
 Lightsmith1|LSframefile = @LightsmithObjectFrameFile
 Lightsmith1|LSframecolor = @LightsmithObjectFrameColor
@@ -99,7 +100,7 @@ function __data()
 	this.lightWidth = @LightsmithWidth;
 	this.lightColor = [@LightsmithColor];
 	for(var i = 0; i < this.lightColor.length; i++)  
-    	this.lightColor[i] = this.lightColor[i] / 255;
+    	this.lightColor[i] = this.lightColor[i] / 255 * @LightsmithMultiplier;
     this.lightObjectPath = this.resourcesDirectory + "/" + "@LightsmithObjectFile";
 	this.lightObjectFramePath = this.resourcesDirectory + "/" + "@LightsmithObjectFrameFile";
 	this.lightObjectFrameColor = [@LightsmithObjectFrameColor];
