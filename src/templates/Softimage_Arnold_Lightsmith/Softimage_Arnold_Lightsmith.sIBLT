@@ -2,7 +2,7 @@
 Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.1 | String | Template
+Release = @Release | 1.0.2 | String | Template
 Date = @Date | 30 December 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
@@ -452,6 +452,7 @@ function getLight(clip, name, shape, scaleX, scaleY)
 	var colorMathBasicIntensityShader = getLightShaderBranch(lightShader, clip, name);
 	SIConnectShaderToCnxPoint(colorMathBasicIntensityShader, lightShader + ".color", false);
 
+	lightShader.Parameters("intensity").value = 1 / Math.PI;
 	lightShader.Parameters("normalize").value = 0;
 	lightShader.Parameters("samples").value = 4;
 
