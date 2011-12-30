@@ -2,7 +2,7 @@
 Name = @Name | Maya VRay Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.1 | String | Template Release
+Release = @Release | 1.0.2 | String | Template Release
 Date = @Date | 30 December 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
@@ -184,7 +184,7 @@ class Setup(object):
 		intensityMultiplyDivide = self.getLightShaderBranch(name, file)
 		cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.rectTex" % light, f=True)
 
-		setAttributes({"%s.intensityMult" % light:(scaleX / 2) * (scaleY / 2),
+		setAttributes({"%s.intensityMult" % light:1,
 						"%s.subdivs" % light:24,
 						"%s.invisible" % light:True,
 						"%s.useRectTex" % light:True,

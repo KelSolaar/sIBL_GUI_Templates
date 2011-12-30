@@ -47,10 +47,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome
 Comment = "VRay For Maya Dome Light Template: Port code to Python."
 
 [Maya_VRay_Lightsmith]
-Release = 1.0.1
+Release = 1.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Lightsmith/Nightly/Maya_VRay_Lightsmith.zip"
-Comment = "VRay For Maya Ligthsmith Template: Fix pre-normalisation code."
+Comment = "VRay For Maya Ligthsmith Template: Fix light intensity issue."
 
 [Maya_VRay_Standard]
 Release = 2.0.0
