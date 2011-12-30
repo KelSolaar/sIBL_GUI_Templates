@@ -209,12 +209,12 @@ class Setup(object):
 
 		self.getPortalLightShader(light, name)
 
-		setAttributes({"%s.emitSpecular" % light:False,
-						"%s.useRayTraceShadows" % light:True,
-						"%s.areaLight" % light:True,
-						"%s.areaHiSamples" % light:24,
-						"%s.sx" % light:scaleX / 2,
-						"%s.sy" % light:scaleY / 2})
+		setAttributes({"%s.emitSpecular" % light : False,
+						"%s.useRayTraceShadows" % light : True,
+						"%s.areaLight" % light : True,
+						"%s.areaHiSamples" % light : 24,
+						"%s.sx" % light : scaleX / 2,
+						"%s.sy" % light : scaleY / 2})
 
 		lockHideAttributes(light, ("tx", "ty", "tz", "rx", "ry", "rz", "sz"))
 		return cmds.rename(light, name)
@@ -282,8 +282,8 @@ class Setup(object):
 		lightTarget = cmds.spaceLocator()
 		lightSupport = getTransform(importObjFile(geometryPath)[0])
 		lightFrame = getTransform(importObjFile(geometryFramePath)[0])
-		setAttributes({"%s.tz" % lightSupport:Constants.geometriesOffset,
-				"%s.tz" % lightFrame:Constants.geometriesOffset})
+		setAttributes({"%s.tz" % lightSupport : Constants.geometriesOffset,
+				"%s.tz" % lightFrame : Constants.geometriesOffset})
 
 		lightSupport = cmds.parent(lightSupport, lightGeometries)[0]
 		lightFrame = cmds.parent(lightFrame, lightGeometries)[0]
@@ -344,12 +344,12 @@ class Setup(object):
 				cmds.setAttr("%s.emitSpecular" % light, False)
 			self.connectDriverToLightShaders(controlsLocator, name)
 
-		setAttributes({"%s.sx" % lightRoot:scale,
-						"%s.sy" % lightRoot:scale,
-						"%s.sz" % lightRoot:scale,
-						"%s.tx" % lightRoot:scale*5,
-						"%s.ty" % lightRoot:scale*5,
-						"%s.tz" % lightRoot:scale*5})
+		setAttributes({"%s.sx" % lightRoot : scale,
+						"%s.sy" % lightRoot : scale,
+						"%s.sz" % lightRoot : scale,
+						"%s.tx" % lightRoot : scale*5,
+						"%s.ty" % lightRoot : scale*5,
+						"%s.tz" % lightRoot : scale*5})
 
 		for node in (aimConstraint, surfaceShader, shadingEngine):
 			cmds.rename(node, "%s_%s" % (name, cmds.nodeType(node)))
@@ -437,10 +437,10 @@ class Setup(object):
 		mel.eval("miSetIPStateValue;mentalRayOptionsCheckIP;")
 
 	def setFinalGatheringEngine(self):
-		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
-						"miDefaultOptions.finalGather":True,
-						"miDefaultOptions.finalGatherTraceDiffuse":True,
-						"miDefaultOptions.finalGatherTraceDepth":3})
+		setAttributes({"defaultRenderGlobals.enableDefaultLight" : False,
+						"miDefaultOptions.finalGather" : True,
+						"miDefaultOptions.finalGatherTraceDiffuse" : True,
+						"miDefaultOptions.finalGatherTraceDepth" : 3})
 
 	def setIndirectLighting(self):
 		if Options.indirectLightingEngine == "Final Gathering":
@@ -454,8 +454,8 @@ class Setup(object):
 		if filteredCameras:
 			if Options.photographicTonemapper:
 				tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
-				setAttributes({"%s.film_iso" % tonemapper:False,
-							"%s.burn_highlights" % tonemapper:0.25})
+				setAttributes({"%s.film_iso" % tonemapper : False,
+							"%s.burn_highlights" % tonemapper : 0.25})
 			else:
 				tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
 
@@ -516,8 +516,8 @@ def importObjFile(file):
 	objects = importFile(file, "OBJ", "mo=0")
 
 	for object in objects:
-		setAttributes({"%s.visibleInReflections" % object:True,
-				"%s.visibleInRefractions" % object:True})
+		setAttributes({"%s.visibleInReflections" % object : True,
+				"%s.visibleInRefractions" % object : True})
 	return objects
 
 def setAttributes(attributes):

@@ -101,10 +101,10 @@ class Constants(object):
 						"multiplyDivide",
 						"place2dTexture",
 						"shadingEngine")
-	lightTypes = {"Area":"areaLight",
-					"Directional":"directionalLight",
-					"Point":"pointLight",
-					"Spot":"spotLight"}
+	lightTypes = {"Area" : "areaLight",
+					"Directional" : "directionalLight",
+					"Point" : "pointLight",
+					"Spot" : "spotLight"}
 
 class Structure(object):
 	def __init__(self, **kwargs):
@@ -173,19 +173,19 @@ class Setup(object):
 		self.feedback = None
 		self.lightsTarget = None
 		self.feedbackRadius = Options.feedbackRadius
-		self.storedSessionAttributes = {"%s_feedback.rotateY" % Constants.prefix:None,
-										"%s_feedback.scaleX" % Constants.prefix:None,
-										"%s_feedback.scaleY" % Constants.prefix:None,
-										"%s_feedback.scaleZ" % Constants.prefix:None,
-										"%s_ground.translateX" % Constants.prefix:None,
-										"%s_ground.translateY" % Constants.prefix:None,
-										"%s_ground.translateZ" % Constants.prefix:None,
-										"%s_ground.rotateX" % Constants.prefix:None,
-										"%s_ground.rotateY" % Constants.prefix:None,
-										"%s_ground.rotateZ" % Constants.prefix:None,
-										"%s_ground.scaleX" % Constants.prefix:None,
-										"%s_ground.scaleY" % Constants.prefix:None,
-										"%s_ground.scaleZ" % Constants.prefix:None}
+		self.storedSessionAttributes = {"%s_feedback.rotateY" % Constants.prefix : None,
+										"%s_feedback.scaleX" % Constants.prefix : None,
+										"%s_feedback.scaleY" % Constants.prefix : None,
+										"%s_feedback.scaleZ" % Constants.prefix : None,
+										"%s_ground.translateX" % Constants.prefix : None,
+										"%s_ground.translateY" % Constants.prefix : None,
+										"%s_ground.translateZ" % Constants.prefix : None,
+										"%s_ground.rotateX" % Constants.prefix : None,
+										"%s_ground.rotateY" % Constants.prefix : None,
+										"%s_ground.rotateZ" % Constants.prefix : None,
+										"%s_ground.scaleX" % Constants.prefix : None,
+										"%s_ground.scaleY" % Constants.prefix : None,
+										"%s_ground.scaleZ" % Constants.prefix : None}
 
 	def __exit__(self):
 		sys.exit()
@@ -322,7 +322,7 @@ class Setup(object):
 
 		if useOverride:
 			condition = cmds.shadingNode("condition", asUtility=True)
-			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
+			setAttributes({"%s.firstTerm" % condition : 1, "%s.secondTerm" % condition : 1})
 			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)
 
 			mibColorAlpha = cmds.shadingNode("mib_color_alpha", asUtility=True)
@@ -364,20 +364,20 @@ class Setup(object):
 	def getDisplayLocator(self, name, radius, visibility):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({"%s.miDeriveFromMaya" % locator:False,
-						"%s.visibility" % locator:visibility,
-						"%s.miHide" % locator:True,
+		setAttributes({"%s.miDeriveFromMaya" % locator : False,
+						"%s.visibility" % locator : visibility,
+						"%s.miHide" % locator : True,
 						"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
 		cmds.refresh(force=True)
 		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
-		setAttributes({"%s.scaleX" % locator:radius,
-						"%s.scaleY" % locator:radius,
-						"%s.scaleZ" % locator:radius})
+		setAttributes({"%s.scaleX" % locator : radius,
+						"%s.scaleY" % locator : radius,
+						"%s.scaleZ" % locator : radius})
 		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
-		setAttributes({"%s.doubleSided" % locator:False,
-						"%s.opposite" % locator:False})
+		setAttributes({"%s.doubleSided" % locator : False,
+						"%s.opposite" % locator : False})
 		return locator
 
 	def getFeedback(self):
@@ -425,15 +425,15 @@ class Setup(object):
 
 		if usePhysicalSun and Constants.lightTypes[type] == "directionalLight":
 			miaPhysicalSun = cmds.shadingNode("mia_physicalsun", asLight=True)
-			setAttributes({"%s.y_is_up" % miaPhysicalSun:True,
-							"%s.multiplier" % miaPhysicalSun:multiplier / 10})
+			setAttributes({"%s.y_is_up" % miaPhysicalSun : True,
+							"%s.multiplier" % miaPhysicalSun : multiplier / 10})
 			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miLightShader" % light, f=True)
 			cmds.connectAttr("%s.message" % miaPhysicalSun, "%s.miPhotonEmitter" % light, f=True)
 			cmds.rename(miaPhysicalSun, "%s_%s" % (name, cmds.nodeType(miaPhysicalSun)))
 
 		cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
-		setAttributes({"%s.intensity" % light:multiplier,
-						"%s.useRayTraceShadows" % light:True})
+		setAttributes({"%s.intensity" % light : multiplier,
+						"%s.useRayTraceShadows" % light : True})
 
 		if type == "Area":
 			cmds.setAttr("%s.areaLight" % light, True)
@@ -443,20 +443,20 @@ class Setup(object):
 		elif type == "Point":
 			pass
 		elif type == "Spot":
-			setAttributes({"%s.coneAngle" % light:96,
-							"%s.penumbraAngle" % light:16})
+			setAttributes({"%s.coneAngle" % light : 96,
+							"%s.penumbraAngle" % light : 16})
 
-		setAttributes({"%s.sx" % light:scale,
-						"%s.sy" % light:scale,
-						"%s.sz" % light:scale})
+		setAttributes({"%s.sx" % light : scale,
+						"%s.sy" % light : scale,
+						"%s.sz" % light : scale})
 
 		cmds.parent(light, self.controlsGroup)
 
 		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
 		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
 		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
-		setAttributes({"%s.parameterU" % pointOnSurfaceInfo:0.5 + (0.5 - vCoordinate),
-						"%s.parameterV" % pointOnSurfaceInfo:0.5 + (0.5 - uCoordinate)})
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 0.5 + (0.5 - vCoordinate),
+						"%s.parameterV" % pointOnSurfaceInfo : 0.5 + (0.5 - uCoordinate)})
 
 		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 
@@ -495,11 +495,11 @@ class Setup(object):
 
 	def getGround(self):
 		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
-		setAttributes({"%s.overrideEnabled" % ground:True,
-						"%s.overrideShading" % ground:False,
-						"%s.scaleX" % ground:self.feedbackRadius * math.sqrt(2),
-						"%s.scaleY" % ground:self.feedbackRadius * math.sqrt(2),
-						"%s.scaleZ" % ground:self.feedbackRadius * math.sqrt(2)})
+		setAttributes({"%s.overrideEnabled" % ground : True,
+						"%s.overrideShading" % ground : False,
+						"%s.scaleX" % ground : self.feedbackRadius * math.sqrt(2),
+						"%s.scaleY" % ground : self.feedbackRadius * math.sqrt(2),
+						"%s.scaleZ" % ground : self.feedbackRadius * math.sqrt(2)})
 		cmds.parent(ground, self.controlsGroup)
 
 		if Options.shadowCatcher:
@@ -529,10 +529,10 @@ class Setup(object):
 		mel.eval("miSetIPStateValue;mentalRayOptionsCheckIP;")
 
 	def setFinalGatheringEngine(self):
-		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
-						"miDefaultOptions.finalGather":True,
-						"miDefaultOptions.finalGatherTraceDiffuse":True,
-						"miDefaultOptions.finalGatherTraceDepth":3})
+		setAttributes({"defaultRenderGlobals.enableDefaultLight" : False,
+						"miDefaultOptions.finalGather" : True,
+						"miDefaultOptions.finalGatherTraceDiffuse" : True,
+						"miDefaultOptions.finalGatherTraceDepth" : 3})
 
 	def setIndirectLighting(self):
 		if Options.indirectLightingEngine == "Final Gathering":
@@ -543,8 +543,8 @@ class Setup(object):
 	def setLinearWorkflow(self):
 		if Options.photographicTonemapper:
 			tonemapper = cmds.shadingNode("mia_exposure_photographic", asUtility=True)
-			setAttributes({"%s.film_iso" % tonemapper:False,
-						"%s.burn_highlights" % tonemapper:0.25})
+			setAttributes({"%s.film_iso" % tonemapper : False,
+						"%s.burn_highlights" % tonemapper : 0.25})
 		else:
 			tonemapper = cmds.shadingNode("mia_exposure_simple", asUtility=True)
 

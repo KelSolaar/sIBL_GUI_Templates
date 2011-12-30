@@ -184,14 +184,14 @@ class Setup(object):
 		intensityMultiplyDivide = self.getLightShaderBranch(name, file)
 		cmds.connectAttr("%s.output" % intensityMultiplyDivide, "%s.rectTex" % light, f=True)
 
-		setAttributes({"%s.intensityMult" % light:1,
-						"%s.subdivs" % light:24,
-						"%s.invisible" % light:True,
-						"%s.useRectTex" % light:True,
-						"%s.affectSpecular" % light:False,
-						"%s.affectReflections" % light:False,
-						"%s.sx" % light:scaleX / 2,
-						"%s.sy" % light:scaleY / 2})
+		setAttributes({"%s.intensityMult" % light : 1,
+						"%s.subdivs" % light : 24,
+						"%s.invisible" % light : True,
+						"%s.useRectTex" % light : True,
+						"%s.affectSpecular" % light : False,
+						"%s.affectReflections" % light : False,
+						"%s.sx" % light : scaleX / 2,
+						"%s.sy" % light : scaleY / 2})
 
 		lockHideAttributes(light, ("tx", "ty", "tz", "rx", "ry", "rz", "sz"))
 		return cmds.rename(light, name)
@@ -259,8 +259,8 @@ class Setup(object):
 		lightTarget = cmds.spaceLocator()
 		lightSupport = getTransform(importObjFile(geometryPath)[0])
 		lightFrame = getTransform(importObjFile(geometryFramePath)[0])
-		setAttributes({"%s.tz" % lightSupport:Constants.geometriesOffset,
-				"%s.tz" % lightFrame:Constants.geometriesOffset})
+		setAttributes({"%s.tz" % lightSupport : Constants.geometriesOffset,
+				"%s.tz" % lightFrame : Constants.geometriesOffset})
 
 		lightSupport = cmds.parent(lightSupport, lightGeometries)[0]
 		lightFrame = cmds.parent(lightFrame, lightGeometries)[0]
@@ -328,12 +328,12 @@ class Setup(object):
 			self.connectDriverToLightShaders(controlsLocator, name)
 			cmds.rename(vrayObjProperties, "%s_%s" % (name, cmds.nodeType(vrayObjProperties)))
 
-		setAttributes({"%s.sx" % lightRoot:scale,
-						"%s.sy" % lightRoot:scale,
-						"%s.sz" % lightRoot:scale,
-						"%s.tx" % lightRoot:scale*5,
-						"%s.ty" % lightRoot:scale*5,
-						"%s.tz" % lightRoot:scale*5})
+		setAttributes({"%s.sx" % lightRoot : scale,
+						"%s.sy" % lightRoot : scale,
+						"%s.sz" % lightRoot : scale,
+						"%s.tx" % lightRoot : scale*5,
+						"%s.ty" % lightRoot : scale*5,
+						"%s.tz" % lightRoot : scale*5})
 
 		for node in (aimConstraint, surfaceShader, shadingEngine):
 			cmds.rename(node, "%s_%s" % (name, cmds.nodeType(node)))
@@ -413,21 +413,21 @@ class Setup(object):
 							cmds.setAttr("%s_controls.%sColor" % (name, component[0]), color[i])
 							cmds.setAttr("%s_modulation_multiplyDivide.input2%s" % (name, component[1]), (1 / intensity) * (1 / averageColor))
 						cmds.setAttr("%s.emitSpecular" % compliantLight, False)
-						setAttributes({"%s.subdivs" % light:24,
-										"%s.invisible" % light:True,
-										"%s.useRectTex" % light:True,
-										"%s.affectSpecular" % light:False,
-										"%s.affectReflections" % light:False})
+						setAttributes({"%s.subdivs" % light : 24,
+										"%s.invisible" % light : True,
+										"%s.useRectTex" % light : True,
+										"%s.affectSpecular" % light : False,
+										"%s.affectReflections" % light : False})
 		else:
 			cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | No '%s' group found, skipping Lightsmith lights creation!" % (Constants.applicationName, Constants.prefix), button=["Ok"])
 
 	def setIndirectLighting(self):
-		setAttributes({"defaultRenderGlobals.enableDefaultLight":False,
-						"vraySettings.giOn":True})
+		setAttributes({"defaultRenderGlobals.enableDefaultLight" : False,
+						"vraySettings.giOn" : True})
 
 	def setLinearWorkflow(self):
-		setAttributes({"vraySettings.cmap_gamma":Constants.defaultGamma,
-						"vraySettings.cmap_affectBackground":False})
+		setAttributes({"vraySettings.cmap_gamma" : Constants.defaultGamma,
+						"vraySettings.cmap_affectBackground" : False})
 
 def importFile(file, type, options):
 	nodesBefore = cmds.ls()
@@ -438,8 +438,8 @@ def importObjFile(file):
 	objects = importFile(file, "OBJ", "mo=0")
 
 	for object in objects:
-		setAttributes({"%s.visibleInReflections" % object:True,
-				"%s.visibleInRefractions" % object:True})
+		setAttributes({"%s.visibleInReflections" % object : True,
+				"%s.visibleInRefractions" % object : True})
 	return objects
 
 def setAttributes(attributes):

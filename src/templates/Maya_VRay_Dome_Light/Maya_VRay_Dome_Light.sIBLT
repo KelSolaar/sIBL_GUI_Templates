@@ -92,14 +92,14 @@ class Constants(object):
 						"shadingEngine",
 						"VRayObjectProperties",
 						"VRayPlaceEnvTex")
-	lightTypes = {"Area":"areaLight",
-					"Directional":"directionalLight",
-					"Point":"pointLight",
-					"Spot":"spotLight",
-					"VRaySun":"VRaySunShape",
-					"VRaySphere":"VRayLightSphereShape",
-					"VRayRect":"VRayLightRectShape",
-					"VRayIES":"VRayLightIESShape"}
+	lightTypes = {"Area" : "areaLight",
+					"Directional" : "directionalLight",
+					"Point" : "pointLight",
+					"Spot" : "spotLight",
+					"VRaySun" : "VRaySunShape",
+					"VRaySphere" : "VRayLightSphereShape",
+					"VRayRect" : "VRayLightRectShape",
+					"VRayIES" : "VRayLightIESShape"}
 
 class Structure(object):
 	def __init__(self, **kwargs):
@@ -162,19 +162,19 @@ class Setup(object):
 		self.feedback = None
 		self.lightsTarget = None
 		self.feedbackRadius = Options.feedbackRadius
-		self.storedSessionAttributes = {"%s_feedback.rotateY" % Constants.prefix:None,
-										"%s_feedback.scaleX" % Constants.prefix:None,
-										"%s_feedback.scaleY" % Constants.prefix:None,
-										"%s_feedback.scaleZ" % Constants.prefix:None,
-										"%s_ground.translateX" % Constants.prefix:None,
-										"%s_ground.translateY" % Constants.prefix:None,
-										"%s_ground.translateZ" % Constants.prefix:None,
-										"%s_ground.rotateX" % Constants.prefix:None,
-										"%s_ground.rotateY" % Constants.prefix:None,
-										"%s_ground.rotateZ" % Constants.prefix:None,
-										"%s_ground.scaleX" % Constants.prefix:None,
-										"%s_ground.scaleY" % Constants.prefix:None,
-										"%s_ground.scaleZ" % Constants.prefix:None}
+		self.storedSessionAttributes = {"%s_feedback.rotateY" % Constants.prefix : None,
+										"%s_feedback.scaleX" % Constants.prefix : None,
+										"%s_feedback.scaleY" % Constants.prefix : None,
+										"%s_feedback.scaleZ" % Constants.prefix : None,
+										"%s_ground.translateX" % Constants.prefix : None,
+										"%s_ground.translateY" % Constants.prefix : None,
+										"%s_ground.translateZ" % Constants.prefix : None,
+										"%s_ground.rotateX" % Constants.prefix : None,
+										"%s_ground.rotateY" % Constants.prefix : None,
+										"%s_ground.rotateZ" % Constants.prefix : None,
+										"%s_ground.scaleX" % Constants.prefix : None,
+										"%s_ground.scaleY" % Constants.prefix : None,
+										"%s_ground.scaleZ" % Constants.prefix : None}
 
 	def __exit__(self):
 		sys.exit()
@@ -301,7 +301,7 @@ class Setup(object):
 
 		if useOverride:
 			condition = cmds.shadingNode("condition", asUtility=True)
-			setAttributes({"%s.firstTerm" % condition:1, "%s.secondTerm" % condition:1})
+			setAttributes({"%s.firstTerm" % condition : 1, "%s.secondTerm" % condition : 1})
 			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)
 
 			blendColors = cmds.shadingNode("blendColors", asUtility=True)
@@ -330,9 +330,9 @@ class Setup(object):
 			cmds.setAttr("vraySettings.cam_envtexGi", 0, 0, 0, type="double3")
 
 			vrayDomeLight = cmds.shadingNode("VRayLightDomeShape", asLight=True)
-			setAttributes({"%s.sx" % vrayDomeLight:2.0 / 3.0,
-							"%s.sy" % vrayDomeLight:2.0 / 3.0,
-							"%s.sz" % vrayDomeLight:2.0 / 3.0,
+			setAttributes({"%s.sx" % vrayDomeLight : 2.0 / 3.0,
+							"%s.sy" % vrayDomeLight : 2.0 / 3.0,
+							"%s.sz" % vrayDomeLight : 2.0 / 3.0,
 							"%s.visibility" % vrayDomeLight: Options.displayFeedback,
 							"%s.domeSpherical" % vrayDomeLight: True,
 							"%s.useDomeTex" % vrayDomeLight: True,
@@ -356,18 +356,18 @@ class Setup(object):
 	def getDisplayLocator(self, name, radius, visibility):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({"%s.visibility" % locator:visibility,
+		setAttributes({"%s.visibility" % locator : visibility,
 						"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
 		cmds.refresh(force=True)
 		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
-		setAttributes({"%s.scaleX" % locator:radius,
-						"%s.scaleY" % locator:radius,
-						"%s.scaleZ" % locator:radius})
+		setAttributes({"%s.scaleX" % locator : radius,
+						"%s.scaleY" % locator : radius,
+						"%s.scaleZ" % locator : radius})
 		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
-		setAttributes({"%s.doubleSided" % locator:False,
-						"%s.opposite" % locator:False})
+		setAttributes({"%s.doubleSided" % locator : False,
+						"%s.opposite" % locator : False})
 		return locator
 
 	def getFeedback(self):
@@ -403,20 +403,20 @@ class Setup(object):
 
 		vrayObjectProperties = cmds.createNode("VRayObjectProperties")
 		cmds.connectAttr("%s.instObjGroups[0]" % self.feedback, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
-		setAttributes({"%s.generateGI" % vrayObjectProperties:False,
-						"%s.receiveGI" % vrayObjectProperties:False,
-						"%s.generateCaustics" % vrayObjectProperties:False,
-						"%s.receiveCaustics" % vrayObjectProperties:False,
-						"%s.giVisibility" % vrayObjectProperties:False,
-						"%s.reflectionVisibility" % vrayObjectProperties:False,
-						"%s.refractionVisibility" % vrayObjectProperties:False,
-						"%s.castsShadows" % self.feedback:False,
-						"%s.receiveShadows" % self.feedback:False,
-						"%s.motionBlur" % self.feedback:False,
-						"%s.primaryVisibility" % self.feedback:False,
-						"%s.smoothShading" % self.feedback:False,
-						"%s.visibleInReflections" % self.feedback:False,
-						"%s.visibleInRefractions" % self.feedback:False})
+		setAttributes({"%s.generateGI" % vrayObjectProperties : False,
+						"%s.receiveGI" % vrayObjectProperties : False,
+						"%s.generateCaustics" % vrayObjectProperties : False,
+						"%s.receiveCaustics" % vrayObjectProperties : False,
+						"%s.giVisibility" % vrayObjectProperties : False,
+						"%s.reflectionVisibility" % vrayObjectProperties : False,
+						"%s.refractionVisibility" % vrayObjectProperties : False,
+						"%s.castsShadows" % self.feedback : False,
+						"%s.receiveShadows" % self.feedback : False,
+						"%s.motionBlur" % self.feedback : False,
+						"%s.primaryVisibility" % self.feedback : False,
+						"%s.smoothShading" % self.feedback : False,
+						"%s.visibleInReflections" % self.feedback : False,
+						"%s.visibleInRefractions" % self.feedback : False})
 
 		for node in (lambert, shadingEngine, file, place2dTexture, vrayObjectProperties):
 			cmds.rename(node, "%s_feedback_%s" % (Constants.prefix, cmds.nodeType(node)))
@@ -432,8 +432,8 @@ class Setup(object):
 
 		if type == "Area" or type == "Directional" or type == "Point" or type == "Spot":
 			cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
-			setAttributes({"%s.intensity" % light:multiplier,
-							"%s.useRayTraceShadows" % light:True})
+			setAttributes({"%s.intensity" % light : multiplier,
+							"%s.useRayTraceShadows" % light : True})
 		elif type == "VRaySphere" or type == "VRayRect" or type == "VRayIES":
 			cmds.setAttr("%s.lightColor" % light, color[0], color[1], color[2], type="double3")
 
@@ -445,34 +445,34 @@ class Setup(object):
 		elif type == "Point":
 			pass
 		elif type == "Spot":
-			setAttributes({"%s.coneAngle" % light:96,
-							"%s.penumbraAngle" % light:16})
+			setAttributes({"%s.coneAngle" % light : 96,
+							"%s.penumbraAngle" % light : 16})
 		elif type == "VRaySun":
-			setAttributes({"%s.intensityMult" % light:0.350 * multiplier,
-							"%s.sizeMultiplier" % light:1 * (scale / 20)})
+			setAttributes({"%s.intensityMult" % light : 0.350 * multiplier,
+							"%s.sizeMultiplier" % light : 1 * (scale / 20)})
 		elif type == "VRaySphere":
-			setAttributes({"%s.intensityMult" % light:10000 * multiplier,
-							"%s.radius" % light:1 * (scale / 10),
-							"%s.subdivs" % light:24})
+			setAttributes({"%s.intensityMult" % light : 10000 * multiplier,
+							"%s.radius" % light : 1 * (scale / 10),
+							"%s.subdivs" % light : 24})
 		elif type == "VRayRect":
-			setAttributes({"%s.intensityMult" % light:7500 * multiplier,
-							"%s.uSize" % light:1 * (scale / 10),
-							"%s.vSize" % light:1 * (scale / 10),
-							"%s.subdivs" % light:24})
+			setAttributes({"%s.intensityMult" % light : 7500 * multiplier,
+							"%s.uSize" % light : 1 * (scale / 10),
+							"%s.vSize" % light : 1 * (scale / 10),
+							"%s.subdivs" % light : 24})
 		elif type == "VRayRect":
 			cmds.setAttr("%s.intensityMult" % light, multiplier)
 
-		setAttributes({"%s.sx" % light:scale,
-						"%s.sy" % light:scale,
-						"%s.sz" % light:scale})
+		setAttributes({"%s.sx" % light : scale,
+						"%s.sy" % light : scale,
+						"%s.sz" % light : scale})
 
 		cmds.parent(light, self.controlsGroup)
 
 		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
 		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
 		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
-		setAttributes({"%s.parameterU" % pointOnSurfaceInfo:0.5 + (0.5 - vCoordinate),
-						"%s.parameterV" % pointOnSurfaceInfo:0.5 + (0.5 - uCoordinate)})
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 0.5 + (0.5 - vCoordinate),
+						"%s.parameterV" % pointOnSurfaceInfo : 0.5 + (0.5 - uCoordinate)})
 
 		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 
@@ -513,28 +513,28 @@ class Setup(object):
 
 	def getGround(self):
 		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
-		setAttributes({"%s.overrideEnabled" % ground:True,
-						"%s.overrideShading" % ground:False,
-						"%s.scaleX" % ground:self.feedbackRadius * math.sqrt(2),
-						"%s.scaleY" % ground:self.feedbackRadius * math.sqrt(2),
-						"%s.scaleZ" % ground:self.feedbackRadius * math.sqrt(2)})
+		setAttributes({"%s.overrideEnabled" % ground : True,
+						"%s.overrideShading" % ground : False,
+						"%s.scaleX" % ground : self.feedbackRadius * math.sqrt(2),
+						"%s.scaleY" % ground : self.feedbackRadius * math.sqrt(2),
+						"%s.scaleZ" % ground : self.feedbackRadius * math.sqrt(2)})
 		cmds.parent(ground, self.controlsGroup)
 
 		if Options.shadowCatcher:
 			vrayObjectProperties = cmds.createNode("VRayObjectProperties")
 			cmds.connectAttr("%s.instObjGroups[0]" % ground, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
-			setAttributes({"%s.giVisibility" % vrayObjectProperties:False,
-							"%s.matteSurface" % vrayObjectProperties:True,
-							"%s.shadows" % vrayObjectProperties:True,
-							"%s.shadowBrightness" % vrayObjectProperties:0.5,
-							"%s.giAmount" % vrayObjectProperties:0.5})
+			setAttributes({"%s.giVisibility" % vrayObjectProperties : False,
+							"%s.matteSurface" % vrayObjectProperties : True,
+							"%s.shadows" % vrayObjectProperties : True,
+							"%s.shadowBrightness" % vrayObjectProperties : 0.5,
+							"%s.giAmount" % vrayObjectProperties : 0.5})
 			cmds.rename(vrayObjectProperties, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(vrayObjectProperties)))
 
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 
 	def setLinearWorkflow(self):
-		setAttributes({"vraySettings.cmap_gamma":Constants.defaultGamma,
-						"vraySettings.cmap_affectBackground":False})
+		setAttributes({"vraySettings.cmap_gamma" : Constants.defaultGamma,
+						"vraySettings.cmap_affectBackground" : False})
 
 def setAttributes(attributes):
 	for attribute, value in attributes.iteritems():
