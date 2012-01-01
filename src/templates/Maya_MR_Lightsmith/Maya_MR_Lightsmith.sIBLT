@@ -2,16 +2,16 @@
 Name = @Name | Maya Mental Ray Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.1 | String | Template Release
-Date = @Date | 30 December 2011 | String | Date
+Release = @Release | 1.0.2 | String | Template Release
+Date = @Date | 1 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | Maya | String | Software
-Version = @Version | 2008 To 2011 | String | Version
+Version = @Version | 2008 to 2012 | String | Version
 Renderer = @Renderer | Mental Ray | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.py	 | String | Output Script
-Comment = @Comment | This is Maya 2008 To 2011 Mental Ray Lightsmith Template. | String | Comment
+Comment = @Comment | This is Maya 2008 to 2012 Mental Ray Lightsmith Template. | String | Comment
 
 [Ibl Set]
 Path = @iblPath | | String | sIBL File Path
@@ -45,7 +45,7 @@ photographicTonemapper = @photographicTonemapper | 0 | Boolean | Use Photographi
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = r\"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 

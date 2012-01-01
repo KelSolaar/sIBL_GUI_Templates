@@ -23,40 +23,40 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_St
 Comment = "Maya Arnold Template: Initial Public Release."
 
 [Maya_MR_Lightsmith]
-Release = 1.0.1
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
-Comment = "Maya Mental Ray Lightsmith Template: Fix pre-normalisation code."
-
-[Maya_MR_Standard]
-Release = 2.0.0
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
-Comment = "Maya Mental Ray Template: Port code to Python."
-
-[Maya_RfM_Standard]
-Release = 2.0.0
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Nightly/Maya_RfM_Standard.zip"
-Comment = "Renderman For Maya Template: Port code to Python."
-
-[Maya_VRay_Dome_Light]
-Release = 2.0.0
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome_Light/Nightly/Maya_VRay_Dome_Light.zip"
-Comment = "VRay For Maya Dome Light Template: Port code to Python."
-
-[Maya_VRay_Lightsmith]
 Release = 1.0.2
 Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
+Comment = "Maya Mental Ray Lightsmith Template: Fix potential module import exception."
+
+[Maya_MR_Standard]
+Release = 2.0.1
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
+Comment = "Maya Mental Ray Template: Fix potential module import exception."
+
+[Maya_RfM_Standard]
+Release = 2.0.1
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Nightly/Maya_RfM_Standard.zip"
+Comment = "Renderman For Maya Template: Fix potential module import exception."
+
+[Maya_VRay_Dome_Light]
+Release = 2.0.1
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome_Light/Nightly/Maya_VRay_Dome_Light.zip"
+Comment = "VRay For Maya Dome Light Template: Fix potential module import exception."
+
+[Maya_VRay_Lightsmith]
+Release = 1.0.3
+Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Lightsmith/Nightly/Maya_VRay_Lightsmith.zip"
-Comment = "VRay For Maya Ligthsmith Template: Fix light intensity issue."
+Comment = "VRay For Maya Ligthsmith Template: Fix potential module import exception."
 
 [Maya_VRay_Standard]
-Release = 2.0.0
+Release = 2.0.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Standard/Nightly/Maya_VRay_Standard.zip"
-Comment = "VRay For Maya Template: Port code to Python."
+Comment = "VRay For Maya Template: Fix potential module import exception."
 
 [Softimage_Arnold_Dome_Light]
 Release = 2.0.0
