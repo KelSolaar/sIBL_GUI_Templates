@@ -1,26 +1,31 @@
-sIBL_GUI_Templates - 2.0.1 - Stable
+sIBL_GUI_Templates - 2.0.2 - Alpha
 ===================================
 
 Change Log
 ==========
 
-2.0.1 - Stable
+2.0.2 - Alpha
+--------------
+
+-  Fixed incorrect lights colors handling in templates.
+
+2.0.1 - Alpha
 --------------
 
 -  Update Lightsmith templates to support latest Lightsmith Ibl Sets.
 
-2.0.0 - Stable
+2.0.0 - Alpha
 --------------
 
--  Port "Maya_MR_Standard" template code to Python.
--  Port "Maya_VRay_Standard" template code to Python.
--  Port "Maya_VRay_Dome_Light" template code to Python.
--  Port "Maya_RfM_Standard" template code to Python.
--  Port "Maya_MR_Lightsmith" template code to Python.
--  Port "Maya_VRay_Lightsmith" template code to Python.
--  Refactor 3dsMax and Softimage / XSI templates.
+-  Ported "Maya_MR_Standard" template code to Python.
+-  Ported "Maya_VRay_Standard" template code to Python.
+-  Ported "Maya_VRay_Dome_Light" template code to Python.
+-  Ported "Maya_RfM_Standard" template code to Python.
+-  Ported "Maya_MR_Lightsmith" template code to Python.
+-  Ported "Maya_VRay_Lightsmith" template code to Python.
+-  Refactored 3dsMax and Softimage / XSI templates.
 -  Most templates now have a prefix attribute exposed allowing customization of the scene setup. 
--  Update documentations / help files.
+-  Updated documentations / help files.
 
 1.0.5 - Stable
 --------------
