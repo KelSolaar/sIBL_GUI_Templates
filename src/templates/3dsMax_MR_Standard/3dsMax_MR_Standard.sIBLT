@@ -56,12 +56,12 @@ Template last modified: @Date
 sIBL_GUI
 */
 
-struct __constants (applicationName, prefix, title, globalPreProcessCallback, globalPostProcessCallback, localPreProcessCommand, localPostProcessCommand)
+struct __constants (applicationName, prefix, title, defaultGamma, globalPreProcessCallback, globalPostProcessCallback, localPreProcessCommand, localPostProcessCommand)
 struct __data (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
 struct __options (createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, shadowCatcher, activateLinearWorkflow)
 struct __sceneNodes (dataGroup, lightsGroup, feedback)
 
-global Constants = __constants applicationName:"sIBL_GUI" prefix:"@sceneSetupPrefix" title:"Smart IBL" globalPreProcessCallback:"sIBL_3dsmax_preProcessCallback" globalPostProcessCallback:"sIBL_3dsmax_postProcessCallback" localPreProcessCommand:"sIBL_3dsmax_MR_preProcessCallback" localPostProcessCommand:"sIBL_3dsmax_MR_postProcessCallback"
+global Constants = __constants applicationName:"sIBL_GUI" prefix:"@sceneSetupPrefix" title:"Smart IBL" defaultGamma:2.2 globalPreProcessCallback:"sIBL_3dsmax_preProcessCallback" globalPostProcessCallback:"sIBL_3dsmax_postProcessCallback" localPreProcessCommand:"sIBL_3dsmax_MR_preProcessCallback" localPostProcessCommand:"sIBL_3dsmax_MR_postProcessCallback"
 global Datas = __data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
 global UserOptions = __options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global SceneNodes = __sceneNodes()
@@ -217,8 +217,6 @@ fn getLight lightType lightName lightColor intensity lightDistance uCoordinate v
 	if(SceneNodes.lightsGroup == undefined) then
 		getLightsGroup()
 
-	lightColorTokens = filterstring lightColor ","
-
 	uCoordinate += 0.75
 	projectedRadius = cos((0.5 - vCoordinate) * 180)
 
@@ -229,7 +227,8 @@ fn getLight lightType lightName lightColor intensity lightDistance uCoordinate v
 	local lightTarget = TargetObject transform:(matrix3 [1,0,0] [0,1,0] [0,0,1] [0,0,0])
 	lightTarget.parent = SceneNodes.lightsGroup
 
-	local lightColor = color (lightColorTokens[1] as float) (lightColorTokens[2] as float) (lightColorTokens[3] as float)
+	lightColorTokens = filterstring lightColor ","
+	local lightColor = color ((pow ((lightColorTokens[1] as float) / 255) Constants.defaultGamma) * 255) ((pow ((lightColorTokens[2] as float) / 255) Constants.defaultGamma) * 255) ((pow ((lightColorTokens[3] as float) / 255) Constants.defaultGamma) * 255)
 	local lightFalloff = lightDistance + 5
 
 	if(lightType == "Direct") then
@@ -408,7 +407,7 @@ fn activateLinearWorkflow createBackground =
 	lensShader.name = (Constants.prefix + "_Lens")
 
 	if(createBackground == 1) then
-		environmentMap.eye.gamma = 2.2
+		environmentMap.eye.gamma = Constants.defaultGamma
 )
 
 fn setup =

@@ -8,10 +8,10 @@ Author = @Author | Kel Solaar /Dschaga / JHaywood | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | 3dsMax  | String | Software
-Version = @Version | 2009 To 2011 | String | Version
+Version = @Version | 2009 - 2012 | String | Version
 Renderer = @Renderer | VRay| String | Renderer
 OutputScript = @OutputScript | sIBL_3dsmax_Import.ms | String | Output Script
-Comment = @Comment | This is 3dsmax 2009 To 2011 VRay Template. | String | Comment
+Comment = @Comment | This is 3dsmax 2009 - 2012 VRay Template. | String | Comment
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile
@@ -56,12 +56,12 @@ Template last modified: @Date
 sIBL_GUI
 */
 
-struct __constants (applicationName, prefix, title, globalPreProcessCallback, globalPostProcessCallback, localPreProcessCommand, localPostProcessCommand)
+struct __constants (applicationName, prefix, title, defaultGamma, globalPreProcessCallback, globalPostProcessCallback, localPreProcessCommand, localPostProcessCommand)
 struct __data (backgroundFilePath, reflectionFilePath, lightingFilePath, sunU, sunV, sunColor, sunMultiplier, dynamicLights)
 struct __options (createBackground, createLighting, createReflection, createSun, createLights, displayFeedback, feedbackRadius, hideLights, sunLightType, dynamicLightsType, createGround, shadowCatcher, activateLinearWorkflow)
 struct __sceneNodes (dataGroup, lightsGroup, feedback)
 
-global Constants = __constants applicationName:"sIBL_GUI" prefix:"@sceneSetupPrefix" title:"Smart IBL" globalPreProcessCallback:"sIBL_3dsmax_preProcessCallback" globalPostProcessCallback:"sIBL_3dsmax_postProcessCallback" localPreProcessCommand:"sIBL_3dsmax_VRay_preProcessCallback" localPostProcessCommand:"sIBL_3dsmax_VRay_postProcessCallback"
+global Constants = __constants applicationName:"sIBL_GUI" prefix:"@sceneSetupPrefix" title:"Smart IBL" defaultGamma:2.2 globalPreProcessCallback:"sIBL_3dsmax_preProcessCallback" globalPostProcessCallback:"sIBL_3dsmax_postProcessCallback" localPreProcessCommand:"sIBL_3dsmax_VRay_preProcessCallback" localPostProcessCommand:"sIBL_3dsmax_VRay_postProcessCallback"
 global Datas = __data backgroundFilePath:"@BGfile" reflectionFilePath:"@REFfile" lightingFilePath:"@EVfile" sunU:@SUNu sunV:@SUNv sunColor:"@SUNcolor" sunMultiplier:@SUNmulti dynamicLights:"@dynamicLights"
 global UserOptions = __options createBackground:@createBackground createReflection:@createReflection createLighting:@createLighting createSun:@createSun createLights:@createLights displayFeedback:@displayFeedback feedbackRadius:1000 sunLightType:"@sunLightType" dynamicLightsType:"@dynamicLightsType" hideLights:@hideLights createGround:@createGround shadowCatcher:@shadowCatcher activateLinearWorkflow:@activateLinearWorkflow
 global SceneNodes = __sceneNodes()
@@ -190,8 +190,6 @@ fn getLight lightType lightName lightColor intensity lightDistance uCoordinate v
 	if(SceneNodes.lightsGroup == undefined) then
 		getLightsGroup()
 
-	lightColorTokens = filterstring lightColor ","
-
 	uCoordinate += 0.75
 	projectedRadius = cos((0.5 - vCoordinate) * 180)
 
@@ -202,7 +200,8 @@ fn getLight lightType lightName lightColor intensity lightDistance uCoordinate v
 	local lightTarget = TargetObject transform:(matrix3 [1,0,0] [0,1,0] [0,0,1] [0,0,0])
 	lightTarget.parent = SceneNodes.lightsGroup
 
-	local lightColor = color (lightColorTokens[1] as float) (lightColorTokens[2] as float) (lightColorTokens[3] as float)
+	lightColorTokens = filterstring lightColor ","
+	local lightColor = color ((pow ((lightColorTokens[1] as float) / 255) Constants.defaultGamma) * 255) ((pow ((lightColorTokens[2] as float) / 255) Constants.defaultGamma) * 255) ((pow ((lightColorTokens[3] as float) / 255) Constants.defaultGamma) * 255)
 	local lightFalloff = lightDistance + 5
 
 	if(lightType == "Direct") then
@@ -403,11 +402,11 @@ fn createGround currentScale shadowCatcher =
 
 fn activateLinearWorkflow createBackground =
 (
-	renderers.current.colorMapping_gamma = 2.2
+	renderers.current.colorMapping_gamma = Constants.defaultGamma
 	if(createBackground == 1) then
 	(
 		environmentMap.lightnessMode = 1
-		environmentMap.gammaRGB = 1/2.2
+		environmentMap.gammaRGB = 1 / Constants.defaultGamma
 	)
 )
 
