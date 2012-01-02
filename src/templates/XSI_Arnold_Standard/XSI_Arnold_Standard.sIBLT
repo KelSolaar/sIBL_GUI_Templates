@@ -2,7 +2,7 @@
 Name = @Name | XSI Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_Arnold_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.0 | String | Template
+Release = @Release | 2.0.1 | String | Template
 Date = @Date | 14 December 2011 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
@@ -92,6 +92,38 @@ function __constants()
 }
 var Constants = new __constants();
 
+function convertInputColors(color)
+{
+	if(color == [-1])
+		return color;
+
+	for(var i = 0; i < color.length; i++)  
+    	color[i] = color[i] / 255.0;
+
+	return color;
+}
+
+function Light(name, color, multiplier, uCoordinate, vCoordinate)
+{
+	this.name = name;
+	this.color = color;
+	this.multiplier = multiplier;
+	this.uCoordinate = uCoordinate;
+	this.vCoordinate = vCoordinate;
+}
+
+function parseDynamicLightsAttribute(data)
+{
+	if(data == -1)
+		return data;
+
+	var	dynamicLights = [];
+	var data = data.split("|");
+	for(var i = 0; i < data.length; i += 8)
+		dynamicLights[dynamicLights.length] = new Light(Constants.prefix + "_DKL_" + data[i + 1], convertInputColors([parseFloat(data[i + 2]), parseFloat(data[i + 3]), parseFloat(data[i + 4])]), parseFloat(data[i + 5]), parseFloat(data[i + 6]), parseFloat(data[i + 7]));
+	return dynamicLights;
+}
+
 function __data()
 {
 	this.backgroundFilePath = "@BGfile";
@@ -103,9 +135,9 @@ function __data()
 	this.lightingGamma = @EVgamma;
 	this.sunU = @SUNu;
 	this.sunV = @SUNv;
-	this.sunColor = [@SUNcolor];
+	this.sunColor = convertInputColors([@SUNcolor]);
 	this.sunMultiplier = @SUNmulti;
-	this.dynamicLights = "@dynamicLights";
+	this.dynamicLights = parseDynamicLightsAttribute("@dynamicLights");
 	this.height = @Height;
 	this.north = @North;
 }
@@ -710,7 +742,7 @@ function getLight(parent, constraintParent, type, name, scale, intensity, color,
 	light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("intensity").value = intensity;
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
-		light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("color").Parameters(subComponents[i]).value = color[i] / 255;
+		light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("color").Parameters(subComponents[i]).value = color[i];
 
 	light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("samples").value = 4;
 
@@ -795,9 +827,8 @@ function getDynamicLights()
 {
 	var controlsGroup = getControlsGroup();
 	var feedback = Application.ActiveSceneRoot.FindChild(Constants.prefix + "_Feedback");
-	var dynamicLights = Data.dynamicLights.split("|");
-	for(var i = 0; i < dynamicLights.length; i += 8)
-		getLight(controlsGroup, feedback, Options.dynamicLightsType, Constants.prefix + "_DKL_" + dynamicLights[i + 1], Options.feedbackRadius / 15, parseFloat(dynamicLights[i + 5]), [parseFloat(dynamicLights[i + 2]), parseFloat(dynamicLights[i + 3]), parseFloat(dynamicLights[i + 4])], parseFloat(dynamicLights[i + 6]), parseFloat(dynamicLights[i + 7]))
+	for(var i = 0; i < Data.dynamicLights.length; i ++)
+		getLight(controlsGroup, feedback, Options.dynamicLightsType, Data.dynamicLights[i].name, Options.feedbackRadius / 15, Data.dynamicLights[i].multiplier, Data.dynamicLights[i].color, Data.dynamicLights[i].uCoordinate, Data.dynamicLights[i].vCoordinate);
 }
 
 function bridgeControlsAndShaders(pass, slot)

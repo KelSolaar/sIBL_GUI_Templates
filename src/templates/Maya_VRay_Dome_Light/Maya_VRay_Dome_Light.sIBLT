@@ -2,16 +2,16 @@
 Name = @Name | Maya VRay Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.1 | String | Template Release
+Release = @Release | 2.0.2 | String | Template Release
 Date = @Date | 1 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | Maya | String | Software
-Version = @Version | 2009 to 2012 | String | Version
+Version = @Version | 2009 - 2012 | String | Version
 Renderer = @Renderer | VRay | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
-Comment = @Comment | This is Maya 2009 to 2012 VRay Dome Light Template. | String | Comment
+Comment = @Comment | This is Maya 2009 - 2012 VRay Dome Light Template. | String | Comment
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile
@@ -108,14 +108,21 @@ class Structure(object):
 class Light(Structure):
 	pass
 
-def getDynamicLights(data):
+def convertInputColors(color):
+	if color == [-1]:
+		return color
+
+	color = [value / 255.0 for value in color]
+	return @activateLinearWorkflow and [value ** Constants.defaultGamma for value in color] or color
+
+def parseDynamicLightsAttribute(data):
 	dynamicLights = {}
 	try:
 		tokens = data.split("|")
 		for i in range(0, len(tokens), 8):
-			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=(float(tokens[i+2] / 255.0), float(tokens[i+3] / 255.0), float(tokens[i+4] / 255.0)), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
-	except:
-		pass
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=convertInputColors([float(tokens[i+2]), float(tokens[i+3]), float(tokens[i+4])]), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
+	except Exception as error:
+		mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "Exception raised while parsing the Dynamic Lights attribute: '%s'." % error))
 	return dynamicLights
 
 class Data(object):
@@ -129,9 +136,9 @@ class Data(object):
 	lightingGamma = @EVgamma
 	sunU = @SUNu
 	sunV = @SUNv
-	sunColor = [value / 255.0 for value in [@SUNcolor]]
+	sunColor = convertInputColors([@SUNcolor])
 	sunMultiplier = @SUNmulti
-	dynamicLights = getDynamicLights("@dynamicLights")
+	dynamicLights = parseDynamicLightsAttribute("@dynamicLights")
 	height = @Height
 	north = @North
 
