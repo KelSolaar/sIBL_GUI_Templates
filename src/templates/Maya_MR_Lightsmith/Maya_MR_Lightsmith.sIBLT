@@ -2,16 +2,16 @@
 Name = @Name | Maya Mental Ray Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.2 | String | Template Release
+Release = @Release | 1.0.3 | String | Template Release
 Date = @Date | 1 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | Maya | String | Software
-Version = @Version | 2008 to 2012 | String | Version
+Version = @Version | 2008 - 2012 | String | Version
 Renderer = @Renderer | Mental Ray | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.py	 | String | Output Script
-Comment = @Comment | This is Maya 2008 to 2012 Mental Ray Lightsmith Template. | String | Comment
+Comment = @Comment | This is Maya 2008 - 2012 Mental Ray Lightsmith Template. | String | Comment
 
 [Ibl Set]
 Path = @iblPath | | String | sIBL File Path
@@ -80,6 +80,9 @@ class Structure(object):
 	def __init__(self, **kwargs):
 		self.__dict__.update(kwargs)
 
+def convertInputColors(color):
+	return [value / 255.0 for value in color]
+
 class Data(object):
 	resourcesDirectory = os.path.dirname("@iblPath")
 	lightName= "@LightsmithName"
@@ -87,10 +90,10 @@ class Data(object):
 	lightMaskFilePath =  "@LightsmithMaskFile" != "-1" and os.path.join(resourcesDirectory, "@LightsmithMaskFile") or None
 	lightHeight = float(@LightsmithHeight)
 	lightWidth = float(@LightsmithWidth)
-	lightColor = [float(color) / 255 * @LightsmithMultiplier for color in (@LightsmithColor)]
+	lightColor = [color * @LightsmithMultiplier for color in convertInputColors([@LightsmithColor])]
 	lightObjectPath = os.path.join(resourcesDirectory, "@LightsmithObjectFile")
 	lightObjectFramePath = os.path.join(resourcesDirectory, "@LightsmithObjectFrameFile")
-	lightObjectFrameColor = [float(color) / 255 for color in (@LightsmithObjectFrameColor)]
+	lightObjectFrameColor = convertInputColors([@LightsmithObjectFrameColor])
 	lightShape = "@LightsmithShape"
 
 class Options(object):
