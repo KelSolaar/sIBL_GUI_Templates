@@ -41,7 +41,6 @@ createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 [Additional Attributes]
 showCamerasDialog = @showCamerasDialog | 0 | Boolean | Cameras Selection Dialog
 preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
-displayFeedback = @displayFeedback | 1 | Boolean | Display Feedback
 sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
 hideLights = @hideLights | 1 | Boolean | Hide Lights
@@ -51,7 +50,7 @@ activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = \"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = r\"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
@@ -143,7 +142,6 @@ class Options(object):
 	createLights = @createLights
 	showCamerasDialog = @showCamerasDialog
 	preserveSessionSettings = @preserveSessionSettings
-	displayFeedback = @displayFeedback
 	feedbackRadius = 100
 	sunLightType = "@sunLightType"
 	dynamicLightsType = "@dynamicLightsType"
@@ -328,7 +326,8 @@ class Setup(object):
 			for node in (blendColors, condition):
 				cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 		else:
-			cmds.connectAttr("%s.output" % multiplyDivide, aiRaySwitch, f=True)
+			for port in ports:
+				cmds.connectAttr("%s.output" % multiplyDivide, "%s.%s" % (aiRaySwitch, port), f=True)
 
 		for node in (gammaCorrect, multiplyDivide, _file):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
@@ -355,12 +354,10 @@ class Setup(object):
 		for node in (aiSky, aiRaySwitch):
 			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
 
-	def getDisplayLocator(self, name, radius, visibility):
+	def getDisplayLocator(self, name, radius):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({"%s.miDeriveFromMaya" % locator : False,
-						"%s.visibility" % locator : visibility,
-						"%s.miHide" % locator : True,
+		setAttributes({	"%s.visibility" % locator : False,
 						"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
@@ -369,44 +366,15 @@ class Setup(object):
 		setAttributes({"%s.scaleX" % locator : radius,
 						"%s.scaleY" % locator : radius,
 						"%s.scaleZ" % locator : radius})
-		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
+		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz", "visibility"))
 		setAttributes({"%s.doubleSided" % locator : False,
 						"%s.opposite" % locator : False})
 		return locator
 
 	def getFeedback(self):
-		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius, Options.displayFeedback)
+		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius)
 		cmds.parent(self.feedback, self.controlsGroup)
 		addToDisplayLayer(self.feedback, "%s_feedback_layer" % Constants.prefix)
-
-		lambert = cmds.shadingNode("lambert", asShader=True)
-		cmds.setAttr("%s.transparency" % lambert, 0.5, 0.5, 0.5, type="double3")
-		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
-		cmds.connectAttr("%s.outColor" % lambert, "%s.surfaceShader" % shadingEngine, f=True)
-
-		file = cmds.shadingNode("file", asTexture=True)
-		not cmds.ls("%s.resolution" % file) and cmds.addAttr(file, ln="resolution", at="long")
-		cmds.setAttr("%s.resolution" % file, 2048)
-
-		fileTextureName = Data.backgroundFile
-		if Data.backgroundWidth > Constants.maximumViewportTextureSize:
-			cmds.confirmDialog(title="%s | Information" % Constants.applicationName, message="The background image is too Large to be displayed on the Visual Feedback.\nCurrent environment image width: %s Pixels.\nThe Visual Feedback will use the reflection image instead." % Data.backgroundWidth, button=("Ok",), defaultButton="Ok")
-			fileTextureName = Data.reflectionFile
-		cmds.setAttr("%s.fileTextureName" % file, fileTextureName, type="string")
-		cmds.connectAttr("%s.outColor" % file, "%s.color" % lambert, f=True)
-
-		place2dTexture = cmds.shadingNode("place2dTexture", asUtility=True)
-		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % file, f=True)
-		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % file, f=True)
-		attributes = ("coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV")
-		for attribute in attributes:
-			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)
-		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
-
-		cmds.sets(self.feedback, e=True, forceElement=shadingEngine)
-
-		for node in (lambert, shadingEngine, file, place2dTexture):
-			cmds.rename(node, "%s_feedback_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 	def getLigthsTarget(self):
 		self.lightsTarget = cmds.spaceLocator()
