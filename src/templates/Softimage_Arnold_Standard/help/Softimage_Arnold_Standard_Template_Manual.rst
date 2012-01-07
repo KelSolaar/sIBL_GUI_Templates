@@ -44,6 +44,7 @@ Additional Attributes
 -  **Dynamic Lights Type**: Create the Dynamics Lights as one of these lights type: "Distant", "Quad", "Spot", "Point".
 -  **Hide Lights**: Hides all current Scene lights.
 -  **Create Ground**: A Grid is added to the Scene.
+-  **Ground Shadow Catcher**: A Shadow Shader is assigned to the Ground.
 -  **Use Lighting Image For Glossy**: Lighting Image branch is connected to the sIBL_Sky Glossy slot.
 -  **Activate Linear Workflow**: Activates Linear Workflow.
 -  **Use Arnold Gamma Correction**: Uses Arnold Gamma Correction instead of Softimage Native Color Management ( Preferences > Display > Color Management ).
@@ -68,7 +69,7 @@ Render Togglers:
 Change Log
 ----------
 
-`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html>`_
+`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change_Log/Change_Log.html>`_
 
 About
 -----

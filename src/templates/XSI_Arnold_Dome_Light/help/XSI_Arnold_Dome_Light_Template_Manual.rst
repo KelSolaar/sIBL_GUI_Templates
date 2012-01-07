@@ -44,6 +44,7 @@ Additional Attributes
 -  **Dynamic Lights Type**: Create the Dynamics Lights as one of these lights type: "Distant", "Quad", "Spot", "Point".
 -  **Hide Lights**: Hides all current Scene lights.
 -  **Create Ground**: A Grid is added to the Scene.
+-  **Ground Shadow Catcher**: A Shadow Shader is assigned to the Ground.
 -  **Use Dual Skydome Setup**: Two Skydomes lights will be created: one for the Diffuse component and another one for the Specular component.
 -  **Use Reflection Image For Lighting**: Reflection Image is connected to the Skydome(s).
 -  **Activate Linear Workflow**: Activates Linear Workflow.
@@ -69,7 +70,7 @@ Render Togglers:
 Change Log
 ----------
 
-`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change%20Log/Change%20Log.html>`_
+`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change_Log/Change_Log.html>`_
 
 About
 -----

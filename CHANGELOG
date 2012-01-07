@@ -1,8 +1,13 @@
-sIBL_GUI_Templates - 2.0.2 - Alpha
-===================================
+sIBL_GUI_Templates - 2.0.3 - Beta
+=================================
 
 Change Log
 ==========
+
+2.0.3 - Beta
+------------
+
+-  Added support for shadow catching ground in Arnold XSI / Softimage templates.
 
 2.0.2 - Alpha
 --------------

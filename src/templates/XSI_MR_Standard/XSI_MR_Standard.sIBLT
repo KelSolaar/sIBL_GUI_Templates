@@ -2,8 +2,8 @@
 Name = @Name | XSI Mental Ray Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_MR_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.1 | String | Template
-Date = @Date | 2 January 2012 | String | Date
+Release = @Release | 2.0.2 | String | Template
+Date = @Date | 7 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -552,6 +552,7 @@ function update_environmentDeletion()
 		{
 			if(!Options.createGround)
 			{
+				DeleteObj(getMatchingObjectsByClassID("{4C4F7500-51EF-11D0-854E-00A02417D029}", Constants.prefix + "_Ground_Material", false));
 				DeleteObj(getMatchingObjectsByClassID("{5FC0CCAE-3DC8-11D0-9449-00AA006D3165}", Constants.prefix + "_Ground", true));
 				DeleteObj(getMatchingObjectsByClassID("{479F2E10-3900-11D1-B0B3-00A024C79287}", Constants.prefix + "_Ground_Layer", true));
 			}

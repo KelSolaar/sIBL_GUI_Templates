@@ -1,20 +1,20 @@
 [3dsMax_MR_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_MR_Standard/Nightly/3dsMax_MR_Standard.zip"
-Comment = "3dsMax Mental Ray Template: Fix incorrect lights color handling."
+Comment = "3dsMax Mental Ray Template: Update documentation / help files."
 
 [3dsMax_Scanline_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_Scanline_Standard/Nightly/3dsMax_Scanline_Standard.zip"
-Comment = "3dsMax Scanline Template: Update template header."
+Comment = "3dsMax Scanline Template: Update documentation / help files."
 
 [3dsMax_VRay_Standard]
 Release = 2.0.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_VRay_Standard/Nightly/3dsMax_VRay_Standard.zip"
-Comment = "3dsMax VRay Template: Fix incorrect lights color handling."
+Comment = "3dsMax VRay Template: Update documentation / help files."
 
 [Maya_Arnold_Standard]
 Release = 0.3.4
@@ -23,85 +23,85 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_St
 Comment = "Maya Arnold Template: Initial Public Release."
 
 [Maya_MR_Lightsmith]
-Release = 1.0.3
+Release = 1.0.4
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
-Comment = "Maya Mental Ray Lightsmith Template: Refactor input colors conversion."
+Comment = "Maya Mental Ray Lightsmith Template: Update documentation / help files."
 
 [Maya_MR_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
-Comment = "Maya Mental Ray Template: Fix incorrect lights color handling."
+Comment = "Maya Mental Ray Template: Update documentation / help files."
 
 [Maya_RfM_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Nightly/Maya_RfM_Standard.zip"
-Comment = "Renderman For Maya Template: Fix incorrect lights color handling."
+Comment = "Renderman For Maya Template: Update documentation / help files."
 
 [Maya_VRay_Dome_Light]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome_Light/Nightly/Maya_VRay_Dome_Light.zip"
 Comment = "VRay For Maya Dome Light Template: Fix incorrect lights color handling."
 
 [Maya_VRay_Lightsmith]
-Release = 1.0.4
+Release = 1.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Lightsmith/Nightly/Maya_VRay_Lightsmith.zip"
-Comment = "VRay For Maya Ligthsmith Template: Refactor input colors conversion."
+Comment = "VRay For Maya Ligthsmith Template: Update documentation / help files."
 
 [Maya_VRay_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Standard/Nightly/Maya_VRay_Standard.zip"
 Comment = "VRay For Maya Template: Fix incorrect lights color handling."
 
 [Softimage_Arnold_Dome_Light]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Dome_Light/Nightly/Softimage_Arnold_Dome_Light.zip"
-Comment = "Softimage Arnold Dome Light Template: Fix incorrect lights color handling"
+Comment = "Softimage Arnold Dome Light Template: Implement shadow catcher support."
 
 [Softimage_Arnold_Lightsmith]
-Release = 1.0.3
+Release = 1.0.4
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Lightsmith/Nightly/Softimage_Arnold_Lightsmith.zip"
-Comment = "Softimage Arnold Ligthsmith Template: Refactor input colors conversion."
+Comment = "Softimage Arnold Ligthsmith Template: Update documentation / help files."
 
 [Softimage_Arnold_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Standard/Nightly/Softimage_Arnold_Standard.zip"
-Comment = "Softimage Arnold Standard Template: Fix incorrect lights color handling."
+Comment = "Softimage Arnold Standard Template: Implement shadow catcher support."
 
 [Softimage_MR_Lightsmith]
-Release = 1.0.2
+Release = 1.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Lightsmith/Nightly/Softimage_MR_Lightsmith.zip"
-Comment = "Softimage Mental Ray Ligthsmith Template: Refactor input colors conversion."
+Comment = "Softimage Mental Ray Ligthsmith Template: Update documentation / help files."
 
 [Softimage_MR_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Standard/Nightly/Softimage_MR_Standard.zip"
-Comment = "Softimage Mental Ray Template: Fix incorrect lights color handling."
+Comment = "Softimage Mental Ray Template: Enforce materials cleanup."
 
 [XSI_Arnold_Dome_Light]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/XSI_Arnold_Dome_Light/Nightly/XSI_Arnold_Dome_Light.zip"
-Comment = "XSI Arnold Dome Light Template: Fix incorrect lights color handling."
+Comment = "XSI Arnold Dome Light Template: Implement shadow catcher support."
 
 [XSI_Arnold_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/XSI_Arnold_Standard/Nightly/XSI_Arnold_Standard.zip"
-Comment = "XSI Arnold Template: Fix incorrect lights color handling."
+Comment = "XSI Arnold Template: Implement shadow catcher support."
 
 [XSI_MR_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/XSI_MR_Standard/Nightly/XSI_MR_Standard.zip"
-Comment = "XSI Mental Ray Template: Fix incorrect lights color handling."
+Comment = "XSI Mental Ray Template: Enforce materials cleanup."

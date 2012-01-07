@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.1 | String | Template
-Date = @Date | 2 January 2012 | String | Date
+Release = @Release | 2.0.2 | String | Template
+Date = @Date | 7 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -44,6 +44,7 @@ sunLightType = @sunLightType | Distant;Quad;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Distant;Quad;Spot;Point | Enum | Dynamic Lights Type
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
+shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 useLightingForGlossy = @useLightingForGlossy | 0 | Boolean | Use Lighting Image For Glossy
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 useArnoldGammaCorrection = @useArnoldGammaCorrection | 1 | Boolean | Use Arnold Gamma Correction
@@ -153,10 +154,11 @@ function __options()
 	this.showPassesDialog = @showPassesDialog;
 	this.displayFeedback = @displayFeedback;
 	this.feedbackRadius = 100;
-	this.createGround = @createGround;
 	this.sunLightType = "@sunLightType";
 	this.dynamicLightsType = "@dynamicLightsType";
 	this.hideLights = @hideLights;
+	this.createGround = @createGround;
+	this.shadowCatcher = @shadowCatcher;
 	this.useLightingForGlossy = @useLightingForGlossy;
 	this.activateLinearWorkflow = @activateLinearWorkflow;
 	this.useArnoldGammaCorrection = @useArnoldGammaCorrection;
@@ -461,6 +463,9 @@ function environmentDeletion()
 
 		// Clips Deletion.
 		DeleteObj(getMatchingObjectsByClassID("{22C3E8F8-CCEA-11D2-B35B-00105A1E70DE}", Constants.prefix, false));
+
+		// Materials Deletion.
+		DeleteObj(getMatchingObjectsByClassID("{4C4F7500-51EF-11D0-854E-00A02417D029}", Constants.prefix, false));
 
 		// Shaders Deletion.
 		DeleteObj(getMatchingObjectsByClassID("{6495C5C1-FD18-474E-9703-AEA66631F7A7}", Constants.prefix, false));
@@ -929,6 +934,40 @@ function getGround()
 
 	ResetTransform(ground, siCtr, siSRT, siXYZ);
 
+	if(Options.shadowCatcher)
+	{
+		var groundMaterial = SICreateMaterial(getShadersPath() + "Shaders/Material/utility.Preset", Constants.prefix + "_Ground_Utility", null, null, false);
+		var subComponents = ["red", "green", "blue"];
+		for(var i = 0; i < subComponents.length; i++)
+			groundMaterial.Shaders(0).Parameters("color").Parameters(subComponents[i]).value = 0.25;
+		groundMaterial.Shaders(0).Parameters("shade_mode").value = "ambocc";
+
+		var colorToScalarShader = CreateShaderFromProgID("Softimage.sib_color_to_scalar.1.0", groundMaterial);
+		SIConnectShaderToCnxPoint(colorToScalarShader, groundMaterial.Shaders(0) + ".opacity", false);
+		
+		var colorMathBasicShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1", groundMaterial);
+		for(var i = 0; i < subComponents.length; i++)
+		{
+			colorMathBasicShader.Parameters("input1").Parameters(subComponents[i]).value = 1;
+			colorMathBasicShader.Parameters("input2").Parameters(subComponents[i]).value = 0.95;
+		}
+		colorMathBasicShader.Parameters("op").value = 2;
+		SIConnectShaderToCnxPoint(colorMathBasicShader, colorToScalarShader + ".input", false);
+		
+		var shadowShader = CreateShaderFromProgID("Softimage.sib_illum_shadowmaterial.1.0", groundMaterial);
+		shadowShader.Parameters("rgb").value = true;
+		SIConnectShaderToCnxPoint(shadowShader, colorMathBasicShader + ".input1", false);
+
+		colorToScalarShader.Parameters("Name").value = Constants.prefix + "_Ground_Color_To_Scalar";
+		colorMathBasicShader.Parameters("Name").value = Constants.prefix + "_Ground_Color_Math_Basic";
+		shadowShader.Parameters("Name").value = Constants.prefix + "_Ground_Shadow";
+		
+		AssignMaterial(groundMaterial + "," + ground);
+
+		var property = SITOA_AddParametersProperties(ground);
+		ground.properties("Arnold_Parameters").Parameters("opaque").value = false;
+	}
+	
 	addToDisplayLayer(Constants.prefix + "_Ground_Layer", ground);
 }
 

@@ -2,8 +2,8 @@
 Name = @Name | XSI Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.1 | String | Template
-Date = @Date | 2 January 2012 | String | Date
+Release = @Release | 2.0.2 | String | Template
+Date = @Date | 7 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -44,6 +44,7 @@ sunLightType = @sunLightType | Distant;Quad;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Distant;Quad;Spot;Point | Enum | Dynamic Lights Type
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
+shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
 useDualSkydomeSetup = @useDualSkydomeSetup | 1 | Boolean | Use Dual Skydome Setup
 useReflectionForLighting = @useReflectionForLighting | 0 | Boolean | Use Reflection Image For Lighting
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
@@ -158,6 +159,7 @@ function __options()
 	this.dynamicLightsType = "@dynamicLightsType";
 	this.hideLights = @hideLights;
 	this.createGround = @createGround;
+	this.shadowCatcher = @shadowCatcher;
 	this.useDualSkydomeSetup = @useDualSkydomeSetup;
 	this.useReflectionForLighting = @useReflectionForLighting;
 	this.activateLinearWorkflow = @activateLinearWorkflow;
@@ -1007,6 +1009,40 @@ function getGround()
 		globalKinematics(subComponents[i]).value = (Options.feedbackRadius * Math.sqrt(2)) / 2;
 
 	ResetTransform(ground, siCtr, siSRT, siXYZ);
+
+	if(Options.shadowCatcher)
+	{
+		var groundMaterial = SICreateMaterial(getShadersPath() + "Shaders/Material/utility.Preset", Constants.prefix + "_Ground_Utility", null, null, false);
+		var subComponents = ["red", "green", "blue"];
+		for(var i = 0; i < subComponents.length; i++)
+			groundMaterial.Shaders(0).Parameters("color").Parameters(subComponents[i]).value = 0.25;
+		groundMaterial.Shaders(0).Parameters("shade_mode").value = "ambocc";
+
+		var colorToScalarShader = CreateShaderFromPreset("$XSI_DSPRESETS/Shaders/Texture/Conversion/Color_to_Scalar.Preset", groundMaterial, "");
+		SIConnectShaderToCnxPoint(colorToScalarShader, groundMaterial.Shaders(0) + ".opacity", false);
+		
+		var colorMathBasicShader = CreateShaderFromPreset("$XSI_DSPRESETS/Shaders/Texture/Math/Color_Math_Basic.Preset", groundMaterial, "");
+		for(var i = 0; i < subComponents.length; i++)
+		{
+			colorMathBasicShader.Parameters("input1").Parameters(subComponents[i]).value = 1;
+			colorMathBasicShader.Parameters("input2").Parameters(subComponents[i]).value = 0.95;
+		}
+		colorMathBasicShader.Parameters("op").value = 2;
+		SIConnectShaderToCnxPoint(colorMathBasicShader, colorToScalarShader + ".input", false);
+		
+		var shadowShader = CreateShaderFromPreset("$XSI_DSPRESETS/Shaders/Material/Shadow.Preset", groundMaterial, "");
+		shadowShader.Parameters("rgb").value = true;
+		SIConnectShaderToCnxPoint(shadowShader, colorMathBasicShader + ".input1", false);
+
+		colorToScalarShader.Parameters("Name").value = Constants.prefix + "_Ground_Color_To_Scalar";
+		colorMathBasicShader.Parameters("Name").value = Constants.prefix + "_Ground_Color_Math_Basic";
+		shadowShader.Parameters("Name").value = Constants.prefix + "_Ground_Shadow";
+		
+		AssignMaterial(groundMaterial + "," + ground);
+
+		var property = SITOA_AddParametersProperties(ground);
+		ground.properties("Arnold_Parameters").Parameters("opaque").value = false;
+	}
 
 	addToDisplayLayer(Constants.prefix + "_Ground_Layer", ground);
 }
