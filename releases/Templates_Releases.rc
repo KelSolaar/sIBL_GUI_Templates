@@ -11,7 +11,7 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_Scanlin
 Comment = "3dsMax Scanline Template: Update documentation / help files."
 
 [3dsMax_VRay_Standard]
-Release = 2.0.1
+Release = 2.0.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_VRay_Standard/Nightly/3dsMax_VRay_Standard.zip"
 Comment = "3dsMax VRay Template: Update documentation / help files."
