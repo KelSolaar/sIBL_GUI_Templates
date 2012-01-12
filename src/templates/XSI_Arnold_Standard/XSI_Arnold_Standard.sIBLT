@@ -2,8 +2,8 @@
 Name = @Name | XSI Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/XSI_Arnold_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.2 | String | Template
-Date = @Date | 7 January 2012 | String | Date
+Release = @Release | 2.0.3 | String | Template
+Date = @Date | 12 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -835,7 +835,7 @@ function getDynamicLights()
 
 function bridgeControlsAndShaders(pass, slot)
 {
-	AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Boolean_Switch.switch", "1-('" + Constants.prefix + "'." + Constants.controlsTitle + "." + slot + "_Toggle)", true);
+	AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Boolean_Switch.switch", "1-(" + Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Toggle)", true);
 
 	var components = ["red", "green", "blue"];
 	for(var i = 0; i < components.length; i++)

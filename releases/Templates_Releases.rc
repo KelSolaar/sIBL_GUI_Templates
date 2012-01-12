@@ -59,10 +59,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Stan
 Comment = "VRay For Maya Template: Fix incorrect lights color handling."
 
 [Softimage_Arnold_Dome_Light]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Dome_Light/Nightly/Softimage_Arnold_Dome_Light.zip"
-Comment = "Softimage Arnold Dome Light Template: Implement shadow catcher support."
+Comment = "Softimage Arnold Dome Light Template: Fix broken controls property."
 
 [Softimage_Arnold_Lightsmith]
 Release = 1.0.4
@@ -71,10 +71,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Ligthsmith Template: Update documentation / help files."
 
 [Softimage_Arnold_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Standard/Nightly/Softimage_Arnold_Standard.zip"
-Comment = "Softimage Arnold Standard Template: Implement shadow catcher support."
+Comment = "Softimage Arnold Standard Template: Fix broken controls property."
 
 [Softimage_MR_Lightsmith]
 Release = 1.0.3
@@ -83,25 +83,25 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_L
 Comment = "Softimage Mental Ray Ligthsmith Template: Update documentation / help files."
 
 [Softimage_MR_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Standard/Nightly/Softimage_MR_Standard.zip"
-Comment = "Softimage Mental Ray Template: Enforce materials cleanup."
+Comment = "Softimage Mental Ray Template: Fix broken controls property."
 
 [XSI_Arnold_Dome_Light]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/XSI_Arnold_Dome_Light/Nightly/XSI_Arnold_Dome_Light.zip"
-Comment = "XSI Arnold Dome Light Template: Implement shadow catcher support."
+Comment = "XSI Arnold Dome Light Template: Fix broken controls property."
 
 [XSI_Arnold_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/XSI_Arnold_Standard/Nightly/XSI_Arnold_Standard.zip"
-Comment = "XSI Arnold Template: Implement shadow catcher support."
+Comment = "XSI Arnold Template: Fix broken controls property."
 
 [XSI_MR_Standard]
-Release = 2.0.2
+Release = 2.0.3
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/XSI_MR_Standard/Nightly/XSI_MR_Standard.zip"
-Comment = "XSI Mental Ray Template: Enforce materials cleanup."
+Comment = "XSI Mental Ray Template: Fix broken controls property."
