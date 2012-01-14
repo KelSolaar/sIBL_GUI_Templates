@@ -3,7 +3,7 @@ Name = @Name | Maya Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Standard_Template_Manual.html | String | Help File
 Release = @Release | 0.9.0 | String | Template Release
-Date = @Date | 13 January 2012 | String | Date
+Date = @Date | 15 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -266,7 +266,7 @@ class Setup(object):
 		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
 
 		annotationTransform = getTransform(annotation)
-		cmds.setAttr("%s.ty" % annotationTransform, 5)
+		cmds.setAttr("%s.translateY" % annotationTransform, 5)
 		lockHideAttributes(annotationTransform, ("rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
 		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
 		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
@@ -399,9 +399,9 @@ class Setup(object):
 			setAttributes({"%s.coneAngle" % light : 96,
 							"%s.penumbraAngle" % light : 16})
 
-		setAttributes({"%s.sx" % light : scale,
-						"%s.sy" % light : scale,
-						"%s.sz" % light : scale})
+		setAttributes({"%s.scaleX" % light : scale,
+						"%s.scaleY" % light : scale,
+						"%s.scaleZ" % light : scale})
 
 		cmds.parent(light, self.controlsGroup)
 

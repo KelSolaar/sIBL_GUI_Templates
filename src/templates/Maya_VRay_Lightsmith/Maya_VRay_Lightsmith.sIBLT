@@ -168,8 +168,8 @@ class Setup(object):
 		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
 
 		annotationTransform = getTransform(annotation)
-		cmds.setAttr("%s.ty" % annotationTransform, 5)
-		lockHideAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		cmds.setAttr("%s.translateY" % annotationTransform, 5)
+		lockHideAttributes(annotationTransform, ("rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
 		cmds.addAttr(annotationTransform, ln="generalControls", nn="[ General Controls ]", at="enum", en=Constants.title)
 		cmds.setAttr("%s.generalControls" % annotationTransform, e=True, keyable=True, lock=True)
 
@@ -193,10 +193,10 @@ class Setup(object):
 						"%s.useRectTex" % light : True,
 						"%s.affectSpecular" % light : False,
 						"%s.affectReflections" % light : False,
-						"%s.sx" % light : scaleX / 2,
-						"%s.sy" % light : scaleY / 2})
+						"%s.scaleX" % light : scaleX / 2,
+						"%s.scaleY" % light : scaleY / 2})
 
-		lockHideAttributes(light, ("tx", "ty", "tz", "rx", "ry", "rz", "sz"))
+		lockHideAttributes(light, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleZ"))
 		return cmds.rename(light, name)
 
 	def getFileShaderBranch(self, name, filePath):
@@ -262,8 +262,8 @@ class Setup(object):
 		lightTarget = cmds.spaceLocator()
 		lightSupport = getTransform(importObjFile(geometryPath)[0])
 		lightFrame = getTransform(importObjFile(geometryFramePath)[0])
-		setAttributes({"%s.tz" % lightSupport : Constants.geometriesOffset,
-				"%s.tz" % lightFrame : Constants.geometriesOffset})
+		setAttributes({"%s.translateZ" % lightSupport : Constants.geometriesOffset,
+				"%s.translateZ" % lightFrame : Constants.geometriesOffset})
 
 		lightSupport = cmds.parent(lightSupport, lightGeometries)[0]
 		lightFrame = cmds.parent(lightFrame, lightGeometries)[0]
@@ -272,7 +272,7 @@ class Setup(object):
 		lightRoot = cmds.parent(lightRoot, lightGroup)[0]
 		lightTarget = cmds.parent(lightTarget, lightGroup)[0]
 
-		attributes = ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz")
+		attributes = ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ")
 		lockHideAttributes(lightSupport, attributes)
 		lockHideAttributes(lightFrame, attributes)
 
@@ -301,7 +301,7 @@ class Setup(object):
 
 		controlsLocator = cmds.parent(self.getControlsLocator(name), lightHook)[0]
 		controlsLocatorOffset = truncFloat(1.25 * ((scaleX + scaleY)/2), 0.1)
-		cmds.setAttr("%s.ty" % controlsLocator, controlsLocatorOffset)
+		cmds.setAttr("%s.translateY" % controlsLocator, controlsLocatorOffset)
 		lockHideAttributes(controlsLocator, attributes)
 		self.connectDriverToMaterialShaders(controlsLocator, name)
 
@@ -331,12 +331,12 @@ class Setup(object):
 			self.connectDriverToLightShaders(controlsLocator, name)
 			cmds.rename(vrayObjProperties, "%s_%s" % (name, cmds.nodeType(vrayObjProperties)))
 
-		setAttributes({"%s.sx" % lightRoot : scale,
-						"%s.sy" % lightRoot : scale,
-						"%s.sz" % lightRoot : scale,
-						"%s.tx" % lightRoot : scale*5,
-						"%s.ty" % lightRoot : scale*5,
-						"%s.tz" % lightRoot : scale*5})
+		setAttributes({"%s.scaleX" % lightRoot : scale,
+						"%s.scaleY" % lightRoot : scale,
+						"%s.scaleZ" % lightRoot : scale,
+						"%s.translateX" % lightRoot : scale*5,
+						"%s.translateY" % lightRoot : scale*5,
+						"%s.translateZ" % lightRoot : scale*5})
 
 		for node in (aimConstraint, surfaceShader, shadingEngine):
 			cmds.rename(node, "%s_%s" % (name, cmds.nodeType(node)))
@@ -404,11 +404,11 @@ class Setup(object):
 
 						averageSupportScale = (scaleX + scaleY) / 2
 						veragedLightSize = (cmds.getAttr("%s.uSize" % compliantLight) + cmds.getAttr ("%s.vSize" % compliantLight)) / 2;
-						for attribute in ("sx", "sy", "sz"):
+						for attribute in ("scaleX", "scaleY", "scaleZ"):
 							compliantLightAxis = cmds.getAttr("%s.%s" % (compliantLightTransform, attribute))
 							lightRootAxis = cmds.getAttr("%s.%s" % (lightRoot, attribute))
 							cmds.setAttr("%s.%s" % (lightRoot, attribute), (lightRootAxis * ((compliantLightAxis * 2) / averageSupportScale)) * averagedLightSize)
-						for attribute in ("tx", "ty", "tz", "rx", "ry", "rz"):
+						for attribute in ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"):
 							cmds.setAttr("%s.%s" % (lightRoot, attribute), 0)
 						self.connectDriverToLightShaders("%s_controls" % name, name)
 						averageColor = (color[0] +  color[1] +  color[2]) / 3

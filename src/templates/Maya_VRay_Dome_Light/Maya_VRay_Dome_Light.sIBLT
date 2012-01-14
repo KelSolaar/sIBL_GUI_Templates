@@ -2,8 +2,8 @@
 Name = @Name | Maya VRay Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.3 | String | Template Release
-Date = @Date | 7 January 2012 | String | Date
+Release = @Release | 2.0.4 | String | Template Release
+Date = @Date | 15 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -150,7 +150,7 @@ class Options(object):
 	createLights = @createLights
 	preserveSessionSettings = @preserveSessionSettings
 	displayFeedback = @displayFeedback
-	feedbackRadius = 100
+	feedbackRadius = 100.0
 	sunLightType = "@sunLightType"
 	dynamicLightsType = "@dynamicLightsType"
 	hideLights = @hideLights
@@ -248,7 +248,7 @@ class Setup(object):
 			cmds.delete(Constants.prefix)
 
 		for type in Constants.sessionNodeTypes:
-			deleteType(type, "\\b%s*" % Constants.prefix)
+			deleteType(type, "^%s_*" % Constants.prefix)
 
 	def getExtendedFeedbackRadius(self):
 		sceneExtent = getSceneExtent() * math.sqrt(2)
@@ -260,7 +260,7 @@ class Setup(object):
 	def getControlsGroup(self):
 		if not self.controlsGroup:
 			self.controlsGroup = cmds.createNode("transform", n=Constants.prefix)
-			lockHideAttributes(self.controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
+			lockHideAttributes(self.controlsGroup, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
 
 	def getControlsLocator(self):
 		annotation = cmds.createNode("annotationShape")
@@ -269,8 +269,8 @@ class Setup(object):
 		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
 
 		annotationTransform = getTransform(annotation)
-		cmds.setAttr("%s.ty" % annotationTransform, 5)
-		lockHideAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		cmds.setAttr("%s.translateY" % annotationTransform, 5)
+		lockHideAttributes(annotationTransform, ("rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
 		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
 		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
 
@@ -337,9 +337,9 @@ class Setup(object):
 			cmds.setAttr("vraySettings.cam_envtexGi", 0, 0, 0, type="double3")
 
 			vrayDomeLight = cmds.shadingNode("VRayLightDomeShape", asLight=True)
-			setAttributes({"%s.sx" % vrayDomeLight : 2.0 / 3.0,
-							"%s.sy" % vrayDomeLight : 2.0 / 3.0,
-							"%s.sz" % vrayDomeLight : 2.0 / 3.0,
+			setAttributes({"%s.scaleX" % vrayDomeLight : 2.0 / 3.0,
+							"%s.scaleY" % vrayDomeLight : 2.0 / 3.0,
+							"%s.scaleZ" % vrayDomeLight : 2.0 / 3.0,
 							"%s.visibility" % vrayDomeLight: Options.displayFeedback,
 							"%s.domeSpherical" % vrayDomeLight: True,
 							"%s.useDomeTex" % vrayDomeLight: True,
@@ -349,7 +349,7 @@ class Setup(object):
 							"%s.texAdaptive" % vrayDomeLight: False,
 							"%s.subdivs" % vrayDomeLight: 128})
 
-			lockHideAttributes(vrayDomeLight, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"), lock=False)
+			lockHideAttributes(vrayDomeLight, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"), lock=False)
 
 			self.getEnvironmentShadersBranch("%s.domeTex" % vrayDomeLight, Data.lightingFile, "%s_lighting" % Constants.prefix, True)
 
@@ -372,7 +372,7 @@ class Setup(object):
 		setAttributes({"%s.scaleX" % locator : radius,
 						"%s.scaleY" % locator : radius,
 						"%s.scaleZ" % locator : radius})
-		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz"))
+		lockHideAttributes(locator, ("translateX", "translateY", "translateZ", "rotateX", "rotateZ"))
 		setAttributes({"%s.doubleSided" % locator : False,
 						"%s.opposite" % locator : False})
 		return locator
@@ -469,9 +469,9 @@ class Setup(object):
 		elif type == "VRayRect":
 			cmds.setAttr("%s.intensityMult" % light, multiplier)
 
-		setAttributes({"%s.sx" % light : scale,
-						"%s.sy" % light : scale,
-						"%s.sz" % light : scale})
+		setAttributes({"%s.scaleX" % light : scale,
+						"%s.scaleY" % light : scale,
+						"%s.scaleZ" % light : scale})
 
 		cmds.parent(light, self.controlsGroup)
 
