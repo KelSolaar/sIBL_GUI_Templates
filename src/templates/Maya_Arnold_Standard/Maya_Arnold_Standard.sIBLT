@@ -3,7 +3,7 @@ Name = @Name | Maya Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Standard_Template_Manual.html | String | Help File
 Release = @Release | 0.9.0 | String | Template Release
-Date = @Date | 2 January 2012 | String | Date
+Date = @Date | 13 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -39,7 +39,6 @@ createSun = @createSun | 1 | Boolean | Create Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
-showCamerasDialog = @showCamerasDialog | 0 | Boolean | Cameras Selection Dialog
 preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
 sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
@@ -88,7 +87,8 @@ class Constants(object):
 						"lambert",
 						"multiplyDivide",
 						"place2dTexture",
-						"shadingEngine")
+						"shadingEngine",
+						"aiSky")
 	lightTypes = {"Area" : "areaLight",
 					"Directional" : "directionalLight",
 					"Point" : "pointLight",
@@ -140,9 +140,8 @@ class Options(object):
 	createLighting = @createLighting
 	createSun = @createSun
 	createLights = @createLights
-	showCamerasDialog = @showCamerasDialog
 	preserveSessionSettings = @preserveSessionSettings
-	feedbackRadius = 100
+	feedbackRadius = 100.0
 	sunLightType = "@sunLightType"
 	dynamicLightsType = "@dynamicLightsType"
 	hideLights = @hideLights
@@ -190,15 +189,6 @@ class Setup(object):
 
 		print("%s | Starting %s file import!" % (Constants.applicationName, Constants.title))
 
-		if Options.showCamerasDialog:
-			if cmds.layoutDialog(t="%s Camera Chooser" % Constants.applicationName, ui=camerasChooser_formLayout) == "Cancel":
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "'%s' file import canceled!" % Constants.title))
-				self.__exit__()
-			self.outputCameras = cmds.optionVar(q="%s_outputCameras" % Constants.prefix) != "" and cmds.optionVar(q="%s_outputCameras" % Constants.prefix).split(",") or None
-			if not self.outputCameras:
-				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "No cameras selected, %s file import canceled!" % Constants.title))
-				self.__exit__()
-
 		Options.preserveSessionSettings and self.storeSessionAttributes()
 
 		self.setRenderer()
@@ -215,9 +205,9 @@ class Setup(object):
 			self.getSun()
 		if Options.createLights and Data.dynamicLights:
 			self.getDynamicLights()
-		# self.connectFeedbackToShaders()
-		# Options.createGround and self.getGround()
-		# Options.activateIndirectLighting and self.setIndirectLighting()
+		self.connectFeedbackToShaders()
+		Options.createGround and self.getGround()
+		Options.activateIndirectLighting and self.setIndirectLighting()
 		# Options.activateLinearWorkflow and self.setLinearWorkflow()
 		# 
 		# Options.preserveSessionSettings and self.restoreSessionAttributes()
@@ -255,7 +245,7 @@ class Setup(object):
 			cmds.delete(Constants.prefix)
 
 		for type in Constants.sessionNodeTypes:
-			deleteType(type, "\\b%s*" % Constants.prefix)
+			deleteType(type, "^%s_*" % Constants.prefix)
 
 	def getExtendedFeedbackRadius(self):
 		sceneExtent = getSceneExtent() * math.sqrt(2)
@@ -267,7 +257,7 @@ class Setup(object):
 	def getControlsGroup(self):
 		if not self.controlsGroup:
 			self.controlsGroup = cmds.createNode("transform", n=Constants.prefix)
-			lockHideAttributes(self.controlsGroup, ("tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"))
+			lockHideAttributes(self.controlsGroup, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
 
 	def getControlsLocator(self):
 		annotation = cmds.createNode("annotationShape")
@@ -277,7 +267,7 @@ class Setup(object):
 
 		annotationTransform = getTransform(annotation)
 		cmds.setAttr("%s.ty" % annotationTransform, 5)
-		lockHideAttributes(annotationTransform, ("rx", "ry", "rz", "sx", "sy", "sz"))
+		lockHideAttributes(annotationTransform, ("rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
 		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
 		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
 
@@ -334,6 +324,11 @@ class Setup(object):
 
 	def getEnvironmentShaders(self):
 		aiSky = cmds.shadingNode("aiSky", asUtility=True)
+		aiSkyTransform = getTransform(aiSky)
+		setAttributes({"%s.scaleX" % aiSkyTransform : self.feedbackRadius / 1000.0,
+						"%s.scaleY" % aiSkyTransform : self.feedbackRadius / 1000.0,
+						"%s.scaleZ" % aiSkyTransform : self.feedbackRadius / 1000.0})
+
 		aiRaySwitch = cmds.shadingNode("aiRaySwitch", asUtility=True)
 		cmds.connectAttr("%s.outColor" % aiRaySwitch, "%s.color" % aiSky, f=True)
 
@@ -350,23 +345,27 @@ class Setup(object):
 			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.reflectionFile, "%s_reflection" % Constants.prefix, True)
 
 		cmds.connectAttr("%s.message" % aiSky, "defaultArnoldRenderOptions.background", f=True)
+
+		aiSkyTransform = cmds.parent(aiSkyTransform, self.controlsGroup)
+		addToDisplayLayer(aiSkyTransform, "%s_feedback_layer" % Constants.prefix)
 		
-		for node in (aiSky, aiRaySwitch):
-			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
+		cmds.rename(aiSky, "%s_%s" % (Constants.prefix, cmds.nodeType(aiSky)))
+		cmds.rename(aiSkyTransform, "%s_aiSky_%s" % (Constants.prefix, cmds.nodeType(aiSkyTransform)))
+		cmds.rename(aiRaySwitch, "%s_%s" % (Constants.prefix, cmds.nodeType(aiRaySwitch)))
 
 	def getDisplayLocator(self, name, radius):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({	"%s.visibility" % locator : False,
-						"%s.rotateY" % locator:-90,
+		setAttributes({"%s.rotateY" % locator:-90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
 		cmds.refresh(force=True)
 		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
 		setAttributes({"%s.scaleX" % locator : radius,
-						"%s.scaleY" % locator : radius,
-						"%s.scaleZ" % locator : radius})
-		lockHideAttributes(locator, ("tx", "ty", "tz", "rx", "rz", "visibility"))
+		 				"%s.scaleY" % locator : radius,
+		 				"%s.scaleZ" % locator : radius,
+		 				"%s.visibility" % locator : False})
+		lockHideAttributes(locator, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"), lock=False)
 		setAttributes({"%s.doubleSided" % locator : False,
 						"%s.opposite" % locator : False})
 		return locator
@@ -436,16 +435,20 @@ class Setup(object):
 	def connectFeedbackToShaders(self):
 		components = ("Gamma", "Gain")
 		if Options.createBackground:
-			cmds.expression(name="%s_backgroundEnvironmentControls_expression" % Constants.prefix, s="%s_background_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Background")
 
 		if Options.createLighting:
-			cmds.expression(name="%s_lightingEnvironmentControls_expression" % Constants.prefix, s="%s_lighting_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Lighting")
 
 		if Options.createReflection:
-			cmds.expression(name="%s_reflectionEnvironmentControls_expression" % Constants.prefix, s="%s_reflection_mib_lookup_spherical.rotate = deg_to_rad(%s.rotateY/2);" % (Constants.prefix, self.feedback))
 			self.bridgeFeedbackControlsAndShaders("Reflection")
+		
+		pointConstraint = cmds.pointConstraint("%s_aiSky_transform" % Constants.prefix, self.feedback)
+		orientConstraint = cmds.orientConstraint("%s_aiSky_transform" % Constants.prefix, self.feedback, mo=True)
+		scaleConstraint = cmds.scaleConstraint("%s_aiSky_transform" % Constants.prefix, self.feedback, mo=True)
+		
+		for node in (pointConstraint, orientConstraint, scaleConstraint):
+			cmds.rename(node, "%s_%s" % (self.feedback, cmds.nodeType(node)))
 
 	def getGround(self):
 		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
@@ -459,56 +462,12 @@ class Setup(object):
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 
 	def setIndirectLighting(self):
-		pass
+		cmds.setAttr("defaultArnoldRenderOptions.GIDiffuseDepth", 2)
+
 
 	def setLinearWorkflow(self):
-		cmds.setAttr("%s.gamma" % tonemapper, Constants.defaultGamma)
-		if Options.createBackground:
-			cmds.setAttr("%s_controls.backgroundGamma" % Constants.prefix, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, 1.0 / Constants.defaultGamma, type="double3")
-
-		for camera in self.outputCameras:
-			cmds.connectAttr("%s.message" % tonemapper, "%s.miLensShader" % camera, f=True)
-
-def camerasChooser_formLayout():
-	camerasChooser_formLayout = cmds.setParent(q=True)
-	cmds.formLayout(camerasChooser_formLayout, e=True, height=300)
-	selectAll_button = cmds.button("%s_selectAll_button" % Constants.applicationName, label="Select All", command=selectAll_button_OnClicked)
-	selectNone_button = cmds.button("%s_selectNone_button" % Constants.applicationName, label="Select None", command=selectNone_button_OnClicked)
-
-	cameras_textScrollList = cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, allowMultiSelection=True, fn="smallFixedWidthFont",sc=cameras_textScrollList_OnSelectionChanged)
-
-	for camera in cmds.ls(l=True, type="camera"):
-		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, append=camera)
-
-	buttons_rowlayout = cmds.rowLayout(numberOfColumns=2, cl2=("center", "center"), ct2=("both", "both"))
-	ok_button = cmds.button("%s_ok_button" % Constants.applicationName, label="Ok", command="cmds.layoutDialog(dismiss='Ok')")
-	cancel_button = cmds.button("%s_cancel_button" % Constants.applicationName, label="Cancel", command="cmds.layoutDialog(dismiss='Cancel')")
-
-	spacer = margin = 4
-	cmds.formLayout(camerasChooser_formLayout, edit=True,
-					attachForm = [(selectAll_button, "top", margin),
-					(selectAll_button, "left", margin),
-					(selectAll_button, "right", margin),
-					(selectNone_button, "left", margin),
-					(selectNone_button, "right", margin),
-					(cameras_textScrollList, "right", margin),
-					(cameras_textScrollList, "left", margin),
-					(buttons_rowlayout, "left", margin),
-					(buttons_rowlayout, "right", margin),
-					(buttons_rowlayout, "bottom", margin)],
-					attachControl=[(cameras_textScrollList, "top", spacer, selectNone_button),
-					(selectNone_button, "top", spacer, selectAll_button),
-					(cameras_textScrollList, "bottom", spacer, buttons_rowlayout)])
-
-def selectAll_button_OnClicked(value):
-	for i in range(1,cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, ni=True) + 1):
-		cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, sii=i)
-
-def selectNone_button_OnClicked(value):
-	cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, e=True, da=True)
-
-def cameras_textScrollList_OnSelectionChanged():
-	cmds.optionVar(sv=("%s_outputCameras" % Constants.prefix, ",".join(cmds.textScrollList("%s_cameras_textScrollList" % Constants.applicationName, q=True, si=True))))
+		for attribute in (display_gamma, light_gamma, shader_gamma, texture_gamma):
+			cmds.setAttr("defaultArnoldRenderOptions.%s" % attribute, self.defaultGamma)
 
 def setAttributes(attributes):
 	for attribute, value in attributes.iteritems():
