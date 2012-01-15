@@ -29,6 +29,7 @@ Options
 Common Attributes
 -----------------
 
+-  **Scene Setup Prefix**: Defines the prefix used by the Scene Setup.
 -  **Light Scale**: Defines the Lightsmith Light scale.
 -  **Create Light**: Creates a real light that will drive the HDR texture as companion for the Lightsmith Light.
 -  **Textured Light**: The real light will be textured using the HDR texture.

@@ -29,6 +29,7 @@ Options
 Common Attributes
 -----------------
 
+-  **Scene Setup Prefix**: Defines the prefix used by the Scene Setup.
 -  **Create Dynamic Lights**: Creates the sIBL Dynamics Lights.
 -  **Create Background**: Creates the Background Environment Branch of the Rayswitch Shader ( Using the High Resolution LDR file of the current IBL Set ).
 -  **Create Reflection**: Creates the Reflection Environment Branch of the Rayswitch Shader ( Using the Reflection HDR file of the current IBL Set ).

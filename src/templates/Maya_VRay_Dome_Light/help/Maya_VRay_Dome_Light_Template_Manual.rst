@@ -30,6 +30,7 @@ Options
 Common Attributes
 -----------------
 
+-  **Scene Setup Prefix**: Defines the prefix used by the Scene Setup.
 -  **Create Background**: Creates the Background Environment Branch of the Raytype Shader ( Using the High Resolution LDR file of the current IBL Set ).
 -  **Create Reflection**: Creates the Reflection Environment Branch of the Raytype Shader ( Using the Reflection HDR file of the current IBL Set ).
 -  **Create Lighting**: Creates the Lighting Environment Branch of the Raytype Shader ( Using the Lighting HDR file of the current IBL Set ).
