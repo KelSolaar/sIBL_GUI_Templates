@@ -121,6 +121,9 @@ def convertInputColors(color):
 	return @activateLinearWorkflow and [value ** Constants.defaultGamma for value in color] or color
 
 def parseDynamicLightsAttribute(data):
+	if data == "-1":
+		return {}
+
 	dynamicLights = {}
 	try:
 		tokens = data.split("|")

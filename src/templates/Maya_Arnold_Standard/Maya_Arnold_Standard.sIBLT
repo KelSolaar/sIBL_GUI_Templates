@@ -112,6 +112,9 @@ def convertInputColors(color):
 	return [value / 255.0 for value in color]
 
 def parseDynamicLightsAttribute(data):
+	if data == "-1":
+		return {}
+
 	dynamicLights = {}
 	try:
 		tokens = data.split("|")
