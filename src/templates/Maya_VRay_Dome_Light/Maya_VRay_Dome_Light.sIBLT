@@ -248,7 +248,7 @@ class Setup(object):
 			cmds.delete(Constants.prefix)
 
 		for type in Constants.sessionNodeTypes:
-			deleteType(type, "^%s_*" % Constants.prefix)
+			deleteType(type, "^%s_.*" % Constants.prefix)
 
 	def getExtendedFeedbackRadius(self):
 		sceneExtent = getSceneExtent() * math.sqrt(2)
