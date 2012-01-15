@@ -44,6 +44,7 @@ sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Ty
 dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
+useLightingForGlossy = @useLightingForGlossy | 0 | Boolean | Use Lighting Image For Glossy
 activateIndirectLighting = @activateIndirectLighting | 1 | Boolean | Activate Indirect Lighting
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
@@ -79,7 +80,8 @@ class Constants(object):
 	controlsTitle = "[ %s Controls ]" % title
 	maximumViewportTextureSize = 8192
 	defaultGamma = 2.2
-	sessionNodeTypes =	("condition",
+	sessionNodeTypes =	("blendColors",
+						"condition",
 						"displayLayer",
 						"expression",
 						"file",
@@ -88,7 +90,9 @@ class Constants(object):
 						"multiplyDivide",
 						"place2dTexture",
 						"shadingEngine",
-						"aiSky")
+						"aiRaySwitch",
+						"aiSky",
+						"aiStandard")
 	lightTypes = {"Area" : "areaLight",
 					"Directional" : "directionalLight",
 					"Point" : "pointLight",
@@ -146,6 +150,7 @@ class Options(object):
 	dynamicLightsType = "@dynamicLightsType"
 	hideLights = @hideLights
 	createGround = @createGround
+	useLightingForGlossy = @useLightingForGlossy
 	activateIndirectLighting = @activateIndirectLighting
 	activateLinearWorkflow = @activateLinearWorkflow
 
@@ -208,9 +213,9 @@ class Setup(object):
 		self.connectFeedbackToShaders()
 		Options.createGround and self.getGround()
 		Options.activateIndirectLighting and self.setIndirectLighting()
-		# Options.activateLinearWorkflow and self.setLinearWorkflow()
-		# 
-		# Options.preserveSessionSettings and self.restoreSessionAttributes()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
+		
+		Options.preserveSessionSettings and self.restoreSessionAttributes()
 
 		print("%s | %s file import done!" % (Constants.applicationName, Constants.title))
 
@@ -245,7 +250,7 @@ class Setup(object):
 			cmds.delete(Constants.prefix)
 
 		for type in Constants.sessionNodeTypes:
-			deleteType(type, "^%s_*" % Constants.prefix)
+			deleteType(type, "^%s_.*" % Constants.prefix)
 
 	def getExtendedFeedbackRadius(self):
 		sceneExtent = getSceneExtent() * math.sqrt(2)
@@ -337,11 +342,17 @@ class Setup(object):
 			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.backgroundFile, "%s_background" % Constants.prefix, True)
 
 		if Options.createLighting:
-			ports = ("diffuse",)
+			if Options.useLightingForGlossy:
+				ports = ("diffuse", "glossy")
+			else:
+				ports = ("diffuse",)
 			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.lightingFile, "%s_lighting" % Constants.prefix, True)
 
 		if Options.createReflection:
-			ports = ("reflection", "glossy")
+			if Options.useLightingForGlossy:
+				ports = ("reflection",)
+			else:
+				ports = ("reflection", "glossy")
 			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.reflectionFile, "%s_reflection" % Constants.prefix, True)
 
 		cmds.connectAttr("%s.message" % aiSky, "defaultArnoldRenderOptions.background", f=True)
@@ -457,7 +468,16 @@ class Setup(object):
 						"%s.scaleX" % ground : self.feedbackRadius * math.sqrt(2),
 						"%s.scaleY" % ground : self.feedbackRadius * math.sqrt(2),
 						"%s.scaleZ" % ground : self.feedbackRadius * math.sqrt(2)})
-		cmds.parent(ground, self.controlsGroup)
+
+		ground = cmds.parent(ground, self.controlsGroup)
+
+		aiStandard = cmds.shadingNode("aiStandard", asShader=True)
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
+		cmds.connectAttr("%s.outColor" % aiStandard, "%s.surfaceShader" % shadingEngine, f=True)
+		cmds.sets(ground, e=True, forceElement=shadingEngine)
+
+		for node in (aiStandard, shadingEngine):
+			cmds.rename(node, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(node)))
 
 		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
 
@@ -466,8 +486,8 @@ class Setup(object):
 
 
 	def setLinearWorkflow(self):
-		for attribute in (display_gamma, light_gamma, shader_gamma, texture_gamma):
-			cmds.setAttr("defaultArnoldRenderOptions.%s" % attribute, self.defaultGamma)
+		for attribute in ("display_gamma", "light_gamma", "shader_gamma", "texture_gamma"):
+			cmds.setAttr("defaultArnoldRenderOptions.%s" % attribute, Constants.defaultGamma)
 
 def setAttributes(attributes):
 	for attribute, value in attributes.iteritems():
