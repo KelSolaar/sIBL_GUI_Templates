@@ -46,8 +46,8 @@ Additional Attributes
 -  **Hide Lights**: Hides all current Scene lights.
 -  **Create Ground**: A Grid is added to the Scene.
 -  **Ground Shadow Catcher**: A Shadow Shader is assigned to the Ground.
--  **Use Dual Skydome Setup**: Two Skydomes lights will be created: one for the Diffuse component and another one for the Specular component.
--  **Use Reflection Image For Lighting**: Reflection Image is connected to the Skydome(s).
+-  **Use Dual SkyDome Setup**: Two SkyDomes lights will be created: one for the Diffuse component and another one for the Specular component.
+-  **Use Reflection Image For Lighting**: Reflection Image is connected to the SkyDome(s).
 -  **Activate Linear Workflow**: Activates Linear Workflow.
 -  **Use Arnold Gamma Correction**: Uses Arnold Gamma Correction instead of XSI Native Color Management ( Preferences > Display > Color Management ).
 

@@ -3,7 +3,7 @@ Name = @Name | Maya Mental Ray Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Standard_Template_Manual.html | String | Help File
 Release = @Release | 2.0.4 | String | Template Release
-Date = @Date | 15 January 2012 | String | Date
+Date = @Date | 16 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -317,7 +317,7 @@ class Setup(object):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentShadersBranch(self, mipRayswitch, ports, file, prefix, useOverride):
+	def getEnvironmentShadersBranch(self, mipRayswitch, ports, image, prefix, useOverride):
 		mentalrayTexture = cmds.shadingNode("mentalrayTexture", asTexture=True)
 		cmds.setAttr("%s.fileTextureName" % mentalrayTexture, file, type="string")
 

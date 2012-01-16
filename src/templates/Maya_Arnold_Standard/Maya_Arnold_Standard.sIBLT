@@ -3,7 +3,7 @@ Name = @Name | Maya Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Standard_Template_Manual.html | String | Help File
 Release = @Release | 0.9.0 | String | Template Release
-Date = @Date | 15 January 2012 | String | Date
+Date = @Date | 16 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -45,7 +45,6 @@ dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dy
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
 useLightingForGlossy = @useLightingForGlossy | 0 | Boolean | Use Lighting Image For Glossy
-activateIndirectLighting = @activateIndirectLighting | 1 | Boolean | Activate Indirect Lighting
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 
 [Remote Connection]
@@ -154,7 +153,6 @@ class Options(object):
 	hideLights = @hideLights
 	createGround = @createGround
 	useLightingForGlossy = @useLightingForGlossy
-	activateIndirectLighting = @activateIndirectLighting
 	activateLinearWorkflow = @activateLinearWorkflow
 
 class Setup(object):
@@ -213,9 +211,9 @@ class Setup(object):
 			self.getSun()
 		if Options.createLights and Data.dynamicLights:
 			self.getDynamicLights()
-		self.connectFeedbackToShaders()
+		self.connectFeedbackToDependencies()
 		Options.createGround and self.getGround()
-		Options.activateIndirectLighting and self.setIndirectLighting()
+		self.setIndirectLighting()
 		Options.activateLinearWorkflow and self.setLinearWorkflow()
 		
 		Options.preserveSessionSettings and self.restoreSessionAttributes()
@@ -297,12 +295,12 @@ class Setup(object):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentShadersBranch(self, aiRaySwitch, ports, file, prefix, useOverride):
-		_file = cmds.shadingNode("file", asTexture=True)
-		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
+	def getEnvironmentShadersBranch(self, aiRaySwitch, ports, image, prefix, useOverride):
+		file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % file, image, type="string")
 
 		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)
-		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
+		cmds.connectAttr("%s.outColor" % file, "%s.value" % gammaCorrect, f=True)
 
 		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
 		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)
@@ -327,21 +325,24 @@ class Setup(object):
 			for port in ports:
 				cmds.connectAttr("%s.output" % multiplyDivide, "%s.%s" % (aiRaySwitch, port), f=True)
 
-		for node in (gammaCorrect, multiplyDivide, _file):
+		for node in (gammaCorrect, multiplyDivide, file):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 
 	def getEnvironmentShaders(self):
 		aiSky = cmds.shadingNode("aiSky", asUtility=True)
+		cmds.setAttr("%s.skyRadius" % aiSky, 1)
 		aiSkyTransform = getTransform(aiSky)
-		setAttributes({"%s.scaleX" % aiSkyTransform : self.feedbackRadius / 1000.0,
-						"%s.scaleY" % aiSkyTransform : self.feedbackRadius / 1000.0,
-						"%s.scaleZ" % aiSkyTransform : self.feedbackRadius / 1000.0})
+		setAttributes({"%s.scaleX" % aiSkyTransform : self.feedbackRadius,
+						"%s.scaleY" % aiSkyTransform : self.feedbackRadius,
+						"%s.scaleZ" % aiSkyTransform : self.feedbackRadius})
 
 		aiRaySwitch = cmds.shadingNode("aiRaySwitch", asUtility=True)
+		for port in ("hardwareColor", "camera", "shadow", "reflection", "refraction", "diffuse", "glossy"):
+			cmds.setAttr("%s.%s" % (aiRaySwitch, port), 0, 0, 0, type="double3")
 		cmds.connectAttr("%s.outColor" % aiRaySwitch, "%s.color" % aiSky, f=True)
 
 		if Options.createBackground:
-			ports = ("camera", "refraction")
+			ports = ("camera",)
 			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.backgroundFile, "%s_background" % Constants.prefix, True)
 
 		if Options.createLighting:
@@ -353,9 +354,9 @@ class Setup(object):
 
 		if Options.createReflection:
 			if Options.useLightingForGlossy:
-				ports = ("reflection",)
+				ports = ("reflection", "refraction")
 			else:
-				ports = ("reflection", "glossy")
+				ports = ("reflection", "glossy", "refraction")
 			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.reflectionFile, "%s_reflection" % Constants.prefix, True)
 
 		cmds.connectAttr("%s.message" % aiSky, "defaultArnoldRenderOptions.background", f=True)
@@ -363,8 +364,8 @@ class Setup(object):
 		aiSkyTransform = cmds.parent(aiSkyTransform, self.controlsGroup)
 		addToDisplayLayer(aiSkyTransform, "%s_feedback_layer" % Constants.prefix)
 		
-		cmds.rename(aiSky, "%s_%s" % (Constants.prefix, cmds.nodeType(aiSky)))
-		cmds.rename(aiSkyTransform, "%s_aiSky_%s" % (Constants.prefix, cmds.nodeType(aiSkyTransform)))
+		cmds.rename(aiSky, "%s_%sShape" % (Constants.prefix, cmds.nodeType(aiSky)))
+		cmds.rename(aiSkyTransform, "%s_aiSky" % Constants.prefix)
 		cmds.rename(aiRaySwitch, "%s_%s" % (Constants.prefix, cmds.nodeType(aiRaySwitch)))
 
 	def getDisplayLocator(self, name, radius):
@@ -379,7 +380,8 @@ class Setup(object):
 		 				"%s.scaleY" % locator : radius,
 		 				"%s.scaleZ" % locator : radius,
 		 				"%s.visibility" % locator : False})
-		lockHideAttributes(locator, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"), lock=False)
+		lockHideAttributes(locator, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"), lock=False)
+		lockHideAttributes(locator, ("visibility",))
 		setAttributes({"%s.doubleSided" % locator : False,
 						"%s.opposite" % locator : False})
 		return locator
@@ -446,7 +448,7 @@ class Setup(object):
 		cmds.connectAttr("%s_controls.%sGamma" % (Constants.prefix, lowerCaseTarget), "%s_%s_gammaCorrect.gamma" % (Constants.prefix, lowerCaseTarget), f=True)
 		cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseTarget), "%s_%s_multiplyDivide.input2" % (Constants.prefix, lowerCaseTarget), f=True)
 
-	def connectFeedbackToShaders(self):
+	def connectFeedbackToDependencies(self):
 		components = ("Gamma", "Gain")
 		if Options.createBackground:
 			self.bridgeFeedbackControlsAndShaders("Background")
@@ -457,12 +459,12 @@ class Setup(object):
 		if Options.createReflection:
 			self.bridgeFeedbackControlsAndShaders("Reflection")
 		
-		pointConstraint = cmds.pointConstraint("%s_aiSky_transform" % Constants.prefix, self.feedback)
-		orientConstraint = cmds.orientConstraint("%s_aiSky_transform" % Constants.prefix, self.feedback, mo=True)
-		scaleConstraint = cmds.scaleConstraint("%s_aiSky_transform" % Constants.prefix, self.feedback, mo=True)
-		
-		for node in (pointConstraint, orientConstraint, scaleConstraint):
-			cmds.rename(node, "%s_%s" % (self.feedback, cmds.nodeType(node)))
+
+		for attribute in ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"):
+			if attribute == "visibility":
+				continue
+
+			cmds.connectAttr("%s_aiSky.%s" % (Constants.prefix, attribute), "%s.%s" % (self.feedback, attribute), f=True)
 
 	def getGround(self):
 		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]

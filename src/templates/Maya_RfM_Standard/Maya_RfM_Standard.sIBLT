@@ -3,7 +3,7 @@ Name = @Name | Maya RfM Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard_Template_Manual.html | String | Help File
 Release = @Release | 2.0.4 | String | Template Release
-Date = @Date | 15 January 2012 | String | Date
+Date = @Date | 16 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -310,19 +310,19 @@ class Setup(object):
 		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
 		cmds.connectAttr("%s.outColor" % surfaceShader, "%s.surfaceShader" % shadingEngine, f=True)
 
-		_file = cmds.shadingNode("file", asTexture=True)
-		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
+		file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % file, image, type="string")
 
 		place2dTexture = cmds.shadingNode("place2dTexture", asUtility=True)
-		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % _file, f=True)
-		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % _file, f=True)
+		cmds.connectAttr("%s.outUV" % place2dTexture, "%s.uvCoord" % file, f=True)
+		cmds.connectAttr("%s.outUvFilterSize" % place2dTexture, "%s.uvFilterSize" % file, f=True)
 		attributes = ("coverage", "translateFrame", "rotateFrame", "mirrorU", "mirrorV", "stagger", "wrapU", "wrapV" , "repeatUV" , "vertexUvOne" , "vertexUvTwo" , "vertexUvThree" , "vertexCameraOne", "noiseUV", "offset", "rotateUV")
 		for attribute in attributes:
-			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (_file, attribute), f=True)
+			cmds.connectAttr("%s.%s" % (place2dTexture, attribute), "%s.%s" % (file, attribute), f=True)
 		cmds.setAttr("%s.rotateFrame" % place2dTexture, 90)
 
 		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)
-		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
+		cmds.connectAttr("%s.outColor" % file, "%s.value" % gammaCorrect, f=True)
 
 		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
 		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)
@@ -347,7 +347,7 @@ class Setup(object):
 
 		cmds.sets(sphere, e=True, forceElement=shadingEngine)
 
-		for node in (surfaceShader, shadingEngine, _file, place2dTexture, gammaCorrect, multiplyDivide):
+		for node in (surfaceShader, shadingEngine, file, place2dTexture, gammaCorrect, multiplyDivide):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 
 		return getTransform(sphere)

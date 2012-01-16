@@ -45,7 +45,7 @@ dynamicLightsType = @dynamicLightsType | Distant;Quad;Spot;Point | Enum | Dynami
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
 shadowCatcher = @shadowCatcher | 1 | Boolean | Ground Shadow Catcher
-useDualSkydomeSetup = @useDualSkydomeSetup | 1 | Boolean | Use Dual Skydome Setup
+useDualSkyDomeSetup = @useDualSkyDomeSetup | 0 | Boolean | Use Dual Skydome Setup
 useReflectionForLighting = @useReflectionForLighting | 0 | Boolean | Use Reflection Image For Lighting
 activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
 useArnoldGammaCorrection = @useArnoldGammaCorrection | 1 | Boolean | Use Arnold Gamma Correction
@@ -160,7 +160,7 @@ function __options()
 	this.hideLights = @hideLights;
 	this.createGround = @createGround;
 	this.shadowCatcher = @shadowCatcher;
-	this.useDualSkydomeSetup = @useDualSkydomeSetup;
+	this.useDualSkyDomeSetup = @useDualSkyDomeSetup;
 	this.useReflectionForLighting = @useReflectionForLighting;
 	this.activateLinearWorkflow = @activateLinearWorkflow;
 	this.useArnoldGammaCorrection = @useArnoldGammaCorrection;
@@ -565,18 +565,18 @@ function getEnvironment(passes)
 
 		var lightingSource = Application.CreateImageClip2(sourceImage, Constants.prefix + "_Lighting_Clip");
 
-		if(Options.useDualSkydomeSetup)
-			getSkydomeLight(lightingSource, Constants.prefix + "_Diffuse_Skydome", true, false );
+		if(Options.useDualSkyDomeSetup)
+			getSkyDomeLight(lightingSource, Constants.prefix + "_Diffuse_Skydome", true, false );
 		else
-			getSkydomeLight(lightingSource, Constants.prefix + "_Skydome", true, true );
+			getSkyDomeLight(lightingSource, Constants.prefix + "_Skydome", true, true );
 	}
 
 	if(Options.createReflection)
 	{
 		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, Constants.prefix + "_Reflection_Clip");
 
-		if(Options.useDualSkydomeSetup)
-			getSkydomeLight(reflectionSource, Constants.prefix + "_Specular_Skydome", false, true );
+		if(Options.useDualSkyDomeSetup)
+			getSkyDomeLight(reflectionSource, Constants.prefix + "_Specular_Skydome", false, true );
 
 		ports = ["reflection", "refraction"];
 		getEnvironmentShaderBranch(pass, reflectionSource, false, false, raySwitchShader, ports, Constants.prefix + "_Reflection");
@@ -713,7 +713,7 @@ function getFeedback()
 	return feedback
 }
 
-function getSkydomeLight(imageSource, name, affectDiffuse, affectSpecular)
+function getSkyDomeLight(imageSource, name, affectDiffuse, affectSpecular)
 {
 	var controlsGroup = getControlsGroup();
 
@@ -892,7 +892,7 @@ function connectFeedbackToDependencies(feedback, passes)
 	{
 		var skyDomes = [Constants.prefix + "_Skydome"];
 		var slots = ["Lighting"];
-		if(Options.useDualSkydomeSetup)
+		if(Options.useDualSkyDomeSetup)
 		{
 			skyDomes = [Constants.prefix + "_Diffuse_Skydome", Constants.prefix + "_Specular_Skydome"];
 			var slots = ["Lighting", "Reflection"];
@@ -911,9 +911,6 @@ function connectFeedbackToDependencies(feedback, passes)
 					case Constants.prefix + "_Skydome" :
 						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_diffuse", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);
 						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_specular", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);
-						RemoveCustomParam(Constants.prefix + "." + Constants.controlsTitle + ".Reflection_Toggle");
-						RemoveCustomParam(Constants.prefix + "." + Constants.controlsTitle + ".Reflection_Gamma");
-						RemoveCustomParam(Constants.prefix + "." + Constants.controlsTitle + ".Reflection_Gain");
 						break;
 					case Constants.prefix + "_Diffuse_Skydome" :
 						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_diffuse", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);

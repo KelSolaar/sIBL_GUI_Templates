@@ -3,7 +3,7 @@ Name = @Name | Maya VRay Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_VRay_Dome_Light_Template_Manual.html | String | Help File
 Release = @Release | 2.0.4 | String | Template Release
-Date = @Date | 15 January 2012 | String | Date
+Date = @Date | 16 January 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -295,16 +295,16 @@ class Setup(object):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentShadersBranch(self, slot, file, prefix, useOverride):
+	def getEnvironmentShadersBranch(self, slot, image, prefix, useOverride):
 		vrayPlaceEnvTex = cmds.shadingNode("VRayPlaceEnvTex", asShader=True)
 		cmds.setAttr("%s.mappingType" % vrayPlaceEnvTex, 2)
 
-		_file = cmds.shadingNode("file", asTexture=True)
-		cmds.setAttr("%s.fileTextureName" % _file, file, type="string")
-		cmds.connectAttr("%s.outUV" % vrayPlaceEnvTex, "%s.uvCoord" % _file, f=True)
+		file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % file, image, type="string")
+		cmds.connectAttr("%s.outUV" % vrayPlaceEnvTex, "%s.uvCoord" % file, f=True)
 
 		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)
-		cmds.connectAttr("%s.outColor" % _file, "%s.value" % gammaCorrect, f=True)
+		cmds.connectAttr("%s.outColor" % file, "%s.value" % gammaCorrect, f=True)
 
 		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
 		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)
@@ -327,7 +327,7 @@ class Setup(object):
 		else:
 			cmds.connectAttr("%s.output" % multiplyDivide, slot, f=True)
 
-		for node in (gammaCorrect, multiplyDivide, vrayPlaceEnvTex, _file):
+		for node in (gammaCorrect, multiplyDivide, vrayPlaceEnvTex, file):
 			cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node)))
 
 	def getEnvironmentShaders(self):
