@@ -1,0 +1,609 @@
+[Template]
+Name = @Name | Maya Arnold Dome Light | String | Template Name
+Path = @Path | | String | Template Path
+HelpFile = @HelpFile | help/Maya_Arnold_Dome_Light_Template_Manual.html | String | Help File
+Release = @Release | 0.9.0 | String | Template Release
+Date = @Date | 16 January 2012 | String | Date
+Author = @Author | Kel Solaar | String | Author
+Email = @Email | thomas.mansencal@gmail.com | String | Email
+Url = @Url | http://thomasmansencal.com/ | String | Url
+Software = @Software | Maya | String | Software
+Version = @Version | 2011 - 2012 | String | Version
+Renderer = @Renderer | Arnold | String | Renderer
+OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
+Comment = @Comment | This is Maya Arnold Dome Light Template. | String | Comment
+
+[Ibl Set Attributes]
+Background|BGfile = @BGfile
+Background|BGheight = @BGheight
+Enviroment|EVfile = @EVfile
+Enviroment|EVmulti = @EVmulti
+Enviroment|EVgamma = @EVgamma
+Reflection|REFfile = @REFfile
+Reflection|REFmulti = @REFmulti
+Reflection|REFgamma = @REFgamma
+Sun|SUNu = @SUNu
+Sun|SUNv = @SUNv
+Sun|SUNcolor = @SUNcolor
+Sun|SUNmulti = @SUNmulti
+Header|Height = @Height
+Header|North = @North
+Lights|DynamicLights = @dynamicLights
+
+[Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
+createBackground = @createBackground | 1 | Boolean | Create Background
+createReflection = @createReflection | 1 | Boolean | Create Reflection
+createLighting = @createLighting | 1 | Boolean | Create Lighting
+createSun = @createSun | 1 | Boolean | Create Sun
+createLights = @createLights | 1 | Boolean | Create Dynamic Lights
+
+[Additional Attributes]
+preserveSessionSettings = @preserveSessionSettings | 1 | Boolean | Preserve Session Settings
+sunLightType = @sunLightType | Directional;Area;Spot;Point | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Directional;Area;Spot;Point | Enum | Dynamic Lights Type
+hideLights = @hideLights | 1 | Boolean | Hide Lights
+createGround = @createGround | 1 | Boolean | Create Ground
+useDualSkyDomeSetup = @useDualSkyDomeSetup | 0 | Boolean | Use Dual Skydome Setup
+useReflectionForLighting = @useReflectionForLighting | 0 | Boolean | Use Reflection Image For Lighting
+activateLinearWorkflow = @activateLinearWorkflow | 1 | Boolean | Activate Linear Workflow
+
+[Remote Connection]
+ConnectionType = @ConnectionType | Socket | String | Connection Type
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = r\"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
+DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
+DefaultPort = @DefaultPort | 2048 | Integer | Default Port
+
+[Script]
+# @OutputScript - @Release for @Software @Version
+# Author: @Author
+# EMail: @Email
+# Homepage: @Url
+# Template path: @Path
+# Template last modified: @Date
+# sIBL_GUI
+import math
+import maya.cmds as cmds
+import maya.mel as mel
+import os
+import re
+import sys
+
+class Constants(object):
+	applicationName = "sIBL_GUI"
+	prefix = "@sceneSetupPrefix"
+	package = "@Software".replace(" ", "_")
+	renderer = "@Renderer".replace(" ", "_")
+	packagePrefix = "%s_%s" % (prefix, package)
+	packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+	title = "Smart IBL"
+	controlsTitle = "[ %s Controls ]" % title
+	maximumViewportTextureSize = 8192
+	defaultGamma = 2.2
+	sessionNodeTypes =	("blendColors",
+						"condition",
+						"displayLayer",
+						"expression",
+						"file",
+						"gammaCorrect",
+						"lambert",
+						"multiplyDivide",
+						"place2dTexture",
+						"shadingEngine",
+						"aiRaySwitch",
+						"aiSky",
+						"aiSkyDomeLight",
+						"aiStandard")
+	lightTypes = {"Area" : "areaLight",
+					"Directional" : "directionalLight",
+					"Point" : "pointLight",
+					"Spot" : "spotLight"}
+
+class Structure(object):
+	def __init__(self, **kwargs):
+		self.__dict__.update(kwargs)
+
+class Light(Structure):
+	pass
+
+def convertInputColors(color):
+	if color == [-1]:
+		return color
+	
+	return [value / 255.0 for value in color]
+
+def parseDynamicLightsAttribute(data):
+	if data == "-1":
+		return {}
+
+	dynamicLights = {}
+	try:
+		tokens = data.split("|")
+		for i in range(0, len(tokens), 8):
+			dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"), color=convertInputColors([float(tokens[i+2]), float(tokens[i+3]), float(tokens[i+4])]), multiplier=float(tokens[i+5]), uCoordinate=float(tokens[i+6]), vCoordinate=float(tokens[i+7]))
+	except Exception as error:
+		mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "Exception raised while parsing the Dynamic Lights attribute: '%s'." % error))
+	return dynamicLights
+
+class Data(object):
+	backgroundFile = "@BGfile"
+	backgroundWidth = @BGheight * 2
+	reflectionFile = "@REFfile"
+	reflectionMultiplier = @REFmulti
+	reflectionGamma = @REFgamma
+	lightingFile = "@EVfile"
+	lightingMultiplier = @EVmulti
+	lightingGamma = @EVgamma
+	sunU = @SUNu
+	sunV = @SUNv
+	sunColor = convertInputColors([@SUNcolor])
+	sunMultiplier = @SUNmulti
+	dynamicLights = parseDynamicLightsAttribute("@dynamicLights")
+	height = @Height
+	north = @North
+
+class Options(object):
+	createBackground = @createBackground
+	createReflection = @createReflection
+	createLighting = @createLighting
+	createSun = @createSun
+	createLights = @createLights
+	preserveSessionSettings = @preserveSessionSettings
+	feedbackRadius = 100.0
+	sunLightType = "@sunLightType"
+	dynamicLightsType = "@dynamicLightsType"
+	hideLights = @hideLights
+	createGround = @createGround
+	useDualSkyDomeSetup = @useDualSkyDomeSetup
+	useReflectionForLighting = @useReflectionForLighting
+	activateLinearWorkflow = @activateLinearWorkflow
+
+class Setup(object):
+	def __init__(self):
+		if Data.backgroundFile == "-1" or Data.reflectionFile == "-1" or Data.lightingFile == "-1":
+			if cmds.confirmDialog(title="%s | Warning" % Constants.applicationName, message="%s | Non Template compatible Ibl Set provided: Unpredictable results may occur! Would you like to proceed anyway?" % Constants.applicationName, button=["Yes", "No"], defaultButton="Yes", cancelButton="No", dismissString="No") == "No":
+				mel.eval("warning(\"%s | %s\")" % (Constants.applicationName, "'%s' file import canceled!" % Constants.title))
+				self.__exit__()
+
+		self.outputCameras = cmds.ls(l=True, type="camera")
+		self.controlsGroup = None
+		self.feedback = None
+		self.lightsTarget = None
+		self.feedbackRadius = Options.feedbackRadius
+		self.storedSessionAttributes = {"%s_aiSky.rotateY" % Constants.prefix : None,
+										"%s_aiSky.scaleX" % Constants.prefix : None,
+										"%s_aiSky.scaleY" % Constants.prefix : None,
+										"%s_aiSky.scaleZ" % Constants.prefix : None,
+										"%s_ground.translateX" % Constants.prefix : None,
+										"%s_ground.translateY" % Constants.prefix : None,
+										"%s_ground.translateZ" % Constants.prefix : None,
+										"%s_ground.rotateX" % Constants.prefix : None,
+										"%s_ground.rotateY" % Constants.prefix : None,
+										"%s_ground.rotateZ" % Constants.prefix : None,
+										"%s_ground.scaleX" % Constants.prefix : None,
+										"%s_ground.scaleY" % Constants.prefix : None,
+										"%s_ground.scaleZ" % Constants.prefix : None}
+
+	def __exit__(self):
+		sys.exit()
+
+	def execute(self):
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing overall preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packagePrefix)
+
+		if mel.eval("exists %s_preProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template specific preprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_preProcessCallback();" % Constants.packageRendererPrefix)
+
+		print("%s | Starting %s file import!" % (Constants.applicationName, Constants.title))
+
+		Options.preserveSessionSettings and self.storeSessionAttributes()
+
+		self.setRenderer()
+		self.deleteSession()
+		self.outputCameras = filterNonExistingNodes(self.outputCameras)
+		self.getExtendedFeedbackRadius()
+		self.getControlsGroup()
+		self.getControlsLocator()
+		Options.hideLights and self.hideSceneLights()
+		self.getEnvironmentShaders()
+		self.getFeedback()
+		self.getLigthsTarget()
+		if Options.createSun and Data.sunU != -1 and Data.sunV != -1:
+			self.getSun()
+		if Options.createLights and Data.dynamicLights:
+			self.getDynamicLights()
+		self.connectFeedbackToDependencies()
+		Options.createGround and self.getGround()
+		self.setIndirectLighting()
+		Options.activateLinearWorkflow and self.setLinearWorkflow()
+		
+		Options.preserveSessionSettings and self.restoreSessionAttributes()
+
+		print("%s | %s file import done!" % (Constants.applicationName, Constants.title))
+
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packagePrefix):
+			print("%s | Executing overall postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packagePrefix)
+
+		if mel.eval("exists %s_postProcessCallback;" % Constants.packageRendererPrefix):
+			print("%s | Executing Template specific postprocess Callback!" % Constants.applicationName)
+			mel.eval("%s_postProcessCallback();" % Constants.packageRendererPrefix)
+
+	def storeSessionAttributes(self):
+		for attribute in self.storedSessionAttributes:
+			if len(cmds.ls(attribute)):
+				self.storedSessionAttributes[attribute]= cmds.getAttr(attribute)
+
+	def restoreSessionAttributes(self):
+		for attribute, value in self.storedSessionAttributes.iteritems():
+			if len(cmds.ls(attribute)) and value:
+				cmds.setAttr(attribute, value)
+
+	def setRenderer(self):
+		not cmds.pluginInfo("mtoa", q=True, loaded=True) and cmds.loadPlugin("mtoa")
+		
+		import mtoa.cmds.registerArnoldRenderer
+		mtoa.cmds.registerArnoldRenderer.registerArnoldRenderer()
+		
+		cmds.setAttr("defaultRenderGlobals.currentRenderer", "arnold", type="string")
+
+	def deleteSession(self):
+		if cmds.objExists(Constants.prefix):
+			cmds.delete(Constants.prefix)
+
+		for type in Constants.sessionNodeTypes:
+			deleteType(type, "^%s_.*" % Constants.prefix)
+
+	def getExtendedFeedbackRadius(self):
+		sceneExtent = getSceneExtent() * math.sqrt(2)
+		sceneExtent = sceneExtent + (sceneExtent * 10 / 100)
+
+		if sceneExtent > self.feedbackRadius:
+			self.feedbackRadius = truncFloat(sceneExtent, 10)
+
+	def getControlsGroup(self):
+		if not self.controlsGroup:
+			self.controlsGroup = cmds.createNode("transform", n=Constants.prefix)
+			lockHideAttributes(self.controlsGroup, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
+
+	def getControlsLocator(self):
+		annotation = cmds.createNode("annotationShape")
+		cmds.setAttr("%s.displayArrow" % annotation, 0)
+		cmds.setAttr("%s.displayArrow" % annotation, lock=True, keyable=False)
+		cmds.setAttr("%s.text" % annotation, Constants.controlsTitle, type="string")
+
+		annotationTransform = getTransform(annotation)
+		cmds.setAttr("%s.translateY" % annotationTransform, 5)
+		lockHideAttributes(annotationTransform, ("rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"))
+		cmds.addAttr(annotationTransform, ln="renderTogglers", nn="[ Render Togglers ]", at="enum", en=Constants.title)
+		cmds.setAttr("%s.renderTogglers" % annotationTransform, e=True, keyable=True, lock=True)
+
+		components = ("Background", "Reflection", "Lighting")
+		for component in components:
+			cmds.addAttr(annotationTransform, ln="toggle%s" % component, nn=component, at="bool")
+			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), e=True, keyable=True, lock=False)
+			cmds.setAttr("%s.toggle%s" % (annotationTransform, component), True)
+
+		for component in components:
+			cmds.addAttr(annotationTransform, ln="cc%s" % component, nn="[ %s CC ]" % component, at="enum", en=Constants.title)
+			cmds.setAttr("%s.cc%s" % (annotationTransform, component), e=True, keyable=True, lock=True)
+			for control in ("Gamma", "Gain"):
+				addColorAttributes(annotationTransform, "%s%s"% (component.lower(), control))
+
+		cmds.parent(cmds.rename(annotationTransform, "%s_controls" % Constants.prefix), self.controlsGroup)
+
+	def hideSceneLights(self):
+		lights = cmds.ls(lights=True)
+		lights and cmds.hide(lights)
+
+	def getEnvironmentShadersBranch(self, output, ports, image, prefix, useOverride):
+		file = cmds.shadingNode("file", asTexture=True)
+		cmds.setAttr("%s.fileTextureName" % file, image, type="string")
+
+		gammaCorrect = cmds.shadingNode("gammaCorrect", asUtility=True)
+		cmds.connectAttr("%s.outColor" % file, "%s.value" % gammaCorrect, f=True)
+
+		multiplyDivide = cmds.shadingNode("multiplyDivide", asUtility=True)
+		cmds.connectAttr("%s.outValue" % gammaCorrect, "%s.input1" % multiplyDivide, f=True)
+
+		if useOverride:
+			condition = cmds.shadingNode("condition", asUtility=True)
+			setAttributes({"%s.firstTerm" % condition : 1, "%s.secondTerm" % condition : 1})
+			cmds.connectAttr("%s.output" % multiplyDivide, "%s.colorIfTrue" % condition, f=True)
+
+			blendColors = cmds.shadingNode("blendColors", asUtility=True)
+			for color in ("color1", "color2"):
+				cmds.setAttr("%s.%s" % (blendColors, color), 0, 0, 0, type="double3")
+			cmds.setAttr("%s.blender" % blendColors, 0)
+			cmds.connectAttr("%s.output" % blendColors, "%s.colorIfFalse" % condition, f=True)
+
+			for port in ports:
+				cmds.connectAttr("%s.outColor" % condition, "%s.%s" % (output, port), f=True)
+
+			blendColors, condition = [cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node))) for node in (blendColors, condition)]
+
+		else:
+			for port in ports:
+				cmds.connectAttr("%s.output" % multiplyDivide, "%s.%s" % (output, port), f=True)
+
+		gammaCorrect, multiplyDivide, file = [cmds.rename(node, "%s_%s" % (prefix, cmds.nodeType(node))) for node in (gammaCorrect, multiplyDivide, file)]
+		
+		return useOverride and (file, condition) or (file, multiplyDivide)
+
+	def getEnvironmentShaders(self):
+		aiSky = cmds.shadingNode("aiSky", asUtility=True)
+		cmds.setAttr("%s.skyRadius" % aiSky, 1)
+		aiSkyTransform = getTransform(aiSky)
+		setAttributes({"%s.scaleX" % aiSkyTransform : self.feedbackRadius,
+						"%s.scaleY" % aiSkyTransform : self.feedbackRadius,
+						"%s.scaleZ" % aiSkyTransform : self.feedbackRadius})
+
+		aiRaySwitch = cmds.shadingNode("aiRaySwitch", asUtility=True)
+		for port in ("hardwareColor", "camera", "shadow", "reflection", "refraction", "diffuse", "glossy"):
+			cmds.setAttr("%s.%s" % (aiRaySwitch, port), 0, 0, 0, type="double3")
+		cmds.connectAttr("%s.outColor" % aiRaySwitch, "%s.color" % aiSky, f=True)
+
+		if Options.createBackground:
+			ports = ("camera",)
+			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.backgroundFile, "%s_background" % Constants.prefix, True)
+
+		if Options.createLighting:
+			file = Options.useReflectionForLighting and Data.reflectionFile or Data.lightingFile
+			if Options.useDualSkyDomeSetup:
+				self.getSkyDomeLight(file, "%s_diffuse" % Constants.prefix, True, False)
+			else:
+				self.getSkyDomeLight(file, Constants.prefix, True, True)
+
+		if Options.createReflection:
+			Options.useDualSkyDomeSetup and self.getSkyDomeLight(Data.reflectionFile, "%s_specular" % Constants.prefix, False, True)
+
+			ports = ("reflection", "refraction")
+			self.getEnvironmentShadersBranch(aiRaySwitch, ports, Data.reflectionFile, "%s_reflection" % Constants.prefix, True)
+
+		cmds.connectAttr("%s.message" % aiSky, "defaultArnoldRenderOptions.background", f=True)
+
+		aiSkyTransform = cmds.parent(aiSkyTransform, self.controlsGroup)
+		addToDisplayLayer(aiSkyTransform, "%s_feedback_layer" % Constants.prefix)
+		
+		cmds.rename(aiSky, "%s_%sShape" % (Constants.prefix, cmds.nodeType(aiSky)))
+		cmds.rename(aiSkyTransform, "%s_aiSky" % Constants.prefix)
+		cmds.rename(aiRaySwitch, "%s_%s" % (Constants.prefix, cmds.nodeType(aiRaySwitch)))
+
+	def getDisplayLocator(self, name, radius):
+		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
+		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
+		setAttributes({"%s.rotateY" % locator:-90,
+						"%s.scaleZ" % locator:-1})
+		# Force UI Refresh.
+		cmds.refresh(force=True)
+		cmds.makeIdentity(locator, apply=True, t=False, r=True, s=True, n=False)
+		setAttributes({"%s.scaleX" % locator : radius,
+		 				"%s.scaleY" % locator : radius,
+		 				"%s.scaleZ" % locator : radius,
+		 				"%s.visibility" % locator : False})
+		lockHideAttributes(locator, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ"), lock=False)
+		lockHideAttributes(locator, ("visibility",))
+		setAttributes({"%s.doubleSided" % locator : False,
+						"%s.opposite" % locator : False})
+		return locator
+
+	def getFeedback(self):
+		self.feedback = self.getDisplayLocator("%s_feedback" % Constants.prefix, self.feedbackRadius)
+		cmds.parent(self.feedback, self.controlsGroup)
+		addToDisplayLayer(self.feedback, "%s_feedback_layer" % Constants.prefix)
+
+	def getSkyDomeLight(self, image, prefix, affectDiffuse, affectSpecular):
+		file, root = self.getEnvironmentShadersBranch(None, (), image, prefix, True)
+
+		aiSkyDomeLight = cmds.shadingNode("aiSkyDomeLight", asUtility=True)
+		cmds.setAttr("%s.skyRadius" % aiSkyDomeLight, 1)
+		setAttributes({"%s.resolution" % aiSkyDomeLight : cmds.getAttr("%s.outSizeX" % file),
+						"%s.emitDiffuse" % aiSkyDomeLight : affectDiffuse,
+						"%s.emitSpecular" % aiSkyDomeLight : affectSpecular})
+		cmds.connectAttr("%s.outColor" % root, "%s.color" % aiSkyDomeLight, f=True)
+		aiSkyDomeLightTransform = getTransform(aiSkyDomeLight)
+		setAttributes({"%s.scaleX" % aiSkyDomeLightTransform : self.feedbackRadius,
+						"%s.scaleY" % aiSkyDomeLightTransform : self.feedbackRadius,
+						"%s.scaleZ" % aiSkyDomeLightTransform : self.feedbackRadius})
+		lockHideAttributes(aiSkyDomeLightTransform, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"), lock=False)
+		cmds.connectAttr("%s.instObjGroups" % aiSkyDomeLightTransform, "defaultLightSet.dagSetMembers", nextAvailable=True)
+
+		aiSkyDomeLightTransform = cmds.parent(aiSkyDomeLightTransform, self.controlsGroup)
+
+		cmds.rename(aiSkyDomeLight, "%s_%sShape" % (prefix, cmds.nodeType(aiSkyDomeLight)))
+		cmds.rename(aiSkyDomeLightTransform, "%s_aiSkyDomeLight" % prefix)
+
+	def getLigthsTarget(self):
+		self.lightsTarget = cmds.spaceLocator()
+		addToDisplayLayer(self.lightsTarget, "%s_lighting_layer" % Constants.prefix)
+		cmds.parent(self.lightsTarget, self.controlsGroup)
+		self.lightsTarget = cmds.rename(self.lightsTarget, "%s_lights_target" % Constants.prefix)
+
+	def getLight(self, name, type, color, multiplier, uCoordinate, vCoordinate, scale):
+		light = cmds.shadingNode(Constants.lightTypes[type], asLight=True)
+
+		cmds.setAttr("%s.color" % light, color[0], color[1], color[2], type="double3")
+		setAttributes({"%s.intensity" % light : multiplier,
+						"%s.useRayTraceShadows" % light : True})
+
+		if type == "Area":
+			cmds.setAttr("%s.areaLight" % light, True)
+			scale = scale / 2
+		elif type == "Directional":
+			pass
+		elif type == "Point":
+			pass
+		elif type == "Spot":
+			setAttributes({"%s.coneAngle" % light : 96,
+							"%s.penumbraAngle" % light : 16})
+
+		setAttributes({"%s.scaleX" % light : scale,
+						"%s.scaleY" % light : scale,
+						"%s.scaleZ" % light : scale})
+
+		cmds.parent(light, self.controlsGroup)
+
+		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
+		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
+		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 0.5 + (0.5 - vCoordinate),
+						"%s.parameterV" % pointOnSurfaceInfo : 0.5 + (0.5 - uCoordinate)})
+
+		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
+
+		addToDisplayLayer(light, "%s_lighting_layer" % Constants.prefix)
+
+		cmds.rename(light, name)
+		for node in (pointOnSurfaceInfo, aimConstraint):
+			cmds.rename(node, "%s_%s" % (Constants.prefix, cmds.nodeType(node)))
+
+	def getSun(self):
+		self.getLight("%s_sun" % Constants.prefix, Options.sunLightType, Data.sunColor, Data.sunMultiplier, Data.sunU, Data.sunV, self.feedbackRadius / 10)
+
+	def getDynamicLights(self):
+		for light in Data.dynamicLights.itervalues():
+			self.getLight("%s_%s" % (Constants.prefix, light.name), Options.dynamicLightsType, light.color, light.multiplier, light.uCoordinate, light.vCoordinate, self.feedbackRadius / 15, False)
+
+	def bridgeFeedbackControlsAndShaders(self, driver, driven=None, customDrivenPrefix=None):
+		driven = driven is not None and driven or driver
+		lowerCaseDriver = driver.lower()
+		lowerCaseDriven = driven.lower()
+		cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, driver), customDrivenPrefix and "%s_condition.firstTerm" % customDrivenPrefix or "%s_%s_condition.firstTerm" % (Constants.prefix, lowerCaseDriven), f=True)
+		cmds.connectAttr("%s_controls.%sGamma" % (Constants.prefix, lowerCaseDriver), customDrivenPrefix and "%s_gammaCorrect.gamma" % customDrivenPrefix or "%s_%s_gammaCorrect.gamma" % (Constants.prefix, lowerCaseDriven), f=True)
+		cmds.connectAttr("%s_controls.%sGain" % (Constants.prefix, lowerCaseDriver), customDrivenPrefix and "%s_multiplyDivide.input2" % customDrivenPrefix or "%s_%s_multiplyDivide.input2" % (Constants.prefix, lowerCaseDriven), f=True)
+
+	def connectFeedbackToDependencies(self):
+		components = ("Gamma", "Gain")
+		if Options.createBackground:
+			self.bridgeFeedbackControlsAndShaders("Background")
+
+		if Options.createLighting:
+			if Options.useDualSkyDomeSetup:
+				self.bridgeFeedbackControlsAndShaders("Lighting", "Diffuse")
+				cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, "Lighting"), "%s_diffuse_aiSkyDomeLight.emitDiffuse" % Constants.prefix, f=True)
+				cmds.setAttr("%s_diffuse_aiSkyDomeLight.emitSpecular" % Constants.prefix, lock=True)
+			else:
+				self.bridgeFeedbackControlsAndShaders("Lighting", customDrivenPrefix=Constants.prefix)
+				cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, "Lighting"), "%s_aiSkyDomeLight.emitDiffuse" % Constants.prefix, f=True)
+
+		if Options.createReflection:
+			self.bridgeFeedbackControlsAndShaders("Reflection")
+			
+			if Options.useDualSkyDomeSetup:
+				self.bridgeFeedbackControlsAndShaders("Reflection", "Specular")
+				cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, "Reflection"), "%s_specular_aiSkyDomeLight.emitSpecular" % Constants.prefix, f=True)
+				cmds.setAttr("%s_diffuse_aiSkyDomeLight.emitDiffuse" % Constants.prefix, lock=True)
+			else:
+				cmds.connectAttr("%s_controls.toggle%s" % (Constants.prefix, "Reflection"), "%s_aiSkyDomeLight.emitSpecular" % Constants.prefix, f=True)
+
+		if Options.useDualSkyDomeSetup:
+			drivenNodes = (self.feedback, "%s_diffuse_aiSkyDomeLight" % Constants.prefix, "%s_specular_aiSkyDomeLight" % Constants.prefix)
+		else:
+			drivenNodes = (self.feedback, "%s_aiSkyDomeLight" % Constants.prefix)
+
+		for driven in drivenNodes:
+			for attribute in ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"):
+				if driven == self.feedback and attribute == "visibility":
+					continue
+
+				cmds.connectAttr("%s_aiSky.%s" % (Constants.prefix, attribute), "%s.%s" % (driven, attribute), f=True)
+
+	def getGround(self):
+		ground = cmds.polyPlane(name="%s_ground" % Constants.prefix, sx=15, sy=15, ch=False)[0]
+		setAttributes({"%s.overrideEnabled" % ground : True,
+						"%s.overrideShading" % ground : False,
+						"%s.scaleX" % ground : self.feedbackRadius * math.sqrt(2),
+						"%s.scaleY" % ground : self.feedbackRadius * math.sqrt(2),
+						"%s.scaleZ" % ground : self.feedbackRadius * math.sqrt(2)})
+
+		ground = cmds.parent(ground, self.controlsGroup)
+
+		aiStandard = cmds.shadingNode("aiStandard", asShader=True)
+		shadingEngine = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
+		cmds.connectAttr("%s.outColor" % aiStandard, "%s.surfaceShader" % shadingEngine, f=True)
+		cmds.sets(ground, e=True, forceElement=shadingEngine)
+
+		for node in (aiStandard, shadingEngine):
+			cmds.rename(node, "%s_ground_%s" % (Constants.prefix, cmds.nodeType(node)))
+
+		addToDisplayLayer(ground, "%s_ground_layer" % Constants.prefix);
+
+	def setIndirectLighting(self):
+		cmds.setAttr("defaultArnoldRenderOptions.GIDiffuseDepth", 2)
+
+
+	def setLinearWorkflow(self):
+		for attribute in ("display_gamma", "light_gamma", "shader_gamma", "texture_gamma"):
+			cmds.setAttr("defaultArnoldRenderOptions.%s" % attribute, Constants.defaultGamma)
+
+def setAttributes(attributes):
+	for attribute, value in attributes.iteritems():
+		cmds.setAttr(attribute, value)
+
+def lockHideAttributes(node, attributes, lock=True, keyable=False):
+	for attribute in attributes:
+		cmds.setAttr("%s.%s" % (node, attribute), lock=lock, keyable=keyable)
+
+def addColorAttributes(node, name):
+	subComponents = ("red", "green", "blue")
+	cmds.addAttr(node, ln=name, at="float3", uac=True)
+	for subComponent in subComponents:
+		cmds.addAttr(node, ln="%s%s" % (subComponent, name.capitalize()), at="float", p=name)
+	cmds.setAttr("%s.%s" % (node, name), 1, 1, 1, type="float3")
+	cmds.setAttr("%s.%s" % (node, name), e=True, keyable=True)
+	for subComponent in subComponents:
+		cmds.setAttr("%s.%s%s" % (node, subComponent, name.capitalize()), e=True, keyable=True)
+
+def getSceneExtent():
+	geometries = cmds.ls(l=True, geometry=True)
+	transforms = []
+	for geometry in geometries:
+		transforms.append(getTransform(geometry))
+
+	sceneExtent = 0
+	for transform in transforms:
+		boundingBox = cmds.xform(transform, q=True, bb=True)
+		for value in boundingBox:
+			if math.fabs(value) > sceneExtent:
+				sceneExtent = math.fabs(value)
+
+	return sceneExtent
+
+def truncFloat(number, truncValue):
+	if truncValue != 0:
+		return math.trunc(number / truncValue) * truncValue
+	else:
+		return number
+
+def getShapes(node, fullPath=False, noIntermediate=True):
+	nodes = cmds.listRelatives(node, fullPath=fullPath, shapes=True, noIntermediate=noIntermediate)
+	return nodes != None and nodes or []
+
+def getTransform(node, fullPath=True):
+	transform = node
+	if cmds.nodeType(node) != "transform":
+		parents = cmds.listRelatives(node, fullPath=fullPath, parent=True)
+		transform = parents[0]
+	return transform
+
+def deleteType(type, pattern):
+	nodes=cmds.ls(l=True, type=type)
+	for node in nodes:
+		if re.search(pattern, node):
+			cmds.delete(node)
+
+def getObject(object):
+	try:
+		return cmds.ls(object, fl=True)[0]
+	except:
+		pass
+
+def addToDisplayLayer(object, displayLayer):
+	layer = getObject(displayLayer)
+	layer = not layer and cmds.createDisplayLayer(name=displayLayer) or layer
+	cmds.editDisplayLayerMembers(layer, object, noRecurse=True)
+
+def filterNonExistingNodes(nodes):
+	return [node for node in nodes if cmds.objExists(node)]
