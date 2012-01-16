@@ -1,8 +1,14 @@
-sIBL_GUI_Templates - 2.0.3 - Beta
+sIBL_GUI_Templates - 2.0.4 - Beta
 =================================
 
 Change Log
 ==========
+
+2.0.4 - Beta
+------------
+
+-  Refactored "Maya_Arnold_Standard" template.
+-  Added "Maya_Arnold_Dome_Light" template.
 
 2.0.3 - Beta
 ------------
