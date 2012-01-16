@@ -18,6 +18,9 @@ python reStructuredTextToHtml.py "$TEMPLATES/3dsMax_Scanline_Standard/help/3dsMa
 #! 3dsMax_VRay_Standard Template documentation building.
 python reStructuredTextToHtml.py "$TEMPLATES/3dsMax_VRay_Standard/help/3dsMax_VRay_Standard_Template_Manual.rst" "$TEMPLATES/3dsMax_VRay_Standard/help/3dsMax_VRay_Standard_Template_Manual.html"  "3dsMax VRay Standard - Template - Manual - Help File"
 
+#! Maya_Arnold_Dome_Light Template documentation building.
+python reStructuredTextToHtml.py "$TEMPLATES/Maya_Arnold_Dome_Light/help/Maya_Arnold_Dome_Light_Template_Manual.rst" "$TEMPLATES/Maya_Arnold_Dome_Light/help/Maya_Arnold_Dome_Light_Template_Manual.html"  "Maya Arnold Dome Light - Template - Manual - Help File"
+
 #! Maya_Arnold_Standard Template documentation building.
 python reStructuredTextToHtml.py "$TEMPLATES/Maya_Arnold_Standard/help/Maya_Arnold_Standard_Template_Manual.rst" "$TEMPLATES/Maya_Arnold_Standard/help/Maya_Arnold_Standard_Template_Manual.html"  "Maya Arnold Standard - Template - Manual - Help File"
 

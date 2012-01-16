@@ -53,8 +53,8 @@
 
 <body>
 	<div class="document">
-		<div class="section" id="maya-arnold-standard-template">
-			<h1>Maya Arnold Standard - Template</h1>
+		<div class="section" id="maya-arnold-dome-light-template">
+			<h1>Maya Arnold Dome Light - Template</h1>
 		</div>
 
 		<div class="section" id="manual-help-file">
@@ -97,8 +97,8 @@
 			<div class="section" id="introduction">
 				<h2>Introduction</h2>
 
-				<p>Maya Arnold Standard is a sIBL_GUI Template for
-				Maya and Arnold starting from 2K versions. It
+				<p>Maya Arnold Dome Light is a sIBL_GUI Template
+				for Maya and Arnold starting from 2K versions. It
 				provides a bridge between Maya, Arnold and Smart
 				IBL. There is an Helper Script with everything you
 				need to use sIBL_GUI smoothly with Maya here:
@@ -115,6 +115,10 @@
 				<h2>Common Attributes</h2>
 
 				<ul class="simple">
+					<li><strong>Scene Setup Prefix</strong>:
+					Defines the prefix used by the Scene
+					Setup.</li>
+
 					<li><strong>Create Dynamic Lights</strong>:
 					Creates the sIBL Dynamics Lights.</li>
 
@@ -172,9 +176,14 @@
 					mip_matteshadow Shader is assigned to the
 					Ground.</li>
 
-					<li><strong>Use Lighting Image For
-					Glossy</strong>: Lighting Image branch is
-					connected to the sIBL_Sky Glossy slot.</li>
+					<li><strong>Use Dual SkyDome Setup</strong>:
+					Two SkyDomes lights will be created: one for
+					the Diffuse component and another one for the
+					Specular component.</li>
+
+					<li><strong>Use Reflection Image For
+					Lighting</strong>: Reflection Image is
+					connected to the SkyDome(s).</li>
 
 					<li><strong>Activate Linear Workflow</strong>:
 					Connect a mia_exposure_simple shader in current
