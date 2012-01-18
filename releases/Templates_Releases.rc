@@ -35,10 +35,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lights
 Comment = "Maya Mental Ray Lightsmith Template: Update documentation / help files."
 
 [Maya_MR_Standard]
-Release = 2.0.4
+Release = 2.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
-Comment = "Maya Mental Ray Template: Fix scene deletion method."
+Comment = "Maya Mental Ray Template: Fix textures filename issue."
 
 [Maya_RfM_Standard]
 Release = 2.0.4
