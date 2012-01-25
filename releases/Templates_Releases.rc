@@ -89,10 +89,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_L
 Comment = "Softimage Mental Ray Ligthsmith Template: Update documentation / help files."
 
 [Softimage_MR_Standard]
-Release = 2.0.4
+Release = 2.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Standard/Nightly/Softimage_MR_Standard.zip"
-Comment = "Softimage Mental Ray Template: Update documentation / help files."
+Comment = "Softimage Mental Ray Template: Hide setup verbose messages."
 
 [XSI_Arnold_Dome_Light]
 Release = 2.0.4
