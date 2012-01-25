@@ -1362,9 +1362,9 @@ function getExtendedFeedbackRadius()
 
 function scriptEditorVerbose(verboseState)
 {
-	// Application.Preferences.SetPreferenceValue("scripting.cmdlog", verboseState);
-	// Application.Preferences.SetPreferenceValue("scripting.msglog", verboseState);
-	// Application.Preferences.SetPreferenceValue("scripting.msglogverbose", verboseState);
+	Application.Preferences.SetPreferenceValue("scripting.cmdlog", verboseState);
+	Application.Preferences.SetPreferenceValue("scripting.msglog", verboseState);
+	Application.Preferences.SetPreferenceValue("scripting.msglogverbose", verboseState);
 }
 
 function autoInspectState(autoInspectState)
