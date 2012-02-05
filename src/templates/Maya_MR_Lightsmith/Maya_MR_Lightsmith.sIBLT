@@ -162,7 +162,7 @@ class Setup(object):
 	def getUniqueLightName(self, name):
 		existingNames = cmds.ls("*%s_*_support" % name)
 		existingCount = len(existingNames) + 1
-		return "%s_%s" % (name, setPadding(str(existingCount), 3))
+		return "%s_%s" % (name, setPadding(unicode(existingCount), 3))
 
 	def setRenderer(self):
 		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
