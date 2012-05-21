@@ -47,10 +47,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Stand
 Comment = "Renderman For Maya Template: Fix scene deletion method."
 
 [Maya_VRay_Dome_Light]
-Release = 2.0.4
+Release = 2.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome_Light/Nightly/Maya_VRay_Dome_Light.zip"
-Comment = "VRay For Maya Dome Light Template: Fix scene deletion method."
+Comment = "VRay For Maya Dome Light Template: Fix erroneous control expression."
 
 [Maya_VRay_Lightsmith]
 Release = 1.0.6
