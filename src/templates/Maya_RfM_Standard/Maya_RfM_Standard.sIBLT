@@ -2,8 +2,8 @@
 Name = @Name | Maya RfM Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_RfM_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.4 | String | Template Release
-Date = @Date | 16 January 2012 | String | Date
+Release = @Release | 2.0.5 | String | Template Release
+Date = @Date | 22 July 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -300,7 +300,7 @@ class Setup(object):
 		lights = cmds.ls(lights=True)
 		lights and cmds.hide(lights)
 
-	def getEnvironmentSphereBranch(self, file, prefix, radius, useOverride):
+	def getEnvironmentSphereBranch(self, image, prefix, radius, useOverride):
 		sphere = self.getDisplayLocator("%s_support" % prefix, radius, True)
 		cmds.parent(sphere, self.controlsGroup)
 		setAttributes({"%s.overrideEnabled" % sphere : True,
@@ -352,11 +352,11 @@ class Setup(object):
 
 		return getTransform(sphere)
 
-	def getEnvironmentLightBranch(self, file, prefix, radius):
+	def getEnvironmentLightBranch(self, image, prefix, radius):
 		light = mel.eval("rmanCreateEnvLight();")
 		lightTransform = cmds.parent(getTransform(light), self.controlsGroup)[0]
 
-		cmds.setAttr("%s.rman__EnvMap" % light, file, type="string")
+		cmds.setAttr("%s.rman__EnvMap" % light, image, type="string")
 		setAttributes({"%s.rman__LightPrimaryVisibility" % light : False,
 						"%s.rman__EnvSamples" % light : 128,
 						"%s.rman__EnvGIMaxVariation" % light : 1,
@@ -386,7 +386,7 @@ class Setup(object):
 
 			if Options.activateColorBleeding:
 				mel.eval("rmanSetAttr(\"%s\",\"rman__EnvGIScheme\",\"colorbleeding\");" % light)
-				renderPass = mel.eval("createRenderManNode pass : render : RenderRadiosity;")
+				renderPass = mel.eval("createRenderManNode pass:render:RenderRadiosity;")
 				cmds.connectAttr("%s.message" % renderPass, "%s.rman__GDMap" % light, f=True)
 				cmds.rename(renderPass, "%s_rendermanRadiosityPass" % Constants.prefix)
 			else:

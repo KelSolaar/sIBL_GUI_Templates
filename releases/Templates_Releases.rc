@@ -41,10 +41,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standa
 Comment = "Maya Mental Ray Template: Fix textures filename issue."
 
 [Maya_RfM_Standard]
-Release = 2.0.4
+Release = 2.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Nightly/Maya_RfM_Standard.zip"
-Comment = "Renderman For Maya Template: Fix scene deletion method."
+Comment = "Renderman For Maya Template: Fix refactoring errors."
 
 [Maya_VRay_Dome_Light]
 Release = 2.0.5
