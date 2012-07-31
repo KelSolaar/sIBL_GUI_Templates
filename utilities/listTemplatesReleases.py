@@ -32,7 +32,7 @@ import foundations.core as core
 import foundations.namespace as namespace
 import foundations.parsers
 from foundations.io import File
-from foundations.walkers import OsWalker
+from foundations.walkers import FilesWalker
 from foundations.parsers import SectionsFileParser
 from foundations.globals.constants import Constants
 
@@ -67,9 +67,9 @@ def listTemplatesReleases():
 	This definition lists Templates releases.
 	"""
 
-	osWalker = OsWalker()
-	osWalker.root = TEMPLATES_PATH
-	templates = osWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
+	filesWalker = FilesWalker()
+	filesWalker.root = TEMPLATES_PATH
+	templates = filesWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
 	for template in sorted(templates):
 		sectionsFileParser = SectionsFileParser(templates[template])
 		sectionsFileParser.read() and sectionsFileParser.parse(rawSections=("Script",))
