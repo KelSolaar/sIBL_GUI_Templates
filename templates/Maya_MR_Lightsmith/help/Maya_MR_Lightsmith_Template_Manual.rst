@@ -14,7 +14,7 @@ Table Of Content
    -  `Additional Attributes`_
    -  `Scene Components`_
 
--  `Change Log`_
+-  `Changes`_
 -  `About`_
 
 Introduction
@@ -64,10 +64,10 @@ Others Controls:
 
 -  **Override**: Override the Lightsmith Light HDR texture color without affecting the Lightsmith Light color.
 
-Change Log
+Changes
 ----------
 
-`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change_Log/Change_Log.html>`_
+`sIBL_GUI_Templates - Changes <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Changes/Changes.html>`_
 
 About
 -----

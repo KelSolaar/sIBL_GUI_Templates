@@ -13,7 +13,7 @@ Table Of Content
    -  `Common Attributes`_
    -  `Additional Attributes`_
 
--  `Change Log`_
+-  `Changes`_
 -  `About`_
 
 Introduction
@@ -46,10 +46,10 @@ Additional Attributes
 -  **Ground Shadow Catcher**: A VRayMtlWrapper Shader is assigned to the Ground.
 -  **Activate Linear Workflow**: Sets the Color Mapping values for Linear Workflow.
 
-Change Log
+Changes
 ----------
 
-`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change_Log/Change_Log.html>`_
+`sIBL_GUI_Templates - Changes <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Changes/Changes.html>`_
 
 About
 -----

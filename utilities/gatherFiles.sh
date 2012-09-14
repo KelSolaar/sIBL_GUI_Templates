@@ -5,24 +5,24 @@ echo ---------------------------------------------------------------------------
 
 export PROJECT=/Users/KelSolaar/Documents/Developement/sIBL_GUI_Templates
 
-export SOURCE=$PROJECT/src/
+export SOURCE=$PROJECT/
 export RELEASES=$PROJECT/releases/
 export REPOSITORY=$RELEASES/repository/
 
 #! Gathering folder cleanup.
-rm -rf $REPOSITORY/*
+rm -rf $REPOSITORY
 
 #! Templates cleanup.
 echo -------------------------------------------------------------------------------
 echo Cleanup - Begin
 echo -------------------------------------------------------------------------------
-python ./utilities/recursiveRemove.py ./src/templates/ .DS_Store
+python ./utilities/recursiveRemove.py ./templates/ .DS_Store
 echo -------------------------------------------------------------------------------
 echo Cleanup - End
 echo -------------------------------------------------------------------------------
 
 #! Templates gathering.
-mkdir $REPOSITORY/templates/
+mkdir -p $REPOSITORY/templates/
 cd $SOURCE/templates/
 zip -r $REPOSITORY/templates/3dsMax_MR_Standard.zip 3dsMax_MR_Standard --exclude "./3dsMax_MR_Standard/help/3dsMax_MR_Standard_Template_Manual.rst"
 zip -r $REPOSITORY/templates/3dsMax_Scanline_Standard.zip 3dsMax_Scanline_Standard --exclude "./3dsMax_Scanline_Standard/help/3dsMax_Scanline_Standard_Template_Manual.rst"

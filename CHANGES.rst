@@ -1,6 +1,8 @@
 sIBL_GUI_Templates - 2.0.4 - Beta
 =================================
 
+.. .changes
+
 Changes
 =======
 
@@ -74,9 +76,12 @@ Changes
 
 -  Initial Release of sIBL_GUI_Templates.
 
+.. .about
+
 About
 -----
 
+| sIBL_GUI_Templates by Thomas Mansencal – 2008 - 2012
 | sIBL_GUI by Thomas Mansencal – 2008 - 2012
 | Copyright© 2008 - 2012 – Thomas Mansencal – `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
 | This software is released under terms of GNU GPL V3 license: http://www.gnu.org/licenses/

@@ -21,18 +21,13 @@ import os
 import sys
 
 #**********************************************************************************************************************
-#***	Path settings.
-#**********************************************************************************************************************
-sys.path.append("../../Foundations/src")
-
-#**********************************************************************************************************************
 #***	Internal imports.
 #**********************************************************************************************************************
 import foundations.core as core
-import foundations.namespace as namespace
 import foundations.parsers
+import foundations.strings as strings
+import foundations.walkers
 from foundations.io import File
-from foundations.walkers import FilesWalker
 from foundations.parsers import SectionsFileParser
 from foundations.globals.constants import Constants
 
@@ -56,7 +51,7 @@ LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
 
 core.setVerbosityLevel(3)
 
-TEMPLATES_PATH = "../src/templates"
+TEMPLATES_PATH = "../templates"
 TEMPLATES_EXTENSION = "sIBLT"
 
 #**********************************************************************************************************************
@@ -67,14 +62,14 @@ def listTemplatesReleases():
 	This definition lists Templates releases.
 	"""
 
-	filesWalker = FilesWalker()
-	filesWalker.root = TEMPLATES_PATH
-	templates = filesWalker.walk((TEMPLATES_EXTENSION,), ("\._",))
-	for template in sorted(templates):
-		sectionsFileParser = SectionsFileParser(templates[template])
+	for template in sorted(list(foundations.walkers.filesWalker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
+		sectionsFileParser = SectionsFileParser(template)
 		sectionsFileParser.read() and sectionsFileParser.parse(rawSections=("Script",))
 
-		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__, namespace.getNamespace(template), foundations.parsers.getAttributeCompound("Release", sectionsFileParser.getValue("Release", "Template", encode=True)).value))
+		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__,
+												foundations.strings.getSplitextBasename(template),
+												foundations.parsers.getAttributeCompound("Release",
+												sectionsFileParser.getValue("Release", "Template", encode=True)).value))
 
 if __name__ == "__main__":
 	listTemplatesReleases()

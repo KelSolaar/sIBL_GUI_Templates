@@ -14,7 +14,7 @@ Table Of Content
    -  `Additional Attributes`_
    -  `Scene Components`_
 
--  `Change Log`_
+-  `Changes`_
 -  `About`_
 
 Introduction
@@ -66,10 +66,10 @@ Render Togglers:
 -  Activate / Deactivate the different Smart IBL Components.
 -  [* CC]: Gamma / Gain Controls of the different Smart IBL Components.
 
-Change Log
+Changes
 ----------
 
-`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change_Log/Change_Log.html>`_
+`sIBL_GUI_Templates - Changes <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Changes/Changes.html>`_
 
 About
 -----

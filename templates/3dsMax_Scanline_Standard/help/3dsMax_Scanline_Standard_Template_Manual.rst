@@ -13,7 +13,7 @@ Table Of Content
    -  `Common Attributes`_
    -  `Additional Attributes`_
 
--  `Change Log`_
+-  `Changes`_
 -  `About`_
 
 Introduction
@@ -45,10 +45,10 @@ Additional Attributes
 -  **Create Ground**: A Plane is added to the Scene.
 -  **Activate Linear Workflow**: Connect a Logarithmic Exposure Control in Environment And Effects.
 
-Change Log
+Changes
 ----------
 
-`sIBL_GUI_Templates - Change Log <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Change_Log/Change_Log.html>`_
+`sIBL_GUI_Templates - Changes <http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Changes/Changes.html>`_
 
 About
 -----
