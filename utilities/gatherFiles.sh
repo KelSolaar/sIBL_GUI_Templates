@@ -3,7 +3,7 @@ echo ---------------------------------------------------------------------------
 echo sIBL_GUI_Templates - Files Gathering
 echo -------------------------------------------------------------------------------
 
-export PROJECT=/Users/KelSolaar/Documents/Developement/sIBL_GUI_Templates
+export PROJECT=/Users/KelSolaar/Documents/Development/sIBL_GUI_Templates
 
 export SOURCE=$PROJECT/
 export RELEASES=$PROJECT/releases/

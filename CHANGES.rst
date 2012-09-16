@@ -74,7 +74,7 @@ Changes
 1.0.0 - Stable
 --------------
 
--  Initial Release of sIBL_GUI_Templates.
+-  Initial release of sIBL_GUI_Templates.
 
 .. .about
 

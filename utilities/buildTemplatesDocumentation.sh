@@ -5,7 +5,7 @@ echo ---------------------------------------------------------------------------
 
 alias python=/Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
-export PROJECT=/Users/KelSolaar/Documents/Developement/sIBL_GUI_Templates
+export PROJECT=/Users/KelSolaar/Documents/Development/sIBL_GUI_Templates
 
 export TEMPLATES=$PROJECT/templates
 
