@@ -13,19 +13,23 @@
 **Others:**
 
 """
+
 #**********************************************************************************************************************
 #***	External imports.
 #**********************************************************************************************************************
-import logging
 import os
+import re
 import sys
+if sys.version_info[:2] <= (2, 6):
+	from ordereddict import OrderedDict
+else:
+	from collections import OrderedDict
 
 #**********************************************************************************************************************
 #***	Internal imports.
 #**********************************************************************************************************************
-import foundations.core as core
+import foundations.verbose
 from foundations.io import File
-from foundations.globals.constants import Constants
 
 #**********************************************************************************************************************
 #***	Module attributes.
@@ -37,19 +41,23 @@ __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
-LOGGER = logging.getLogger(Constants.logger)
+__all__ = ["LOGGER",
+		"OUTPUT_FILES_EXTENSION",
+		"SLICE_ATTRIBUTE_INDENT",
+		"CONTENT_DELETION",
+		"CONTENT_SUBSTITUTIONS",
+		"sliceDocumentation"]
 
-LOGGING_CONSOLE_HANDLER = logging.StreamHandler(sys.stdout)
-LOGGING_CONSOLE_HANDLER.setFormatter(core.LOGGING_DEFAULT_FORMATTER)
-LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
+LOGGER = foundations.verbose.installLogger()
 
-core.setVerbosityLevel(3)
+OUTPUT_FILES_EXTENSION = "rst"
+SLICE_ATTRIBUTE_INDENT = 2
+CONTENT_DELETION = ()
+CONTENT_SUBSTITUTIONS = {"resources/": "../",
+						"     \|":"            |" }
 
-RST2HTML = "/Library/Frameworks/Python.framework/Versions/2.7/bin/rst2html.py"
-CSS_FILE = "css/style.css"
-TIDY_SETTINGS_FILE = "tidy/tidySettings.rc"
-
-NORMALIZATION = {"document": "document", }
+foundations.verbose.getLoggingConsoleHandler()
+foundations.verbose.setVerbosityLevel(3)
 
 #**********************************************************************************************************************
 #***	Main Python code.

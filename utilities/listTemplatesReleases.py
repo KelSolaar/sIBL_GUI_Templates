@@ -13,20 +13,20 @@
 **Others:**
 
 """
+
 #**********************************************************************************************************************
 #***	External imports.
 #**********************************************************************************************************************
-import logging
 import os
 import sys
 
 #**********************************************************************************************************************
 #***	Internal imports.
 #**********************************************************************************************************************
-import foundations.core as core
 import foundations.parsers
-import foundations.strings as strings
+import foundations.strings
 import foundations.walkers
+import foundations.verbose
 from foundations.io import File
 from foundations.parsers import SectionsFileParser
 from foundations.globals.constants import Constants
@@ -41,18 +41,15 @@ __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
-__all__ = ["LOGGER", "LOGGING_CONSOLE_HANDLER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION", "listTemplatesReleases"]
+__all__ = ["LOGGER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION", "listTemplatesReleases"]
 
-LOGGER = logging.getLogger(Constants.logger)
-
-LOGGING_CONSOLE_HANDLER = logging.StreamHandler(sys.stdout)
-LOGGING_CONSOLE_HANDLER.setFormatter(core.LOGGING_DEFAULT_FORMATTER)
-LOGGER.addHandler(LOGGING_CONSOLE_HANDLER)
-
-core.setVerbosityLevel(3)
+LOGGER = foundations.verbose.installLogger()
 
 TEMPLATES_PATH = "../templates"
 TEMPLATES_EXTENSION = "sIBLT"
+
+foundations.verbose.getLoggingConsoleHandler()
+foundations.verbose.setVerbosityLevel(3)
 
 #**********************************************************************************************************************
 #***	Main python code.
