@@ -1,10 +1,15 @@
-sIBL_GUI_Templates - 2.0.4 - Beta
-=================================
+sIBL_GUI_Templates - 2.0.5 - Stable
+===================================
 
 .. .changes
 
 Changes
 =======
+
+2.0.5 - Stable
+------------
+
+-  Dropped support for "XSI_Arnold_Dome_Light", "XSI_Arnold_Standard" and "XSI_MR_Standard" templates.
 
 2.0.4 - Beta
 ------------
