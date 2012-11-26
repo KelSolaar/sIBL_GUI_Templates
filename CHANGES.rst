@@ -7,7 +7,7 @@ Changes
 =======
 
 2.0.5 - Stable
-------------
+--------------
 
 -  Dropped support for "XSI_Arnold_Dome_Light", "XSI_Arnold_Standard" and "XSI_MR_Standard" templates.
 
