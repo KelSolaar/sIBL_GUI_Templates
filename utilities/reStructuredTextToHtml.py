@@ -18,12 +18,7 @@
 #***	External imports.
 #**********************************************************************************************************************
 import os
-import re
 import sys
-if sys.version_info[:2] <= (2, 6):
-	from ordereddict import OrderedDict
-else:
-	from collections import OrderedDict
 
 #**********************************************************************************************************************
 #***	Internal imports.
@@ -42,25 +37,25 @@ __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
 __all__ = ["LOGGER",
-		"OUTPUT_FILES_EXTENSION",
-		"SLICE_ATTRIBUTE_INDENT",
-		"CONTENT_DELETION",
-		"CONTENT_SUBSTITUTIONS",
-		"sliceDocumentation"]
+		"RST2HTML",
+		"CSS_FILE",
+		"TIDY_SETTINGS_FILE",
+		"NORMALIZATION",
+		"reStructuredTextToHtml"]
 
 LOGGER = foundations.verbose.installLogger()
 
-OUTPUT_FILES_EXTENSION = "rst"
-SLICE_ATTRIBUTE_INDENT = 2
-CONTENT_DELETION = ()
-CONTENT_SUBSTITUTIONS = {"resources/": "../",
-						"     \|":"            |" }
+RST2HTML = "/Users/$USER/Documents/Development/VirtualEnv/HDRLabs/bin/rst2html.py"
+CSS_FILE = "css/style.css"
+TIDY_SETTINGS_FILE = "tidy/tidySettings.rc"
+
+NORMALIZATION = {"document": "document"}
 
 foundations.verbose.getLoggingConsoleHandler()
 foundations.verbose.setVerbosityLevel(3)
 
 #**********************************************************************************************************************
-#***	Main Python code.
+#***	Module classes and definitions.
 #**********************************************************************************************************************
 def reStructuredTextToHtml(fileIn, fileOut):
 	"""

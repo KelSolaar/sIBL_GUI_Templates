@@ -3,8 +3,6 @@ echo ---------------------------------------------------------------------------
 echo sIBL_GUI_Templates - Build Templates Documentation
 echo -------------------------------------------------------------------------------
 
-alias python=/Library/Frameworks/Python.framework/Versions/2.7/bin/python
-
 export PROJECT=/Users/KelSolaar/Documents/Development/sIBL_GUI_Templates
 
 export TEMPLATES=$PROJECT/templates
@@ -56,12 +54,3 @@ python reStructuredTextToHtml.py "$TEMPLATES/Softimage_MR_Lightsmith/help/Softim
 
 #! Softimage_MR_Standard Template documentation building.
 python reStructuredTextToHtml.py "$TEMPLATES/Softimage_MR_Standard/help/Softimage_MR_Standard_Template_Manual.rst" "$TEMPLATES/Softimage_MR_Standard/help/Softimage_MR_Standard_Template_Manual.html"  "Softimage MR Standard - Template - Manual - Help File"
-
-#! XSI_Arnold_Dome_Light Template documentation building.
-python reStructuredTextToHtml.py "$TEMPLATES/XSI_Arnold_Dome_Light/help/XSI_Arnold_Dome_Light_Template_Manual.rst" "$TEMPLATES/XSI_Arnold_Dome_Light/help/XSI_Arnold_Dome_Light_Template_Manual.html"  "XSI Arnold Dome Light - Template - Manual - Help File"
-
-#! XSI_Arnold_Standard Template documentation building.
-python reStructuredTextToHtml.py "$TEMPLATES/XSI_Arnold_Standard/help/XSI_Arnold_Standard_Template_Manual.rst" "$TEMPLATES/XSI_Arnold_Standard/help/XSI_Arnold_Standard_Template_Manual.html"  "XSI Arnold Standard - Template - Manual - Help File"
-
-#! XSI_MR_Standard Template documentation building.
-python reStructuredTextToHtml.py "$TEMPLATES/XSI_MR_Standard/help/XSI_MR_Standard_Template_Manual.rst" "$TEMPLATES/XSI_MR_Standard/help/XSI_MR_Standard_Template_Manual.html"  "XSI MR Standard - Template - Manual - Help File"
