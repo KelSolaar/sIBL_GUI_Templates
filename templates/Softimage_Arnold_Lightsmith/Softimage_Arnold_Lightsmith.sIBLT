@@ -2,16 +2,16 @@
 Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.5 | String | Template
-Date = @Date | 16 January 2012 | String | Date
+Release = @Release | 1.0.6 | String | Template
+Date = @Date | 27 November 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
 Software = @Software | Softimage | String | Software
-Version = @Version | 2011 - 2012 | String | Version
+Version = @Version | 2011 - 2013 | String | Version
 Renderer = @Renderer | Arnold | String | Renderer
 OutputScript = @OutputScript | sIBL_XSI_Import.js | String | Output Script
-Comment = @Comment | This is Softimage 2011 - 2012 Arnold Lightsmith Template. | String | Comment
+Comment = @Comment | This is Softimage Arnold Lightsmith Template. | String | Comment
 
 [Ibl Set]
 Path = @iblPath | | String | sIBL File Path

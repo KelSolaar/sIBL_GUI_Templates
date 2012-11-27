@@ -2,16 +2,16 @@
 Name = @Name | 3dsMax Mental Ray Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/3dsMax_MR_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.3 | String | Template Release
-Date = @Date | 16 January 2012 | String | Date
+Release = @Release | 2.0.4 | String | Template Release
+Date = @Date | 27 November 2012 | String | Date
 Author = @Author | Kel Solaar / Dschaga / Jeff Hanna / JHaywood  | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | 3dsMax  | String | Software
-Version = @Version | 2009 - 2012 | String | Version
+Version = @Version | 2010 - 2013 | String | Version
 Renderer = @Renderer | Mental Ray | String | Renderer
 OutputScript = @OutputScript | sIBL_3dsmax_Import.ms | String | Output Script
-Comment = @Comment | This is 3dsmax 2009 - 2012 Mental Ray Template. | String | Comment
+Comment = @Comment | This is 3dsmax Mental Ray Template. | String | Comment
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile

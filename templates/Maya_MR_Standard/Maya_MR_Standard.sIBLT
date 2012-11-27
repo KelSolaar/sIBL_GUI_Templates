@@ -8,10 +8,10 @@ Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
 Software = @Software | Maya | String | Software
-Version = @Version | 2008 - 2012 | String | Version
+Version = @Version | 2011 - 2013 | String | Version
 Renderer = @Renderer | Mental Ray | String | Renderer
 OutputScript = @OutputScript | sIBL_Maya_Import.py | String | Output Script
-Comment = @Comment | This is Maya 2008 - 2012 Mental Ray Template. | String | Comment
+Comment = @Comment | This is Maya Mental Ray Template. | String | Comment
 
 [Ibl Set Attributes]
 Background|BGfile = @BGfile

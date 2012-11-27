@@ -1,95 +1,95 @@
 [3dsMax_MR_Standard]
-Release = 2.0.3
+Release = 2.0.4
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_MR_Standard/Nightly/3dsMax_MR_Standard.zip"
-Comment = "3dsMax Mental Ray Template: Update documentation / help files."
+Comment = "3dsMax Mental Ray Template: Drop support for 3dsmax versions prior to 3dsmax 2010."
 
 [3dsMax_Scanline_Standard]
-Release = 2.0.3
+Release = 2.0.4
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_Scanline_Standard/Nightly/3dsMax_Scanline_Standard.zip"
-Comment = "3dsMax Scanline Template: Update documentation / help files."
+Comment = "3dsMax Scanline Template: Drop support for 3dsmax versions prior to 3dsmax 2010."
 
 [3dsMax_VRay_Standard]
-Release = 2.0.3
+Release = 2.0.4
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_VRay_Standard/Nightly/3dsMax_VRay_Standard.zip"
-Comment = "3dsMax VRay Template: Update documentation / help files."
+Comment = "3dsMax VRay Template: Drop support for 3dsmax versions prior to 3dsmax 2010."
 
 [Maya_Arnold_Dome_Light]
-Release = 0.9.0
+Release = 0.9.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_Dome_Light/Nightly/Maya_Arnold_Dome_Light.zip"
-Comment = "Maya Arnold DomeLight Template: Initial Public Release."
+Comment = "Maya Arnold DomeLight Template: Drop support for Maya versions prior to Maya 2011."
 
 [Maya_Arnold_Standard]
-Release = 0.9.0
+Release = 0.9.1
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_Standard/Nightly/Maya_Arnold_Standard.zip"
-Comment = "Maya Arnold Standard Template: Initial Public Release."
+Comment = "Maya Arnold Standard Template: Drop support for Maya versions prior to Maya 2011."
 
 [Maya_MR_Lightsmith]
-Release = 1.0.5
+Release = 1.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
 Comment = "Maya Mental Ray Lightsmith Template: Disable \"mentalrayGlobals.passAlphaThrough\" attribute."
 
 [Maya_MR_Standard]
-Release = 2.0.5
+Release = 2.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
 Comment = "Maya Mental Ray Template: Disable \"mentalrayGlobals.passAlphaThrough\" attribute."
 
 [Maya_RfM_Standard]
-Release = 2.0.5
+Release = 2.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Standard/Nightly/Maya_RfM_Standard.zip"
-Comment = "Renderman For Maya Template: Fix refactoring errors."
+Comment = "Renderman For Maya Template: Drop support for Maya versions prior to Maya 2011."
 
 [Maya_VRay_Dome_Light]
-Release = 2.0.5
+Release = 2.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome_Light/Nightly/Maya_VRay_Dome_Light.zip"
-Comment = "VRay For Maya Dome Light Template: Fix erroneous control expression."
+Comment = "VRay For Maya Dome Light Template: Drop support for Maya versions prior to Maya 2011."
 
 [Maya_VRay_Lightsmith]
-Release = 1.0.6
+Release = 1.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Lightsmith/Nightly/Maya_VRay_Lightsmith.zip"
-Comment = "VRay For Maya Ligthsmith Template: Update documentation / help files."
+Comment = "VRay For Maya Ligthsmith Template: Drop support for Maya versions prior to Maya 2011."
 
 [Maya_VRay_Standard]
-Release = 2.0.4
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Standard/Nightly/Maya_VRay_Standard.zip"
-Comment = "VRay For Maya Template: Fix scene deletion method."
-
-[Softimage_Arnold_Dome_Light]
-Release = 2.0.4
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Dome_Light/Nightly/Softimage_Arnold_Dome_Light.zip"
-Comment = "Softimage Arnold Dome Light Template: Update documentation / help files."
-
-[Softimage_Arnold_Lightsmith]
-Release = 1.0.5
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Lightsmith/Nightly/Softimage_Arnold_Lightsmith.zip"
-Comment = "Softimage Arnold Ligthsmith Template: Update documentation / help files."
-
-[Softimage_Arnold_Standard]
-Release = 2.0.4
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Standard/Nightly/Softimage_Arnold_Standard.zip"
-Comment = "Softimage Arnold Standard Template: Update documentation / help files."
-
-[Softimage_MR_Lightsmith]
-Release = 1.0.4
-Type = "Nightly"
-Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Lightsmith/Nightly/Softimage_MR_Lightsmith.zip"
-Comment = "Softimage Mental Ray Ligthsmith Template: Update documentation / help files."
-
-[Softimage_MR_Standard]
 Release = 2.0.5
 Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Standard/Nightly/Maya_VRay_Standard.zip"
+Comment = "VRay For Maya Template: Drop support for Maya versions prior to Maya 2011."
+
+[Softimage_Arnold_Dome_Light]
+Release = 2.0.5
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Dome_Light/Nightly/Softimage_Arnold_Dome_Light.zip"
+Comment = "Softimage Arnold Dome Light Template: Drop support for Softimage versions prior to Softimage 2011."
+
+[Softimage_Arnold_Lightsmith]
+Release = 1.0.6
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Lightsmith/Nightly/Softimage_Arnold_Lightsmith.zip"
+Comment = "Softimage Arnold Ligthsmith Template: Drop support for Softimage versions prior to Softimage 2011."
+
+[Softimage_Arnold_Standard]
+Release = 2.0.5
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Standard/Nightly/Softimage_Arnold_Standard.zip"
+Comment = "Softimage Arnold Standard Template: Drop support for Softimage versions prior to Softimage 2011."
+
+[Softimage_MR_Lightsmith]
+Release = 1.0.5
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Lightsmith/Nightly/Softimage_MR_Lightsmith.zip"
+Comment = "Softimage Mental Ray Ligthsmith Template: Drop support for Softimage versions prior to Softimage 2011."
+
+[Softimage_MR_Standard]
+Release = 2.0.6
+Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Standard/Nightly/Softimage_MR_Standard.zip"
-Comment = "Softimage Mental Ray Template: Hide setup verbose messages."
+Comment = "Softimage Mental Ray Template: Drop support for Softimage versions prior to Softimage 2011."

@@ -10,6 +10,8 @@ Changes
 --------------
 
 -  Dropped support for **XSI_Arnold_Dome_Light**, **XSI_Arnold_Standard** and **XSI_MR_Standard** Templates.
+-  Dropped support for **3dsmax** versions prior to **3dsmax 2010**.
+-  Dropped support for **Maya** versions prior to **Maya 2011**.
 -  Disable **mentalrayGlobals.passAlphaThrough** attribute in **Maya_MR_Standard** and **Maya_MR_Lightsmith** Templates.
 
 2.0.4 - Beta
