@@ -9,67 +9,68 @@ Changes
 2.0.5 - Stable
 --------------
 
--  Dropped support for "XSI_Arnold_Dome_Light", "XSI_Arnold_Standard" and "XSI_MR_Standard" templates.
+-  Dropped support for **XSI_Arnold_Dome_Light**, **XSI_Arnold_Standard** and **XSI_MR_Standard** Templates.
+-  Disable **mentalrayGlobals.passAlphaThrough** attribute in **Maya_MR_Standard** and **Maya_MR_Lightsmith** Templates.
 
 2.0.4 - Beta
 ------------
 
--  Refactored "Maya_Arnold_Standard" template.
--  Added "Maya_Arnold_Dome_Light" template.
+-  Refactored **Maya_Arnold_Standard** Template.
+-  Added **Maya_Arnold_Dome_Light** Template.
 
 2.0.3 - Beta
 ------------
 
--  Added support for shadow catching ground in Arnold XSI / Softimage templates.
+-  Added support for shadow catching ground in Arnold XSI / Softimage Templates.
 
 2.0.2 - Alpha
 --------------
 
--  Fixed incorrect lights colors handling in templates.
+-  Fixed incorrect lights colors handling in Templates.
 
 2.0.1 - Alpha
 --------------
 
--  Update Lightsmith templates to support latest Lightsmith Ibl Sets.
+-  Update Lightsmith Templates to support latest Lightsmith Ibl Sets.
 
 2.0.0 - Alpha
 --------------
 
--  Ported "Maya_MR_Standard" template code to Python.
--  Ported "Maya_VRay_Standard" template code to Python.
--  Ported "Maya_VRay_Dome_Light" template code to Python.
--  Ported "Maya_RfM_Standard" template code to Python.
--  Ported "Maya_MR_Lightsmith" template code to Python.
--  Ported "Maya_VRay_Lightsmith" template code to Python.
--  Refactored 3dsMax and Softimage / XSI templates.
--  Most templates now have a prefix attribute exposed allowing customization of the scene setup. 
+-  Ported **Maya_MR_Standard** Template code to Python.
+-  Ported **Maya_VRay_Standard** Template code to Python.
+-  Ported **Maya_VRay_Dome_Light** Template code to Python.
+-  Ported **Maya_RfM_Standard** Template code to Python.
+-  Ported **Maya_MR_Lightsmith** Template code to Python.
+-  Ported **Maya_VRay_Lightsmith** Template code to Python.
+-  Refactored 3dsMax and Softimage / XSI Templates.
+-  Most Templates now have a prefix attribute exposed allowing customization of the scene setup. 
 -  Updated documentations / help files.
 
 1.0.5 - Stable
 --------------
 
--  Fixed broken transparency support in Softimage Lightsmith templates.
--  Hide scene default light in "Softimage_MR_Lightsmith" and "Softimage_Arnold_Lightsmith" templates.
+-  Fixed broken transparency support in Softimage Lightsmith Templates.
+-  Hide scene default light in **Softimage_MR_Lightsmith** and **Softimage_Arnold_Lightsmith** Templates.
 -  Implemented Ibl Sets compatibility guard.
--  Arnold Renderer templates are now public.
+-  Arnold Renderer Templates are now public.
 -  Added additional geometries hierarchical control.
 
 1.0.4 - Stable
 --------------
 
--  Introduced new Lightsmith templates: "Maya_MR_Lightsmith", "Maya_VRay_Lightsmith", "Softimage_MR_Lightsmith".
--  Reordered templates attributes.
+-  Introduced new Lightsmith Templates: **Maya_MR_Lightsmith**, **Maya_VRay_Lightsmith**, **Softimage_MR_Lightsmith**.
+-  Reordered Templates attributes.
 -  Dropped support of Illuminate Labs Turtle Renderer.
 
 1.0.3 - Stable
 --------------
 
--  Implemented lights types support in each template, it's now possible to choose between different light types : "Area", "Directional", "Point", "Spot", etc ...
+-  Implemented lights types support in each Template, it's now possible to choose between different light types : **Area**, **Directional**, **Point**, **Spot**, etc ...
 
 1.0.2 - Stable
 --------------
 
--  Added new "sIBL_GUI_Templates_gatherFiles.sh" and "sIBL_GUI_Templates_recursiveRemove.py" utilities.
+-  Added new **sIBL_GUI_Templates_gatherFiles.sh** and **sIBL_GUI_Templates_recursiveRemove.py** utilities.
 
 1.0.1 - Stable
 --------------

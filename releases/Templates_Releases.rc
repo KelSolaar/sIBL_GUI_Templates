@@ -32,13 +32,13 @@ Comment = "Maya Arnold Standard Template: Initial Public Release."
 Release = 1.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
-Comment = "Maya Mental Ray Lightsmith Template: Update documentation / help files."
+Comment = "Maya Mental Ray Lightsmith Template: Disable \"mentalrayGlobals.passAlphaThrough\" attribute."
 
 [Maya_MR_Standard]
 Release = 2.0.5
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
-Comment = "Maya Mental Ray Template: Fix textures filename issue."
+Comment = "Maya Mental Ray Template: Disable \"mentalrayGlobals.passAlphaThrough\" attribute."
 
 [Maya_RfM_Standard]
 Release = 2.0.5

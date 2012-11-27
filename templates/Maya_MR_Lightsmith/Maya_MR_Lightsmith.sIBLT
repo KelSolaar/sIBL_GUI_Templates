@@ -2,8 +2,8 @@
 Name = @Name | Maya Mental Ray Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.5 | String | Template Release
-Date = @Date | 16 January 2012 | String | Date
+Release = @Release | 1.0.6 | String | Template Release
+Date = @Date | 27 November 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -168,6 +168,7 @@ class Setup(object):
 		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
 		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
 		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
+		cmds.setAttr("mentalrayGlobals.passAlphaThrough", False)
 
 	def connectDriverToMaterialShaders(self, driver, name):
 		for key, value in {"color" : "color", "intensity" : "intensity", "override" : "user"}.iteritems():
