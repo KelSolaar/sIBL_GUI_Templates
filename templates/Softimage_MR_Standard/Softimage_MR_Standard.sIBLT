@@ -2,8 +2,8 @@
 Name = @Name | Softimage Mental Ray Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_MR_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.6 | String | Template
-Date = @Date | 27 November 2012 | String | Date
+Release = @Release | 2.0.7 | String | Template
+Date = @Date | 29 November 2012 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -1076,7 +1076,8 @@ function getLight(parent, constraintParent, type, name, scale, physicalSun, inte
 		physicalSunShader = CreateShaderFromProgID("mentalray.mia_physicalsun.1.0", light + ".light");
 		SIConnectShaderToCnxPoint(physicalSunShader, light + ".light.LightShader", false);
 		SIConnectShaderToCnxPoint(physicalSunShader, light + ".light.PhotonShader", false);
-		physicalSunShader.Parameters("multiplier").value = intensity / 6.5;
+		physicalSunShader.Parameters("multiplier").value = intensity / 8;
+		physicalSunShader.Parameters("y_is_up").value = true;
 
 		DisconnectAndDeleteOrUnnestShaders(light + ".light.soft_light", light + ".light");
 	}
