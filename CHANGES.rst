@@ -1,10 +1,15 @@
-sIBL_GUI_Templates - 2.0.5 - Stable
+sIBL_GUI_Templates - 2.0.6 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.0.6 - Stable
+--------------
+
+-  Fixed **Softimage_MR_Standard** template issue related to **mia_physicalsun** shader intensity being affected by "**Ibl_Feedback** rotation.
 
 2.0.5 - Stable
 --------------
