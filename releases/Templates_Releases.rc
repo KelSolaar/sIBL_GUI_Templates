@@ -89,7 +89,7 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_L
 Comment = "Softimage Mental Ray Ligthsmith Template: Drop support for Softimage versions prior to Softimage 2011."
 
 [Softimage_MR_Standard]
-Release = 2.0.6
+Release = 2.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Standard/Nightly/Softimage_MR_Standard.zip"
-Comment = "Softimage Mental Ray Template: Drop support for Softimage versions prior to Softimage 2011."
+Comment = "Softimage Mental Ray Template: Fix incorrect sun light behavior."
