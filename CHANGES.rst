@@ -1,4 +1,4 @@
-sIBL_GUI_Templates - 2.0.6 - Stable
+sIBL_GUI_Templates - 2.0.7 - Stable
 ===================================
 
 .. .changes
@@ -6,10 +6,15 @@ sIBL_GUI_Templates - 2.0.6 - Stable
 Changes
 =======
 
+2.0.7 - Stable
+--------------
+
+-  Ensured **Softimage_Arnold_Dome_Light** and **Softimage_Arnold_Standard** Templates are compatible with **SItoA** 2.6.0 and the **utility** shader categorie change.
+
 2.0.6 - Stable
 --------------
 
--  Fixed **Softimage_MR_Standard** template issue related to **mia_physicalsun** shader intensity being affected by "**Ibl_Feedback** rotation.
+-  Fixed **Softimage_MR_Standard** template issue related to **mia_physicalsun** shader intensity being affected by **Ibl_Feedback** rotation.
 
 2.0.5 - Stable
 --------------

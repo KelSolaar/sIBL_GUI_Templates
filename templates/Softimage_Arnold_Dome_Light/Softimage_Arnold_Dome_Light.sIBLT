@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.5 | String | Template
-Date = @Date | 27 November 2012 | String | Date
+Release = @Release | 2.0.6 | String | Template
+Date = @Date | 15 January 2013 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -1004,14 +1004,16 @@ function getGround()
 
 	if(Options.shadowCatcher)
 	{
-		var groundMaterial = SICreateMaterial(getShadersPath() + "Shaders/Material/utility.Preset", Constants.prefix + "_Ground_Utility", null, null, false);
+		var groundMaterial = getMaterial(Constants.prefix + "_Ground_Material");
+		var utilityShader =  CreateShaderFromProgID("Softimage.utility.1", groundMaterial);
 		var subComponents = ["red", "green", "blue"];
 		for(var i = 0; i < subComponents.length; i++)
-			groundMaterial.Shaders(0).Parameters("color").Parameters(subComponents[i]).value = 0.25;
-		groundMaterial.Shaders(0).Parameters("shade_mode").value = "ambocc";
+			utilityShader.Parameters("color").Parameters(subComponents[i]).value = 0.25;
+		utilityShader.Parameters("shade_mode").value = "ambocc";
+		SIConnectShaderToCnxPoint(utilityShader, groundMaterial + ".surface", false);
 
 		var colorToScalarShader = CreateShaderFromProgID("Softimage.sib_color_to_scalar.1.0", groundMaterial);
-		SIConnectShaderToCnxPoint(colorToScalarShader, groundMaterial.Shaders(0) + ".opacity", false);
+		SIConnectShaderToCnxPoint(colorToScalarShader, utilityShader + ".opacity", false);
 		
 		var colorMathBasicShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1", groundMaterial);
 		for(var i = 0; i < subComponents.length; i++)
@@ -1026,6 +1028,7 @@ function getGround()
 		shadowShader.Parameters("rgb").value = true;
 		SIConnectShaderToCnxPoint(shadowShader, colorMathBasicShader + ".input1", false);
 
+		utilityShader.Parameters("Name").value = Constants.prefix + "_Ground_Utility";
 		colorToScalarShader.Parameters("Name").value = Constants.prefix + "_Ground_Color_To_Scalar";
 		colorMathBasicShader.Parameters("Name").value = Constants.prefix + "_Ground_Color_Math_Basic";
 		shadowShader.Parameters("Name").value = Constants.prefix + "_Ground_Shadow";
@@ -1238,4 +1241,11 @@ function getMatchingObjectsByClassID(classID, pattern, matchExact)
 		}
 	}
 	return matchingObjects;
+}
+
+function getMaterial(name)
+{
+	var material = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", name);
+	DisconnectAndDeleteOrUnnestShaders(material.Shaders(0), material);
+	return material
 }

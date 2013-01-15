@@ -65,10 +65,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Stan
 Comment = "VRay For Maya Template: Drop support for Maya versions prior to Maya 2011."
 
 [Softimage_Arnold_Dome_Light]
-Release = 2.0.5
+Release = 2.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Dome_Light/Nightly/Softimage_Arnold_Dome_Light.zip"
-Comment = "Softimage Arnold Dome Light Template: Drop support for Softimage versions prior to Softimage 2011."
+Comment = "Softimage Arnold Dome Light Template: SItoA 2.6.0 compatibility."
 
 [Softimage_Arnold_Lightsmith]
 Release = 1.0.6
@@ -77,10 +77,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Ligthsmith Template: Drop support for Softimage versions prior to Softimage 2011."
 
 [Softimage_Arnold_Standard]
-Release = 2.0.5
+Release = 2.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Standard/Nightly/Softimage_Arnold_Standard.zip"
-Comment = "Softimage Arnold Standard Template: Drop support for Softimage versions prior to Softimage 2011."
+Comment = "Softimage Arnold Standard Template: SItoA 2.6.0 compatibility."
 
 [Softimage_MR_Lightsmith]
 Release = 1.0.5
