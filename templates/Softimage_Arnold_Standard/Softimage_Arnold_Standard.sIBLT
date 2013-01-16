@@ -834,7 +834,7 @@ function bridgeControlsAndShaders(pass, slot)
 {
 	AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Boolean_Switch.switch", "1-(" + Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Toggle)", true);
 
-	var components = ["red", "green", "blue"];;
+	var components = ["red", "green", "blue"];
 	for(var i = 0; i < components.length; i++)
 	{
 		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gain", true);
