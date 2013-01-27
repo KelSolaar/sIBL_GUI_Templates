@@ -9,7 +9,7 @@ Changes
 2.0.8 - Stable
 --------------
 
--  Added **Softimage_VRay_Standard** Template.
+-  Implemented **Softimage_VRay_Standard** Template.
 
 2.0.7 - Stable
 --------------
