@@ -93,3 +93,9 @@ Release = 2.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_MR_Standard/Nightly/Softimage_MR_Standard.zip"
 Comment = "Softimage Mental Ray Template: Fix incorrect sun light behavior."
+
+[Softimage_VRay_Standard]
+Release = 0.9.0
+Type = "Nightly"
+Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_VRay_Standard/Nightly/Softimage_VRay_Standard.zip"
+Comment = "Softimage VRay Template: Initial release."

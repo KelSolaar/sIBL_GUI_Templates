@@ -97,8 +97,8 @@
 
 <body>
 	<div class="document">
-		<div class="section" id="softimage-mr-standard-template">
-			<h1>Softimage MR Standard - Template</h1>
+		<div class="section" id="softimage-vray-standard-template">
+			<h1>Softimage VRay Standard - Template</h1>
 		</div>
 
 		<div class="section" id="manual-help-file">
@@ -141,13 +141,12 @@
 			<div class="section" id="introduction">
 				<h2>Introduction</h2>
 
-				<p>Softimage MR Standard is a sIBL_GUI Template for
-				Softimage and Mental Ray starting from 2011
-				versions. It provides a bridge between Softimage,
-				Mental Ray and Smart IBL. There is a Softimage
-				Addon with everything needed to use sIBL_GUI
-				smoothly with Softimage here: <a class=
-				"reference external" href=
+				<p>Softimage VRay Standard is a sIBL_GUI Template
+				for Softimage and VRay for Softimage 2010 version.
+				It provides a bridge between Softimage, VRay and
+				Smart IBL. There is a Softimage Addon with
+				everything needed to use sIBL_GUI smoothly with
+				Softimage here: <a class="reference external" href=
 				"http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511">
 				sIBL_GUI For Softimage - Helper Script</a></p>
 			</div>
@@ -164,30 +163,26 @@
 					Defines the prefix used by the Scene
 					Setup.</li>
 
-					<li><strong>Create / Update
-					Background</strong>: Creates / Updates the
-					Background Environment Branch of the Raytype
+					<li><strong>Create Background</strong>: Creates
+					the Background Environment Branch of the Sky
 					Shader ( Using the High Resolution LDR file of
 					the current IBL Set ).</li>
 
-					<li><strong>Create / Update
-					Reflection</strong>: Creates / Updates the
-					Reflection Environment Branch of the Raytype
+					<li><strong>Create Reflection</strong>: Creates
+					the Reflection Environment Branch of the Sky
 					Shader ( Using the Reflection HDR file of the
 					current IBL Set ).</li>
 
-					<li><strong>Create / Update Lighting</strong>:
-					Creates / Updates the Lighting Environment
-					Branch of the Raytype Shader ( Using the
-					Lighting HDR file of the current IBL Set
-					).</li>
+					<li><strong>Create Lighting</strong>: Creates
+					the Lighting Environment Branch of the Sky
+					Shader ( Using the Lighting HDR file of the
+					current IBL Set ).</li>
 
-					<li><strong>Create / Update Sun</strong>:
-					Creates / Updates the light used as Sun.</li>
+					<li><strong>Create Sun</strong>: Creates the
+					light used as Sun.</li>
 
-					<li><strong>Create / Update Lights</strong>:
-					Creates / Updates the sIBL Dynamics
-					Lights.</li>
+					<li><strong>Create Dynamic Lights</strong>:
+					Creates the sIBL Dynamics Lights.</li>
 				</ul>
 			</div>
 
@@ -200,31 +195,23 @@
 					which Pass(es) will be affected by the
 					IBL.</li>
 
-					<li><strong>Override User Tweaks</strong>: User
-					tweaks on the Scene IBL Setup will be be
-					overriden when updating the Scene.</li>
-
-					<li><strong>Update Scene</strong>: Updates the
-					Scene IBL Setup with the new provided
-					informations, this option works with the
-					&quot;Override User Tweaks&quot; one, there is
-					a lot of possibilities available, it's possible
-					to mix different IBL with those 2 options.</li>
-
 					<li><strong>Display Feedback</strong>: Displays
 					a viewport Visual Feedback with the current IBL
 					LDR Background image.</li>
 
-					<li><strong>Sun Light Type</strong>: Creates
-					the Sun as one of these lights type:
-					&quot;Infinite&quot;, &quot;Light Box&quot;,
-					&quot;Spot&quot;, &quot;Point&quot;.</li>
+					<li><strong>Sun Light Type</strong>: Create the
+					Sun as one of these lights type:
+					&quot;VRaySun&quot;, &quot;Infinite&quot;,
+					&quot;Spot&quot;, &quot;Point&quot;,
+					&quot;VRayLight&quot;,
+					&quot;VRayIES&quot;.</li>
 
 					<li><strong>Dynamic Lights Type</strong>:
-					Creates the Dynamics Lights as one of these
-					lights type: &quot;Infinite&quot;, &quot;Light
-					Box&quot;, &quot;Spot&quot;,
-					&quot;Point&quot;.</li>
+					Create the Dynamics Lights as one of these
+					lights type: &quot;Infinite&quot;,
+					&quot;Spot&quot;, &quot;Point&quot;,
+					&quot;VRaySun&quot;, &quot;VRayLight&quot;,
+					&quot;VRayIES&quot;.</li>
 
 					<li><strong>Hide Lights</strong>: Hides all
 					current Scene lights.</li>
@@ -232,26 +219,12 @@
 					<li><strong>Create Ground</strong>: A Grid is
 					added to the Scene.</li>
 
-					<li><strong>Ground Shadow Catcher</strong>: A
-					mip_Matte_Shadow Shader is assigned to the
-					Ground ( Unlike Maya, in Softimage, the
-					Background is made Transparent so it's possible
-					to see behind the Ground Plane, object crossing
-					through will be visible ).</li>
+					<li><strong>Activate Indirect
+					Lighting</strong>: Indirect Lighting is
+					activated in the current Scene.</li>
 
-					<li><strong>Physical Sun</strong>: The Sun is
-					created with a mia_Physical_Sun shader instead
-					of the default soft_light one.</li>
-
-					<li><strong>Activate Final Gather</strong>:
-					Ambiant Lighting ( Ambience ) of the scene is
-					desactivated and Final Gathering is set for the
-					current / selected Pass(es).</li>
-
-					<li><strong>Activate Color Management</strong>:
-					Activates Softimage Color Management (
-					Preferences &gt; Display &gt; Color Management
-					).</li>
+					<li><strong>Activate Linear Workflow</strong>:
+					Activates Linear Workflow.</li>
 				</ul>
 			</div>
 
@@ -311,8 +284,9 @@
 					</div>
 
 					<div class="line">
-						Copyright© 2008 - 2013 - Thomas Mansencal
-						- <a class="reference external" href=
+						CopyrightÂ© 2008 - 2013 - Thomas
+						Mansencal - <a class="reference external"
+						href=
 						"mailto:thomas.mansencal&#64;gmail.com">thomas.mansencal&#64;gmail.com</a>
 					</div>
 
