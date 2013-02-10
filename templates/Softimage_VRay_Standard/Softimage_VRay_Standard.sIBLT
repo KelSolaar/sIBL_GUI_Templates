@@ -1,5 +1,5 @@
 [Template]
-Name = @Name | Softimage Vray Standard | String | Template Name
+Name = @Name | Softimage VRay Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Vray_Standard_Template_Manual.html | String | Help File
 Release = @Release | 0.9.0 | String | Template
