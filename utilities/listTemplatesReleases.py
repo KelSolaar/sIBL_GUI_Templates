@@ -66,7 +66,7 @@ def listTemplatesReleases():
 		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__,
 												foundations.strings.getSplitextBasename(template),
 												foundations.parsers.getAttributeCompound("Release",
-												sectionsFileParser.getValue("Release", "Template", encode=True)).value))
+												sectionsFileParser.getValue("Release", "Template")).value))
 
 if __name__ == "__main__":
 	listTemplatesReleases()
