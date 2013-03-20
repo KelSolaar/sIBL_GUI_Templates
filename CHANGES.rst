@@ -1,10 +1,15 @@
-sIBL_GUI_Templates - 2.0.8 - Stable
+sIBL_GUI_Templates - 2.0.9 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.0.9 - Stable
+--------------
+
+-  Fixed exception in **Softimage_VRay_Standard** Template.
 
 2.0.8 - Stable
 --------------
