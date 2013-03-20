@@ -1148,7 +1148,7 @@ function getSun()
 	var controlsGroup = getControlsGroup();
 	var feedback = Application.ActiveSceneRoot.FindChild(Constants.prefix + "_Feedback");
 
-	getLight(controlsGroup, feedback, Options.sunLightType, Constants.prefix + "_Sun", Options.feedbackRadius / 10, Options.physicalSun, Data.sunMultiplier, Data.sunColor, Data.sunU, Data.sunV)
+	getLight(controlsGroup, feedback, Options.sunLightType, Constants.prefix + "_Sun", Options.feedbackRadius / 15, Options.physicalSun, Data.sunMultiplier, Data.sunColor, Data.sunU, Data.sunV)
 }
 
 function getDynamicLights()

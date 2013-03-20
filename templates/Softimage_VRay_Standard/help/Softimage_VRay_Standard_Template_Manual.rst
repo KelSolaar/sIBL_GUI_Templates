@@ -1,4 +1,4 @@
-Softimage Arnold Standard - Template
+Softimage VRay Standard - Template
 ====================================
 
 Manual - Help File
@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Softimage Arnold Standard is a sIBL_GUI Template for Softimage and Arnold for Softimage 2010 version. It provides a bridge between Softimage, Arnold and Smart IBL.
+Softimage VRay Standard is a sIBL_GUI Template for Softimage and VRay for Softimage 2010 version. It provides a bridge between Softimage, VRay and Smart IBL.
 There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
 Options
@@ -41,14 +41,12 @@ Additional Attributes
 
 -  **Passes Selection Dialog**: A Pass(es) selection dialog appears to choose which Pass(es) will be affected by the IBL.
 -  **Display Feedback**: Displays a viewport Visual Feedback with the current IBL LDR Background image.
--  **Sun Light Type**: Create the Sun as one of these lights type: "Distant", "Quad", "Spot", "Point".
--  **Dynamic Lights Type**: Create the Dynamics Lights as one of these lights type: "Distant", "Quad", "Spot", "Point".
+-  **Sun Light Type**: Create the Sun as one of these lights type: "VRaySun", "Infinite", "Spot", "Point", "VRayLight", "VRayIES".
+-  **Dynamic Lights Type**: Create the Dynamics Lights as one of these lights type: "Infinite", "Spot", "Point", "VRaySun", "VRayLight", "VRayIES".
 -  **Hide Lights**: Hides all current Scene lights.
 -  **Create Ground**: A Grid is added to the Scene.
--  **Ground Shadow Catcher**: A Shadow Shader is assigned to the Ground.
--  **Use Lighting Image For Glossy**: Lighting Image branch is connected to the sIBL_Sky Glossy slot.
+-  **Activate Indirect Lighting**: Indirect Lighting is	activated in the current Scene.
 -  **Activate Linear Workflow**: Activates Linear Workflow.
--  **Use Arnold Gamma Correction**: Uses Arnold Gamma Correction instead of Softimage Native Color Management ( Preferences > Display > Color Management ).
 
 Scene Components
 ----------------
@@ -76,6 +74,6 @@ About
 -----
 
 | **sIBL_GUI** by Thomas Mansencal - 2008 - 2013
-| Copyright© 2008 - 2013 - Thomas Mansencal - `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
+| CopyrightÂ© 2008 - 2013 - Thomas Mansencal - `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
 | This software is released under terms of GNU GPL V3 license: http://www.gnu.org/licenses/
 | http://www.thomasmansencal.com/

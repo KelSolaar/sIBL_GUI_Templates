@@ -54,3 +54,6 @@ python reStructuredTextToHtml.py "$TEMPLATES/Softimage_MR_Lightsmith/help/Softim
 
 #! Softimage_MR_Standard Template documentation building.
 python reStructuredTextToHtml.py "$TEMPLATES/Softimage_MR_Standard/help/Softimage_MR_Standard_Template_Manual.rst" "$TEMPLATES/Softimage_MR_Standard/help/Softimage_MR_Standard_Template_Manual.html"  "Softimage MR Standard - Template - Manual - Help File"
+
+#! Softimage_VRay_Standard_Template_Manual_Standard Template documentation building.
+python reStructuredTextToHtml.py "$TEMPLATES/Softimage_VRay_Standard/help/Softimage_VRay_Standard_Template_Manual.rst" "$TEMPLATES/Softimage_VRay_Standard/help/Softimage_VRay_Standard_Template_Manual.html"  "Softimage VRay Standard - Template - Manual - Help File"

@@ -40,3 +40,4 @@ zip -r $REPOSITORY/templates/Softimage_Arnold_Lightsmith.zip Softimage_Arnold_Li
 zip -r $REPOSITORY/templates/Softimage_Arnold_Standard.zip Softimage_Arnold_Standard --exclude "./Softimage_Arnold_Standard/help/Softimage_Arnold_Standard_Template_Manual.rst"
 zip -r $REPOSITORY/templates/Softimage_MR_Lightsmith.zip Softimage_MR_Lightsmith --exclude "./Softimage_MR_Lightsmith/help/Softimage_MR_Lightsmith_Template_Manual.rst"
 zip -r $REPOSITORY/templates/Softimage_MR_Standard.zip Softimage_MR_Standard --exclude "./Softimage_MR_Standard/help/Softimage_MR_Standard_Template_Manual.rst"
+zip -r $REPOSITORY/templates/Softimage_VRay_Standard.zip Softimage_VRay_Standard --exclude "./Softimage_VRay_Standard/help/Softimage_VRay_Standard_Template_Manual.rst"

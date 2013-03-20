@@ -15,6 +15,11 @@
 """
 
 #**********************************************************************************************************************
+#***	Future imports.
+#**********************************************************************************************************************
+from __future__ import unicode_literals
+
+#**********************************************************************************************************************
 #***	External imports.
 #**********************************************************************************************************************
 import os
@@ -24,7 +29,7 @@ import sys
 #***	Module attributes.
 #**********************************************************************************************************************
 __author__ = "Thomas Mansencal"
-__copyright__ = "Copyright (C) 2008 - 2012 - Thomas Mansencal"
+__copyright__ = "Copyright (C) 2008 - 2013 - Thomas Mansencal"
 __license__ = "GPL V3.0 - http://www.gnu.org/licenses/"
 __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
@@ -49,7 +54,7 @@ def recursiveRemove(rootDirectory, pattern):
 	for root, dirs, files in os.walk(rootDirectory, followlinks=True):
 		for item in files:
 			itemPath = os.path.join(root, item).replace("\\", "/")
-			if pattern in unicode(item):
+			if pattern in item:
 				remove(itemPath)
 
 def remove(item):

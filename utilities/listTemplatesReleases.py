@@ -15,6 +15,11 @@
 """
 
 #**********************************************************************************************************************
+#***	Future imports.
+#**********************************************************************************************************************
+from __future__ import unicode_literals
+
+#**********************************************************************************************************************
 #***	External imports.
 #**********************************************************************************************************************
 import os
@@ -35,7 +40,7 @@ from foundations.globals.constants import Constants
 #***	Module attributes.
 #**********************************************************************************************************************
 __author__ = "Thomas Mansencal"
-__copyright__ = "Copyright (C) 2008 - 2012 - Thomas Mansencal"
+__copyright__ = "Copyright (C) 2008 - 2013 - Thomas Mansencal"
 __license__ = "GPL V3.0 - http://www.gnu.org/licenses/"
 __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
@@ -66,7 +71,7 @@ def listTemplatesReleases():
 		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__,
 												foundations.strings.getSplitextBasename(template),
 												foundations.parsers.getAttributeCompound("Release",
-												sectionsFileParser.getValue("Release", "Template", encode=True)).value))
+												sectionsFileParser.getValue("Release", "Template")).value))
 
 if __name__ == "__main__":
 	listTemplatesReleases()
