@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.6 | String | Template
-Date = @Date | 15 January 2013 | String | Date
+Release = @Release | 2.0.7 | String | Template
+Date = @Date | 17 April 2013 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -551,7 +551,7 @@ function getEnvironment(passes)
 	if(Options.createBackground)
 	{
 		var backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, Constants.prefix + "_Background_Clip");
-
+		backgroundSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		ports = ["camera"];
 		getEnvironmentShaderBranch(pass, backgroundSource, false, false, raySwitchShader, ports, Constants.prefix + "_Background");
 	}
@@ -564,7 +564,7 @@ function getEnvironment(passes)
 			var sourceImage = Data.lightingFilePath;
 
 		var lightingSource = Application.CreateImageClip2(sourceImage, Constants.prefix + "_Lighting_Clip");
-
+		lightingSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		if(Options.useDualSkyDomeSetup)
 			getSkyDomeLight(lightingSource, Constants.prefix + "_Diffuse_Skydome", true, false );
 		else
@@ -574,7 +574,7 @@ function getEnvironment(passes)
 	if(Options.createReflection)
 	{
 		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, Constants.prefix + "_Reflection_Clip");
-
+		reflectionSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		if(Options.useDualSkyDomeSetup)
 			getSkyDomeLight(reflectionSource, Constants.prefix + "_Specular_Skydome", false, true );
 
