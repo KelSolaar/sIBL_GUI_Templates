@@ -609,7 +609,13 @@ function getControls(controlsGroup)
 	for(var i = 0; i < slots.length; i++)
 	{
 		for(var j = 0; j < components.length; j++)
-			controls_customProperty.AddParameter3(slots[i] + "_" + components[j], siFloat, 1, 0, 10);
+		{
+			controls_customProperty.AddParameter3("Red_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3("Green_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3("Blue_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3("Alpha_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3(slots[i] + "_" + components[j], siInt4, 4);
+		}
 	}
 
 	var controls_customProperty_layout = controls_customProperty.PPGLayout;
@@ -624,7 +630,7 @@ function getControls(controlsGroup)
 	{
 		controls_customProperty_layout.AddGroup(slots[i] + " Color Correction");
 		for(var j = 0; j < components.length; j++)
-			controls_customProperty_layout.AddItem(slots[i] + "_" + components[j], components[j]);
+			controls_customProperty_layout.AddColor("Red_" + slots[i] + "_" + components[j], components[j], true);
 		controls_customProperty_layout.EndGroup();
 	}
 }
@@ -840,8 +846,8 @@ function bridgeControlsAndShaders(pass, slot)
 	var components = ["red", "green", "blue"];
 	for(var i = 0; i < components.length; i++)
 	{
-		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gain", true);
-		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gamma", true);
+		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + toTitleCase(components[i]) + "_" + slot + "_Gain", true);
+		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + toTitleCase(components[i]) + "_" + slot + "_Gamma", true);
 	}
 }
 
@@ -973,7 +979,7 @@ function getGround()
 		var property = SITOA_AddParametersProperties(ground);
 		ground.properties("Arnold_Parameters").Parameters("opaque").value = false;
 	}
-	
+
 	addToDisplayLayer(Constants.prefix + "_Ground_Layer", ground);
 }
 
@@ -997,7 +1003,7 @@ function objectExists(object)
 		return false
 }
 
-function  commandExists(command)
+function commandExists(command)
 {
 	var commands = Application.Commands;
 
@@ -1183,4 +1189,9 @@ function getMaterial(name)
 	var material = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", name);
 	DisconnectAndDeleteOrUnnestShaders(material.Shaders(0), material);
 	return material
+}
+
+function toTitleCase(string)
+{
+	return string.replace(/\w\S*/g, function(string){return string.charAt(0).toUpperCase() + string.substr(1).toLowerCase();});
 }

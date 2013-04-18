@@ -1,10 +1,16 @@
-sIBL_GUI_Templates - 2.0.9 - Stable
+sIBL_GUI_Templates - 2.1.0 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.1.0 - Stable
+--------------
+
+-  Fixed color profiles issues in **Softimage_Arnold_Dome_Light** and **Softimage_Arnold_Standard** Templates.
+-  Implemented precise per channel color control over the IBL setup in **Softimage** Templates. 
 
 2.0.9 - Stable
 --------------
@@ -43,7 +49,7 @@ Changes
 2.0.3 - Beta
 ------------
 
--  Added support for shadow catching ground in Arnold XSI / Softimage Templates.
+-  Added support for shadow catching ground in **Arnold XSI / Softimage Templates**.
 
 2.0.2 - Alpha
 --------------
