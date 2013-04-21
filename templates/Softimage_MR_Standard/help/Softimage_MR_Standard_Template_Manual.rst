@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Softimage MR Standard is a sIBL_GUI Template for Softimage and Mental Ray starting from 2011 versions. It provides a bridge between Softimage, Mental Ray and Smart IBL.
+Softimage MR Standard is a sIBL_GUI Template for Softimage and Mental Ray starting from Softimage 2011 version. It provides a bridge between Softimage, Mental Ray and Smart IBL.
 There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
 Options

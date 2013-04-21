@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Softimage Arnold Lightsmith is a sIBL_GUI Template for Softimage and Arnold for XSI / Softimage. It provides a way to create Lightsmith Lights in your scene.
+Softimage Arnold Lightsmith is a sIBL_GUI Template for Softimage and Arnold for Softimage. It provides a way to create Lightsmith Lights in your scene.
 There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
 Options

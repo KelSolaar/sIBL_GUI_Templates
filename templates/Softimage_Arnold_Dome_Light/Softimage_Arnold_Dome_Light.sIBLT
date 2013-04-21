@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.6 | String | Template
-Date = @Date | 15 January 2013 | String | Date
+Release = @Release | 2.0.7 | String | Template
+Date = @Date | 17 April 2013 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -551,7 +551,7 @@ function getEnvironment(passes)
 	if(Options.createBackground)
 	{
 		var backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, Constants.prefix + "_Background_Clip");
-
+		backgroundSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		ports = ["camera"];
 		getEnvironmentShaderBranch(pass, backgroundSource, false, false, raySwitchShader, ports, Constants.prefix + "_Background");
 	}
@@ -564,7 +564,7 @@ function getEnvironment(passes)
 			var sourceImage = Data.lightingFilePath;
 
 		var lightingSource = Application.CreateImageClip2(sourceImage, Constants.prefix + "_Lighting_Clip");
-
+		lightingSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		if(Options.useDualSkyDomeSetup)
 			getSkyDomeLight(lightingSource, Constants.prefix + "_Diffuse_Skydome", true, false );
 		else
@@ -574,7 +574,7 @@ function getEnvironment(passes)
 	if(Options.createReflection)
 	{
 		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, Constants.prefix + "_Reflection_Clip");
-
+		reflectionSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		if(Options.useDualSkyDomeSetup)
 			getSkyDomeLight(reflectionSource, Constants.prefix + "_Specular_Skydome", false, true );
 
@@ -607,7 +607,13 @@ function getControls(controlsGroup)
 	for(var i = 0; i < slots.length; i++)
 	{
 		for(var j = 0; j < components.length; j++)
-			controls_customProperty.AddParameter3(slots[i] + "_" + components[j], siFloat, 1, 0, 10);
+		{
+			controls_customProperty.AddParameter3("Red_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3("Green_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3("Blue_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3("Alpha_" + slots[i] + "_" + components[j], siDouble, 1);
+			controls_customProperty.AddParameter3(slots[i] + "_" + components[j], siInt4, 4);
+		}
 	}
 
 	var controls_customProperty_layout = controls_customProperty.PPGLayout;
@@ -622,7 +628,7 @@ function getControls(controlsGroup)
 	{
 		controls_customProperty_layout.AddGroup(slots[i] + " Color Correction");
 		for(var j = 0; j < components.length; j++)
-			controls_customProperty_layout.AddItem(slots[i] + "_" + components[j], components[j]);
+			controls_customProperty_layout.AddColor("Red_" + slots[i] + "_" + components[j], components[j], true);
 		controls_customProperty_layout.EndGroup();
 	}
 }
@@ -866,8 +872,8 @@ function bridgeControlsAndShaders(pass, slot)
 	var components = ["red", "green", "blue"];
 	for(var i = 0; i < components.length; i++)
 	{
-		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gain", true);
-		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + slot + "_Gamma", true);
+		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + toTitleCase(components[i]) + "_" + slot + "_Gain", true);
+		AddExpr(pass + "." + Constants.prefix + "_" + slot + "_Gamma_Color_Math_Basic.input2." + components[i], Constants.prefix + "." + Constants.controlsTitle + "." + toTitleCase(components[i]) + "_" + slot + "_Gamma", true);
 	}
 }
 
@@ -924,8 +930,8 @@ function connectFeedbackToDependencies(feedback, passes)
 				var components = ["red", "green", "blue"];
 				for(var j = 0; j < components.length; j++)
 				{
-					AddExpr(skyDomes[i] + ".light." + skyDomes[i]  + "_Color_Math_Basic.input2." + components[j], Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Gain", true);
-					AddExpr(skyDomes[i] + ".light." + skyDomes[i]  + "_Gamma_Color_Math_Basic.input2." + components[j], Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Gamma", true);
+					AddExpr(skyDomes[i] + ".light." + skyDomes[i]  + "_Color_Math_Basic.input2." + components[j], Constants.prefix + "." + Constants.controlsTitle + "." + toTitleCase(components[j]) + "_" + slots[i] + "_Gain", true);
+					AddExpr(skyDomes[i] + ".light." + skyDomes[i]  + "_Gamma_Color_Math_Basic.input2." + components[j], Constants.prefix + "." + Constants.controlsTitle + "." + toTitleCase(components[j]) + "_" + slots[i] + "_Gamma", true);
 				}
 			}
 		}
@@ -1248,4 +1254,9 @@ function getMaterial(name)
 	var material = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", name);
 	DisconnectAndDeleteOrUnnestShaders(material.Shaders(0), material);
 	return material
+}
+
+function toTitleCase(string)
+{
+	return string.replace(/\w\S*/g, function(string){return string.charAt(0).toUpperCase() + string.substr(1).toLowerCase();});
 }

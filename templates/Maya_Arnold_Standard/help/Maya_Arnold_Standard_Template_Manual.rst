@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Maya Arnold Standard is a sIBL_GUI Template for Maya and Arnold starting from 2K versions. It provides a bridge between Maya, Arnold and Smart IBL.
+Maya Arnold Standard is a sIBL_GUI Template for Maya and Arnold starting from Maya 2011 version. It provides a bridge between Maya, Arnold and Smart IBL.
 There is an Helper Script with everything you need to use sIBL_GUI smoothly with Maya here: `sIBL_GUI For Maya - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1223936394/2#2>`_
 
 Options

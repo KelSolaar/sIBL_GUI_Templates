@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Maya VRay Standard is a sIBL_GUI Template for Maya and VRay starting from 2K versions. It provides a bridge between Maya, VRay and Smart IBL.
+Maya VRay Standard is a sIBL_GUI Template for Maya and VRay starting from Maya 2011 version. It provides a bridge between Maya, VRay and Smart IBL.
 There is an Helper Script with everything you need to use sIBL_GUI smoothly with Maya here: `sIBL_GUI For Maya - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1223936394/2#2>`_
 
 Options
