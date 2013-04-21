@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-**listTemplatesReleases.py
+**listTemplatesReleases.py**
 
 **Platform:**
 	Windows, Linux, Mac Os X.
