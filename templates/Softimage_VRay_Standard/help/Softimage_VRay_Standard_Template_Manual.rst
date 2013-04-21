@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Softimage VRay Standard is a sIBL_GUI Template for Softimage and VRay for Softimage 2010 version. It provides a bridge between Softimage, VRay and Smart IBL.
+Softimage VRay Standard is a sIBL_GUI Template for Softimage and VRay starting from Softimage 2011 version. It provides a bridge between Softimage, VRay and Smart IBL.
 There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
 Options

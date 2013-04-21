@@ -20,7 +20,7 @@ Table Of Content
 Introduction
 ------------
 
-Softimage Arnold Standard is a sIBL_GUI Template for Softimage and Arnold for Softimage 2010 version. It provides a bridge between Softimage, Arnold and Smart IBL.
+Softimage Arnold Standard is a sIBL_GUI Template for Softimage and Arnold starting from Softimage 2011 version. It provides a bridge between Softimage, Arnold and Smart IBL.
 There is a Softimage Addon with everything needed to use sIBL_GUI smoothly with Softimage here: `sIBL_GUI For Softimage - Helper Script <http://www.hdrlabs.com/cgi-bin/forum/YaBB.pl?num=1221392511>`_
 
 Options
