@@ -2,8 +2,8 @@
 Name = @Name | Maya Mental Ray Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_MR_Standard_Template_Manual.html | String | Help File
-Release = @Release | 2.0.6 | String | Template Release
-Date = @Date | 27 November 2012 | String | Date
+Release = @Release | 2.0.7 | String | Template Release
+Date = @Date | 28 April 2013 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -266,7 +266,7 @@ class Setup(object):
 	def setRenderer(self):
 		not cmds.pluginInfo("Mayatomr", q=True, loaded=True) and cmds.loadPlugin("Mayatomr")
 		cmds.setAttr("defaultRenderGlobals.currentRenderer", "mentalRay", type="string")
-		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;miCreateOtherOptionsNodesForURG;")
+		mel.eval("miCreateGlobalsNode;miCreateDefaultNodes;")
 		cmds.setAttr("mentalrayGlobals.passAlphaThrough", False)
 
 	def deleteSession(self):
