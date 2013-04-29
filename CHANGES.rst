@@ -1,10 +1,15 @@
-sIBL_GUI_Templates - 2.1.0 - Stable
+sIBL_GUI_Templates - 2.1.1 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.1.1 - Stable
+--------------
+
+-  Removed "miCreateOtherOptionsNodesForURG" mel procedure call in **Maya_MR_Standard** and **Maya_MR_Lightsmith** templates.
 
 2.1.0 - Stable
 --------------
