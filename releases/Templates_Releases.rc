@@ -29,16 +29,16 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_St
 Comment = "Maya Arnold Standard Template: Drop support for Maya versions prior to Maya 2011."
 
 [Maya_MR_Lightsmith]
-Release = 1.0.6
+Release = 1.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Lightsmith/Nightly/Maya_MR_Lightsmith.zip"
-Comment = "Maya Mental Ray Lightsmith Template: Disable \"mentalrayGlobals.passAlphaThrough\" attribute."
+Comment = "Maya Mental Ray Lightsmith Template: Remove \"miCreateOtherOptionsNodesForURG\" mel procedure call."
 
 [Maya_MR_Standard]
-Release = 2.0.6
+Release = 2.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_MR_Standard/Nightly/Maya_MR_Standard.zip"
-Comment = "Maya Mental Ray Template: Disable \"mentalrayGlobals.passAlphaThrough\" attribute."
+Comment = "Maya Mental Ray Template: Remove \"miCreateOtherOptionsNodesForURG\" mel procedure call."
 
 [Maya_RfM_Standard]
 Release = 2.0.6
