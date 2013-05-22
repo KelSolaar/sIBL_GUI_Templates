@@ -71,10 +71,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arno
 Comment = "Softimage Arnold Dome Light Template: Implement precise per channel color control."
 
 [Softimage_Arnold_Lightsmith]
-Release = 1.0.6
+Release = 1.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Softimage_Arnold_Lightsmith/Nightly/Softimage_Arnold_Lightsmith.zip"
-Comment = "Softimage Arnold Ligthsmith Template: Drop support for Softimage versions prior to Softimage 2011."
+Comment = "Softimage Arnold Ligthsmith Template: Ensure SItoA 2.8.0 compatibility. Do not update if you use an older version!"
 
 [Softimage_Arnold_Standard]
 Release = 2.0.7

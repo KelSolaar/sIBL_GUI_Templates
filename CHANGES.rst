@@ -1,4 +1,4 @@
-sIBL_GUI_Templates - 2.1.1 - Stable
+sIBL_GUI_Templates - 2.1.2 - Stable
 ===================================
 
 .. .changes
@@ -6,10 +6,15 @@ sIBL_GUI_Templates - 2.1.1 - Stable
 Changes
 =======
 
+2.1.2 - Stable
+--------------
+
+-  Ensured **Softimage_Arnold_Lightsmith** template compatibility with **SItoA 2.8.0** by removing deprecated legacy light filter code.
+
 2.1.1 - Stable
 --------------
 
--  Removed "miCreateOtherOptionsNodesForURG" mel procedure call in **Maya_MR_Standard** and **Maya_MR_Lightsmith** templates.
+-  Removed **miCreateOtherOptionsNodesForURG** mel procedure call in **Maya_MR_Standard** and **Maya_MR_Lightsmith** templates.
 
 2.1.0 - Stable
 --------------
