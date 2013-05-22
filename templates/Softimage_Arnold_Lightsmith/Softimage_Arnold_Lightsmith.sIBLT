@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.6 | String | Template
-Date = @Date | 27 November 2012 | String | Date
+Release = @Release | 1.0.7 | String | Template
+Date = @Date | 22 May 2013 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -178,8 +178,8 @@ function setup()
 				{
 					LogMessage(Constants.applicationName + " | Starting '" + Constants.title + "' file import!");
 
-					 scriptEditorVerbose(false);
-					 autoInspectState(false);
+					scriptEditorVerbose(false);
+					autoInspectState(false);
 
 					var progressBar = XSIUIToolkit.ProgressBar;
 					progressBar.Maximum = 100;
@@ -400,23 +400,6 @@ function getArnoldVisibilityProperty(object)
 	return customProperty
 }
 
-function getArnoldLightDecayFilterProperty(object)
-{
-	var customProperty = object.AddProperty("light_decay", false, "Arnold Light Decay Filter");
-
-	customProperty.AddParameter2("use_near_atten", siBool, false, null, null, null, null, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("use_far_atten", siBool, false, null, null, null, null, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("near_start", siFloat, 0, -100000, 100000, 0, 500, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("near_end", siFloat, 0, -100000, 100000, 0, 500, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("far_start", siFloat, 0, -100000, 100000, 0, 500, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("far_end", siFloat, 0, -100000, 100000, 0, 500, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("decay_type", siString, "constant", 0, 5, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("decay_radius", siFloat, 1, -100000, 100000, 0, 20, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("decay_clamp", siBool, false, null, null, null, null, 0, siPersistable|siAnimatable);
-
-	return customProperty
-}
-
 function getLightControls(object)
 {
 	var lightControlsProperty = object.AddCustomProperty(Constants.controlsTitle, false);
@@ -464,6 +447,7 @@ function getLight(clip, name, shape, scaleX, scaleY)
 	lightShader.Parameters("intensity").value = 1 / Math.PI;
 	lightShader.Parameters("normalize").value = 0;
 	lightShader.Parameters("samples").value = 4;
+	lightShader.Parameters("decay_type").value = "quadratic";
 
 	var globalKinematics = light.Kinematics.Global.Parameters;
 	globalKinematics("sclx").value = scaleX;
@@ -471,9 +455,6 @@ function getLight(clip, name, shape, scaleX, scaleY)
 
 	var parameters = ["sclz", "rotx", "roty", "rotz", "posx", "posy", "posz"];
 	lockParameters(light, parameters)
-
-	var lightDecayFilterProperty = getArnoldLightDecayFilterProperty(light);
-	lightDecayFilterProperty.Parameters("decay_type").value = "quadratic";
 
 	lightShader.Parameters("name").value = name + "_Arnold_Quad_Light";
 
