@@ -50,7 +50,6 @@ __all__ = ["LOGGER",
 
 LOGGER = foundations.verbose.installLogger()
 
-RST2HTML = "/Users/$USER/Documents/Development/VirtualEnv/HDRLabs/bin/rst2html.py"
 CSS_FILE = "css/style.css"
 TIDY_SETTINGS_FILE = "tidy/tidySettings.rc"
 
@@ -62,6 +61,26 @@ foundations.verbose.setVerbosityLevel(3)
 #**********************************************************************************************************************
 #***	Module classes and definitions.
 #**********************************************************************************************************************
+def rst2html():
+    """Return path to system rst2html or hard coded path to user version to
+    maintain backwards compatibility."""
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    program = 'rst2html'
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return "/Users/$USER/Documents/Development/VirtualEnv/HDRLabs/bin/rst2html.py"
+
 def reStructuredTextToHtml(fileIn, fileOut):
 	"""
 	This definition outputs a reStructuredText file to html.
@@ -71,7 +90,7 @@ def reStructuredTextToHtml(fileIn, fileOut):
 	"""
 
 	LOGGER.info("{0} | Converting '{1}' reStructuredText file to html!".format(reStructuredTextToHtml.__name__, fileIn))
-	os.system("{0} --stylesheet-path='{1}' '{2}' > '{3}'".format(RST2HTML,
+	os.system("{0} --stylesheet-path='{1}' '{2}' > '{3}'".format(rst2html(),
 																os.path.join(os.path.dirname(__file__), CSS_FILE),
 																fileIn,
 																fileOut))

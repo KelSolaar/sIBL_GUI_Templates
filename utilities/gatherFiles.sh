@@ -3,7 +3,7 @@ echo ---------------------------------------------------------------------------
 echo sIBL_GUI_Templates - Files Gathering
 echo -------------------------------------------------------------------------------
 
-export PROJECT=/Users/KelSolaar/Documents/Development/sIBL_GUI_Templates
+export PROJECT=..
 
 export SOURCE=$PROJECT/
 export RELEASES=$PROJECT/releases/
@@ -16,7 +16,7 @@ rm -rf $REPOSITORY
 echo -------------------------------------------------------------------------------
 echo Cleanup - Begin
 echo -------------------------------------------------------------------------------
-python ./utilities/recursiveRemove.py ./templates/ .DS_Store
+python $PROJECT/utilities/recursiveRemove.py ./templates/ .DS_Store
 echo -------------------------------------------------------------------------------
 echo Cleanup - End
 echo -------------------------------------------------------------------------------

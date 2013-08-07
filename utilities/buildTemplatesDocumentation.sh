@@ -3,7 +3,7 @@ echo ---------------------------------------------------------------------------
 echo sIBL_GUI_Templates - Build Templates Documentation
 echo -------------------------------------------------------------------------------
 
-export PROJECT=/Users/KelSolaar/Documents/Development/sIBL_GUI_Templates
+export PROJECT=..
 
 export TEMPLATES=$PROJECT/templates
 
