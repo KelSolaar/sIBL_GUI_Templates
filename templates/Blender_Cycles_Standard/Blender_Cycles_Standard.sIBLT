@@ -1,0 +1,690 @@
+[Template]
+Name = @Name | Blender Cycles Standard | String | Template Name
+Path = @Path | | String | Template Path
+HelpFile = @HelpFile | help/Blender_Cycles_Standard_Template_Manual.html | String | Help File
+Release = @Release | 0.1 | String | Template Release
+Date = @Date | 7 August 2013 | String | Date
+Author = @Author | Jed Frechette | String | Author
+Email = @Email | jedfrechette@gmail.com | String | Email
+Url = @Url | | String | Url
+Software = @Software | Blender | String | Software
+Version = @Version | 2.68+ | String | Version
+Renderer = @Renderer | Cycles | String | Renderer
+OutputScript = @OutputScript | sIBL_Blender_Cycles_Import.py | String | Output Script
+Comment = @Comment | This is Blender Cycles Template. | String | Comment
+
+[Ibl Set Attributes]
+Background|BGfile = @BGfile
+Background|BGheight = @BGheight
+Enviroment|EVfile = @EVfile
+Enviroment|EVmulti = @EVmulti
+Enviroment|EVgamma = @EVgamma
+Reflection|REFfile = @REFfile
+Reflection|REFmulti = @REFmulti
+Reflection|REFgamma = @REFgamma
+Sun|SUNu = @SUNu
+Sun|SUNv = @SUNv
+Sun|SUNcolor = @SUNcolor
+Sun|SUNmulti = @SUNmulti
+Header|Height = @Height
+Header|North = @North
+Header|Name = @Name
+Lights|DynamicLights = @dynamicLights
+
+[Common Attributes]
+sceneSetupPrefix = @sceneSetupPrefix | sIBL | String | Scene Setup Prefix
+createBackground = @createBackground | 1 | Boolean | Create Background
+createReflection = @createReflection | 1 | Boolean | Create Reflection
+createLighting = @createLighting | 1 | Boolean | Create Lighting
+createSun = @createSun | 1 | Boolean | Create Sun
+createLights = @createLights | 1 | Boolean | Create Dynamic Lights
+
+[Additional Attributes]
+sunLightType = @sunLightType | Sun;Area;Spot;Point | Enum | Sun Light Type
+dynamicLightsType = @dynamicLightsType | Sun;Area;Spot;Point | Enum | Dynamic Lights Type
+misEnvironment = @misEnvironment | 1 | Boolean | Multiple Importance Sample Environment
+misSun = @misSun | 0 | Boolean | Multiple Importance Sample Sun
+misDynamic = @misDynamic | 0 | Boolean | Multiple Importance Sample Dynamic Lights
+hideLights = @hideLights | 1 | Boolean | Hide Lights
+createGround = @createGround | 1 | Boolean | Create Ground
+aoCatcher = @aoCatcher | 1 | Boolean | Ground AO Catcher
+
+[Remote Connection]
+ConnectionType = @ConnectionType | Socket | String | Connection Type
+ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = r\"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
+DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
+DefaultPort = @DefaultPort | 2048 | Integer | Default Port
+
+[Script]
+# @OutputScript - @Release for @Software @Version
+# Author: @Author
+# EMail: @Email
+# Homepage: @Url
+# Template path: @Path
+# Template last modified: @Date
+# sIBL_GUI
+
+# Standard library imports
+from math import cos, sin, pi
+
+# Blender imports
+import bpy
+
+def convertInputColors(color):
+    if color == [-1]:
+        return color
+
+    return [value / 255.0 for value in color]
+
+def distributeNodesHorizontal(node_list, margin):
+    """Layout nodes in a horizontal line separated by margin.
+
+    Nodes are positioned relative to the first node in the list. If the margin
+    is positive they will be positioned from left to right, otherwise from
+    right to left."""
+    datum = node_list[0]
+    for node in node_list[1:]:
+        if margin >= 0:
+            node.location = (datum.location[0] + datum.width + margin,
+                             datum.location[1])
+        else:
+            node.location = (datum.location[0] - node.width + margin,
+                             datum.location[1])
+        datum = node
+
+def distributeNodesVertical(node_list, margin):
+    """Distribute nodes in a vertical line separated by margin.
+
+    Nodes are positioned relative to the first node in the list. If the margin
+    is positive they will be positioned from top to bottom, otherwise from
+    bottom to top."""
+    datum = node_list[0]
+    for node in node_list[1:]:
+        if margin >= 0:
+            node.location = (datum.location[0],
+                             datum.location[1] - datum.height - margin)
+        else:
+            node.location = (datum.location[0],
+                             datum.location[1] + node.height - margin)
+        datum = node
+
+def parseDynamicLightsAttribute(data):
+    if data == "-1":
+        return {}
+
+    dynamicLights = {}
+    parserWarnings = []
+    try:
+        tokens = data.split("|")
+        for i in range(0, len(tokens), 8):
+            dynamicLights[tokens[i]] = Light(name=tokens[i+1].replace(" ", "_"),
+                                             color=convertInputColors([float(tokens[i+2]),
+                                                                       float(tokens[i+3]),
+                                                                       float(tokens[i+4])]),
+                                                                       multiplier=float(tokens[i+5]),
+                                                                       uCoordinate=float(tokens[i+6]),
+                                                                       vCoordinate=float(tokens[i+7]))
+    except Exception as error:
+        parserWarnings.append("Exception raised while parsing the Dynamic " \
+                               "Lights attribute: '%s'." % error)
+
+    if parserWarnings:
+        dynamicLights['parserWarnings'] = parserWarnings
+    return dynamicLights
+
+def setNodeName(node, name):
+    node.name = name
+    node.label = name
+
+class Constants(object):
+    applicationName = "sIBL_GUI"
+    prefix = "@sceneSetupPrefix"
+    package = "@Software".replace(" ", "_")
+    renderer = "@Renderer".replace(" ", "_")
+    packagePrefix = "%s_%s" % (prefix, package)
+    packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+    title = "sIBL"
+    controlsTitle = "[ %s Controls ]" % title
+    controlsRadius = 5
+    nodeMargin = 50
+    lightTypes = {"Area" : "AREA",
+                  "Point" : "POINT",
+                  "Spot" : "SPOT",
+                  "Sun" : "SUN"}
+
+class Structure(object):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+class Light(Structure):
+    pass
+
+class Data(object):
+    name = "@Name"
+    backgroundFile = "@BGfile"
+    backgroundWidth = @BGheight * 2
+    reflectionFile = "@REFfile"
+    reflectionMultiplier = @REFmulti
+    reflectionGamma = @REFgamma
+    lightingFile = "@EVfile"
+    lightingMultiplier = @EVmulti
+    lightingGamma = @EVgamma
+    sunU = @SUNu
+    sunV = @SUNv
+    sunColor = convertInputColors([@SUNcolor])
+    sunMultiplier = @SUNmulti
+    dynamicLights = parseDynamicLightsAttribute("@dynamicLights")
+    height = @Height
+    north = @North
+
+class Options(object):
+    createBackground = @createBackground
+    createReflection = @createReflection
+    createLighting = @createLighting
+    createSun = @createSun
+    createLights = @createLights
+    sunLightType = "@sunLightType"
+    dynamicLightsType = "@dynamicLightsType"
+    misEnvironment = @misEnvironment
+    misSun = @misSun
+    misDynamic = @misDynamic
+    hideLights = @hideLights
+    createGround = @createGround
+    aoCatcher = @aoCatcher
+
+class SetupSIBL(bpy.types.Operator):
+    """Setup sIBL lighting environment.
+
+    This operator is intended to be called by a sIBL_GUI helper script."""
+
+    bl_idname = "import_scene.setup_sibl"
+    bl_label = "Setup sIBL Lighting Environment"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def __init__(self):
+        self.bl_description = self.__doc__
+
+        if "-1" in (Data.backgroundFile,
+                    Data.reflectionFile,
+                    Data.lightingFile):
+            pass
+            #TODO: Give user option of canceling or proceeding with import.
+            #      Could do some more error checking here too.
+#            "%s | Non Template compatible sIBL " \
+#                                          "Set provided: Unpredictable " \
+#                                          "results may occur! Would you " \
+#                                          "like to proceed anyway?" % Constants.applicationName
+
+        self.sibl_shader = None
+        self.imageBackground = None
+        self.imageReflection = None
+        self.imageLighting = None
+        self.sun = None
+        self.dynamicLights = None
+        self.controlsEmpty = None
+        self.ground = None
+        self.sibl_group = None
+        self.scene = bpy.context.scene
+        self.controlsRadius = Constants.controlsRadius
+
+    def execute(self, context):
+        print("%s | Starting %s file import!" % (Constants.applicationName,
+                                                 Constants.title))
+
+        self.setRenderer()
+        self.deleteSession()
+        if Options.hideLights:
+            self.hideSceneLights()
+
+        images = self.getImages()
+        self.imageBackground = images['background']
+        self.imageReflection = images['reflection']
+        self.imageLighting = images['lighting']
+        self.controlsEmpty = self.getControlsEmpty()
+        self.sibl_shader = self.getEnvironmentShaders()
+        self.connectEnvironment()
+
+        if Options.createSun and Data.sunU != -1 and Data.sunV != -1:
+            self.sun = self.getSun()
+        if Options.createLights and Data.dynamicLights:
+            self.dynamicLights = self.getDynamicLights()
+        if Options.createGround:
+            self.ground = self.getGround()
+
+        self.sibl_group = self.getGroup()
+
+        print("%s | %s file import done!" % (Constants.applicationName,
+                                             Constants.title))
+
+        return {'FINISHED'}
+
+    def setRenderer(self):
+        self.scene.render.engine = 'CYCLES'
+
+    def deleteSession(self):
+        """Delete existing sIBL session."""
+        bpy.ops.object.select_pattern(pattern='%s*' % Constants.prefix,
+                                      case_sensitive=True,
+                                      extend=False)
+        bpy.ops.object.delete()
+        if self.scene.world.name.startswith(Constants.prefix):
+            used_existing = False
+            for world in bpy.data.worlds:
+                if not world.name.startswith(Constants.prefix):
+                    self.scene.world = world
+                    used_existing = True
+                    break
+            if not used_existing:
+                bpy.ops.world.new()
+                self.scene.world = bpy.data.worlds[-1]
+        for data_collection in (bpy.data.images,
+                                bpy.data.lamps,
+                                bpy.data.materials,
+                                bpy.data.meshes,
+                                bpy.data.objects,
+                                bpy.data.worlds,
+                                bpy.data.groups,
+                                bpy.data.node_groups):
+
+            for data in data_collection:
+                if data.name.startswith(Constants.prefix):
+                    try:
+                        data_collection.remove(data)
+                    except RuntimeError:
+                        #TODO: Sort out what is using my node groups so I can
+                        #      properly delete them rather than reusing them
+                        #      like I do now.
+                        print('Unable to remove %s, it has %i users.' % (data.name,
+                                                                         data.users))
+
+    def getImages(self):
+        return {'background': bpy.data.images.load(Data.backgroundFile),
+                'reflection': bpy.data.images.load(Data.reflectionFile),
+                'lighting': bpy.data.images.load(Data.lightingFile)}
+
+    def getControlsEmpty(self):
+        name = '%s Controls' % Constants.prefix
+        if name in bpy.data.objects.keys():
+            if bpy.data.objects[name].type != 'EMPTY':
+                bpy.data.objects.remove(name)
+        else:
+            bpy.ops.object.add(type = 'EMPTY',
+                               location = (0, 0, Data.height))
+        controls = bpy.data.objects[bpy.context.active_object.name]
+        controls.name = name
+        controls.empty_draw_type = 'SPHERE'
+        controls.empty_draw_size = self.controlsRadius
+        #TODO calculate north rotation.
+        controls.lock_location = (True, True, True)
+        controls.lock_rotation = (True, True, False)
+        return controls
+
+    def hideSceneLights(self):
+        for obj in self.scene.objects:
+            if obj.type == 'LAMP':
+                obj.hide = True
+                obj.hide_render = True
+
+    def getRGBAdjustmentGroup(self):
+        """Create node group for adjusting the Brightness and contrast of each
+        color channel in an RGB image."""
+        grp_name = '%s RGB Bright/Contrast' % Constants.prefix
+        if grp_name in bpy.data.node_groups.keys():
+            adjust_group = bpy.data.node_groups[grp_name]
+            adjust_group.nodes.clear()
+        else:
+            adjust_group = bpy.data.node_groups.new(grp_name,
+                                                    'ShaderNodeTree')
+
+        # Create Nodes
+        grp_out = adjust_group.nodes.new('NodeGroupOutput')
+        combine_rgb = adjust_group.nodes.new('ShaderNodeCombineRGB')
+
+        adjust_r = adjust_group.nodes.new('ShaderNodeBrightContrast')
+        setNodeName(adjust_r, 'Red Bright/Contrast')
+        adjust_g = adjust_group.nodes.new('ShaderNodeBrightContrast')
+        setNodeName(adjust_g, 'Green Bright/Contrast')
+        adjust_b = adjust_group.nodes.new('ShaderNodeBrightContrast')
+        setNodeName(adjust_b, 'Blue Bright/Contrast')
+
+        split_rgb = adjust_group.nodes.new('ShaderNodeSeparateRGB')
+        grp_in = adjust_group.nodes.new('NodeGroupInput')
+
+        # Organize nodes
+        distributeNodesHorizontal((grp_in, split_rgb, adjust_g, combine_rgb,
+                                   grp_out), Constants.nodeMargin)
+        distributeNodesVertical((adjust_g, adjust_b), Constants.nodeMargin)
+        distributeNodesVertical((adjust_g, adjust_r), -Constants.nodeMargin)
+
+        # Link Nodes
+        adjust_group.links.new(combine_rgb.outputs[0],
+                               grp_out.inputs[0])
+        adjust_group.links.new(grp_in.outputs[0],
+                               split_rgb.inputs['Image'])
+        grp_in_socket = 1
+        for node in (adjust_r, adjust_g, adjust_b):
+            adjust_group.links.new(node.outputs['Color'],
+                                   combine_rgb.inputs[node.name[0]])
+            adjust_group.links.new(split_rgb.outputs[node.name[0]],
+                                   node.inputs['Color'])
+            for adj in ('Bright', 'Contrast'):
+                adjust_group.links.new(grp_in.outputs[grp_in_socket],
+                                       node.inputs[adj])
+                adjust_group.inputs[grp_in_socket].name = '%s %s' % (node.name.split()[0],
+                                                                adj)
+                grp_in_socket += 1
+
+        return adjust_group
+
+    def getEnvironmentShaders(self):
+        """Create sIBL environment shader node group."""
+
+        rgb_adjust = self.getRGBAdjustmentGroup()
+
+        grp_name = '%s %s Shader' % (Constants.prefix, Data.name)
+        if grp_name in bpy.data.node_groups.keys():
+            shader_grp = bpy.data.node_groups[grp_name]
+            shader_grp.nodes.clear()
+        else:
+            shader_grp = bpy.data.node_groups.new(grp_name, 'ShaderNodeTree')
+
+        # Create Nodes
+        grp_out = shader_grp.nodes.new('NodeGroupOutput')
+
+        mix_bounce_cam = shader_grp.nodes.new('ShaderNodeMixShader')
+        setNodeName(mix_bounce_cam, 'Mix Bounce/Camera')
+        mix_enviro_refl = shader_grp.nodes.new('ShaderNodeMixShader')
+        setNodeName(mix_enviro_refl, 'Mix Environment/Reflection')
+
+        shader_background = shader_grp.nodes.new('ShaderNodeBackground')
+        setNodeName(shader_background, 'Background Shader')
+        shader_reflection = shader_grp.nodes.new('ShaderNodeBackground')
+        setNodeName(shader_reflection, 'Reflection Shader')
+        shader_lighting = shader_grp.nodes.new('ShaderNodeBackground')
+        setNodeName(shader_lighting, 'Lighting Shader')
+
+        adjust_background = shader_grp.nodes.new('ShaderNodeGroup')
+        adjust_background.node_tree = rgb_adjust
+        adjust_reflection = shader_grp.nodes.new('ShaderNodeGroup')
+        adjust_reflection.node_tree = rgb_adjust
+        adjust_lighting = shader_grp.nodes.new('ShaderNodeGroup')
+        adjust_lighting.node_tree = rgb_adjust
+
+        image_background = shader_grp.nodes.new('ShaderNodeTexEnvironment')
+        image_background.image = self.imageBackground
+        setNodeName(image_background, 'Background Image')
+        image_reflection = shader_grp.nodes.new('ShaderNodeTexEnvironment')
+        image_reflection.image = self.imageReflection
+        setNodeName(image_reflection, 'Reflection Image')
+        image_lighting = shader_grp.nodes.new('ShaderNodeTexEnvironment')
+        image_lighting.image = self.imageLighting
+        setNodeName(image_lighting, 'Lighting Image')
+
+        mapping = shader_grp.nodes.new('ShaderNodeMapping')
+        mapping.rotation = (0, 0, -pi/2)
+
+        input_lightpath = shader_grp.nodes.new('ShaderNodeLightPath')
+        input_tex_coords = shader_grp.nodes.new('ShaderNodeTexCoord')
+        grp_in = shader_grp.nodes.new('NodeGroupInput')
+
+        # Organize Nodes
+        distributeNodesVertical((shader_background, shader_reflection,
+                                 shader_lighting), 3 * Constants.nodeMargin)
+        distributeNodesVertical((shader_background, input_lightpath),
+                                -3 * Constants.nodeMargin)
+        distributeNodesHorizontal((shader_background, adjust_background,
+                                   image_background, mapping, input_tex_coords),
+                                  -Constants.nodeMargin)
+        distributeNodesHorizontal((shader_reflection, adjust_reflection,
+                                   image_reflection), -Constants.nodeMargin)
+        distributeNodesHorizontal((shader_reflection, mix_enviro_refl,
+                                   mix_bounce_cam, grp_out),
+                                  Constants.nodeMargin)
+        mix_enviro_refl.location[1] = mix_bounce_cam.location[1] - mix_bounce_cam.height
+
+        distributeNodesHorizontal((shader_lighting, adjust_lighting,
+                                   image_lighting), -Constants.nodeMargin)
+        distributeNodesVertical((input_tex_coords, grp_in),
+                                3 * Constants.nodeMargin)
+
+
+        # Link Nodes
+        shader_grp.links.new(mix_bounce_cam.outputs['Shader'],
+                         grp_out.inputs[0])
+        shader_grp.outputs[0].name = 'Background'
+
+        shader_grp.links.new(input_lightpath.outputs['Is Camera Ray'],
+                         mix_bounce_cam.inputs['Fac'])
+        shader_grp.links.new(mix_enviro_refl.outputs['Shader'],
+                         mix_bounce_cam.inputs[1])
+        shader_grp.links.new(shader_background.outputs['Background'],
+                         mix_bounce_cam.inputs[2])
+
+        shader_grp.links.new(input_lightpath.outputs['Is Glossy Ray'],
+                         mix_enviro_refl.inputs['Fac'])
+        shader_grp.links.new(shader_lighting.outputs['Background'],
+                         mix_enviro_refl.inputs[1])
+        shader_grp.links.new(shader_reflection.outputs['Background'],
+                         mix_enviro_refl.inputs[2])
+
+
+        shader_grp.links.new(input_tex_coords.outputs['Generated'],
+                         mapping.inputs['Vector'])
+        grp_in_socket = 0
+        for shader in (shader_background, shader_reflection, shader_lighting):
+            shader_id = shader.name.split()[0]
+            shader_grp.links.new(grp_in.outputs[grp_in_socket],
+                                 shader.inputs['Strength'])
+            shader_grp.inputs[grp_in_socket].name = 'Strength %s' % shader_id
+            shader_grp.inputs[grp_in_socket].max_value = 100
+            grp_in_socket += 1
+        for shader, adjust, img in ((shader_background,
+                                     adjust_background,
+                                     image_background),
+                                    (shader_reflection,
+                                     adjust_reflection,
+                                     image_reflection),
+                                    (shader_lighting,
+                                     adjust_lighting,
+                                     image_lighting)):
+            shader_grp.links.new(adjust.outputs[0],
+                                 shader.inputs['Color'])
+            shader_grp.links.new(img.outputs['Color'],
+                                 adjust.inputs[0])
+            shader_grp.links.new(mapping.outputs['Vector'],
+                                 img.inputs['Vector'])
+
+            shader_id = shader.name.split()[0]
+            for socket_name, socket_num in (('Red Bright', 1),
+                                            ('Red Contrast', 2),
+                                            ('Green Bright', 3),
+                                            ('Green Contrast', 4),
+                                            ('Blue Bright', 5),
+                                            ('Blue Contrast',6)):
+                shader_grp.links.new(grp_in.outputs[grp_in_socket],
+                                     adjust.inputs[socket_num])
+                shader_grp.inputs[grp_in_socket].name = '%s %s' % (socket_name,
+                                                                   shader_id)
+                grp_in_socket += 1
+        return shader_grp
+
+    def connectEnvironment(self):
+        """Connect Environment shader to world and control empty."""
+        name = '%s %s' %  (Constants.prefix, Data.name)
+        world = bpy.data.worlds.new(name)
+        world.use_nodes = True
+        for key, value in world.node_tree.nodes.items():
+            if key != 'World Output':
+                world.node_tree.nodes.remove(value)
+        shader_grp = world.node_tree.nodes.new('ShaderNodeGroup')
+        shader_grp.node_tree = self.sibl_shader
+        setNodeName(shader_grp, self.sibl_shader.name)
+        distributeNodesHorizontal((shader_grp,
+                                   world.node_tree.nodes['World Output']),
+                                  Constants.nodeMargin)
+        world.node_tree.links.new(shader_grp.outputs[0],
+                                  world.node_tree.nodes['World Output'].inputs['Surface'])
+
+        if Options.createBackground:
+            shader_grp.inputs[0].default_value = 1
+        else:
+            shader_grp.inputs[0].default_value = 0
+        if Options.createReflection:
+            shader_grp.inputs[1].default_value = Data.reflectionMultiplier
+        else:
+            shader_grp.inputs[1].default_value = 0
+        if Options.createReflection:
+            shader_grp.inputs[2].default_value = Data.lightingMultiplier
+        else:
+            shader_grp.inputs[2].default_value = 0
+        if Options.misEnvironment:
+            world.cycles.sample_as_light = True
+        self.scene.world = world
+
+    def getLight(self, name, light_type, color, multiplier, uCoordinate,
+                 vCoordinate, scale, enable_mis):
+        theta = (0.5-uCoordinate)*pi*2
+        phi = vCoordinate*pi
+        x = cos(theta) * sin(phi) * scale
+        y = sin(theta) * sin(phi) * scale
+        z = cos(phi) * scale
+        bpy.ops.object.add(type = 'LAMP', location = (x, y, z))
+        light = bpy.data.objects[bpy.context.active_object.name]
+        light.name = name
+        light.data.name = light.name
+        light.data.type = Constants.lightTypes[light_type]
+        if enable_mis:
+            light.data.cycles.use_multiple_importance_sampling = True
+        light.data.use_nodes = True
+        emission_shader = light.data.node_tree.nodes['Emission']
+        emission_shader.inputs['Strength'].default_value =  multiplier
+        emission_shader.inputs['Color'].default_value = (color[0],
+                                                         color[1],
+                                                         color[2],
+                                                         1)
+
+        # TODO: Apply physically plausible strength scaling and other
+        #       per lamp polish.
+#        if type == "Area":
+#            cmds.setAttr("%s.areaLight" % light, True)
+#            scale = scale / 2
+#        elif type == "Sun":
+#            pass
+#        elif type == "Point":
+#            pass
+#        elif type == "Spot":
+#            setAttributes({"%s.coneAngle" % light : 96,
+#                            "%s.penumbraAngle" % light : 16})
+
+        bpy.ops.object.constraint_add(type='CHILD_OF')
+        light.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
+        light.constraints.active.target = self.controlsEmpty
+
+        bpy.ops.object.constraint_add(type='TRACK_TO')
+        light.constraints.active.name = 'Track to %s' % self.controlsEmpty.name
+        light.constraints.active.target = self.controlsEmpty
+        light.constraints.active.up_axis = 'UP_Y'
+        light.constraints.active.track_axis = 'TRACK_NEGATIVE_Z'
+
+        light.lock_location = (True, True, True)
+        light.lock_rotation = (True, True, True)
+        light.lock_scale = (True, True, True)
+
+        return light
+
+    def getSun(self):
+        return self.getLight("%s Sun" % Constants.prefix,
+                             Options.sunLightType, Data.sunColor,
+                             Data.sunMultiplier, Data.sunU, Data.sunV,
+                             self.controlsRadius * 4, Options.misSun)
+
+    def getDynamicLights(self):
+        dynamic_lights = []
+        for light in Data.dynamicLights.values():
+            dynamic_lights.append(self.getLight("%s %s" % (Constants.prefix,
+                                                           light.name),
+                                                Options.dynamicLightsType,
+                                                light.color,
+                                                light.multiplier,
+                                                light.uCoordinate,
+                                                light.vCoordinate,
+                                                self.controlsRadius * 2,
+                                                Options.misDynamic))
+        return dynamic_lights
+
+    def getAOCatcher(self):
+        """Create Ambient Occlusion catcher material."""
+        name = '%s AO Catcher' % Constants.prefix
+        if name in bpy.data.materials.keys():
+            ao_catcher = bpy.data.materials
+        else:
+            ao_catcher = bpy.data.materials.new(name)
+            ao_catcher.use_nodes = True
+            for key, value in ao_catcher.node_tree.nodes.items():
+                if key != 'Material Output':
+                    ao_catcher.node_tree.nodes.remove(value)
+
+            # Create Nodes
+            node_out = ao_catcher.node_tree.nodes['Material Output']
+            node_ao = ao_catcher.node_tree.nodes.new('ShaderNodeAmbientOcclusion')
+            node_bg = ao_catcher.node_tree.nodes.new('ShaderNodeTexEnvironment')
+            node_bg.image = self.imageBackground
+            node_mapping = ao_catcher.node_tree.nodes.new('ShaderNodeMapping')
+            node_mapping.scale = (-1, -1, -1)
+            node_mapping.rotation = (0, 0, -pi/2)
+            node_geom = ao_catcher.node_tree.nodes.new('ShaderNodeNewGeometry')
+
+            # Organize nodes
+            distributeNodesHorizontal((node_geom, node_mapping, node_bg,
+                                       node_ao, node_out), Constants.nodeMargin)
+
+            # Link Nodes
+            ao_catcher.node_tree.links.new(node_ao.outputs['AO'],
+                                           node_out.inputs['Surface'])
+            ao_catcher.node_tree.links.new(node_bg.outputs['Color'],
+                                           node_ao.inputs['Color'])
+            ao_catcher.node_tree.links.new(node_mapping.outputs['Vector'],
+                                           node_bg.inputs['Vector'])
+            ao_catcher.node_tree.links.new(node_geom.outputs['Incoming'],
+                                           node_mapping.inputs['Vector'])
+
+        return ao_catcher
+
+    def getGround(self):
+        name = "%s Ground" % Constants.prefix
+        if name in bpy.data.objects.keys():
+            ground = bpy.data.objects[name]
+        else:
+            bpy.ops.mesh.primitive_plane_add(radius = self.controlsRadius * 2,
+                                             location = (0, 0, -Data.height))
+            ground = bpy.data.objects[bpy.context.active_object.name]
+            ground.name = name
+            ground.data.name = ground.name
+
+            if Options.aoCatcher:
+                ground.data.materials.append(self.getAOCatcher())
+
+            bpy.ops.object.constraint_add(type='CHILD_OF')
+            ground.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
+            ground.constraints.active.target = self.controlsEmpty
+
+            ground.lock_location = (True, True, True)
+            ground.lock_rotation = (True, True, True)
+            ground.lock_scale = (True, True, True)
+
+        return ground
+
+    def getGroup(self):
+        name = '%s %s' % (Constants.prefix, Data.name)
+        if name in bpy.data.groups.keys():
+            group = bpy.data.groups[name]
+        else:
+            bpy.ops.object.select_pattern(pattern='%s*' % Constants.prefix,
+                                          case_sensitive=True,
+                                          extend=False)
+            group = bpy.ops.group.create(name=name)
+        return group
+
+if __name__ == '__main__':
+    bpy.utils.register_class(SetupSIBL)
+    bpy.ops.import_scene.setup_sibl()
