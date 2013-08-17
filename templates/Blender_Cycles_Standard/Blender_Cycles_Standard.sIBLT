@@ -51,7 +51,7 @@ aoCatcher = @aoCatcher | 1 | Boolean | Ground AO Catcher
 
 [Remote Connection]
 ConnectionType = @ConnectionType | Socket | String | Connection Type
-ExecutionCommand = @ExecutionCommand | python("import os;import sys;path = r\"$loaderScriptPath\";directory = os.path.dirname(path);module = os.path.splitext(os.path.basename(path))[0];not directory in sys.path and sys.path.append(directory);import_ = __import__(module);reload(import_);setup = import_.Setup(); setup.execute()"); | String | Execution Command
+ExecutionCommand = @ExecutionCommand | $loaderScriptPath | String | Execution Command
 DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
@@ -69,8 +69,10 @@ from math import cos, sin, pi
 
 # Blender imports
 import bpy
+import bmesh
 
 def convertInputColors(color):
+    """Convert list of colors in range 0-255 to range 0-1."""
     if color == [-1]:
         return color
 
@@ -109,6 +111,9 @@ def distributeNodesVertical(node_list, margin):
         datum = node
 
 def parseDynamicLightsAttribute(data):
+    """Return dictionary of Light objects.
+
+    If errors are encountered they returned as a list in the 'parserWarings' item."""
     if data == "-1":
         return {}
 
@@ -133,6 +138,7 @@ def parseDynamicLightsAttribute(data):
     return dynamicLights
 
 def setNodeName(node, name):
+    """Set node 'name' and 'label' to match 'name'."""
     node.name = name
     node.label = name
 
@@ -193,55 +199,52 @@ class Options(object):
     aoCatcher = @aoCatcher
 
 class SetupSIBL(bpy.types.Operator):
-    """Setup sIBL lighting environment.
+    """Setup sIBL lighting environment."""
 
-    This operator is intended to be called by a sIBL_GUI helper script."""
-
-    bl_idname = "import_scene.setup_sibl"
+    bl_idname = "import_sibl_gui.setup_sibl"
     bl_label = "Setup sIBL Lighting Environment"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_description = "This operator is intended to be called by a sIBL_GUI " \
+                     "helper script."
 
-    def __init__(self):
-        self.bl_description = self.__doc__
-
-        if "-1" in (Data.backgroundFile,
-                    Data.reflectionFile,
-                    Data.lightingFile):
-            pass
-            #TODO: Give user option of canceling or proceeding with import.
-            #      Could do some more error checking here too.
-#            "%s | Non Template compatible sIBL " \
-#                                          "Set provided: Unpredictable " \
-#                                          "results may occur! Would you " \
-#                                          "like to proceed anyway?" % Constants.applicationName
-
-        self.sibl_shader = None
-        self.imageBackground = None
-        self.imageReflection = None
-        self.imageLighting = None
-        self.sun = None
-        self.dynamicLights = None
-        self.controlsEmpty = None
-        self.ground = None
-        self.sibl_group = None
-        self.scene = bpy.context.scene
-        self.controlsRadius = Constants.controlsRadius
+    scene = None
+    controlsEmpty = None
+    imageLighting = None
+    imageBackground = None
+    imageReflection = None
+    siblShader = None
+    sun = None
+    dynamicLights = None
+    ground = None
+    siblGroup = None
 
     def execute(self, context):
-        print("%s | Starting %s file import!" % (Constants.applicationName,
-                                                 Constants.title))
+        # TODO: Validate sIBL data (should happen in Data class to avoid
+        #       individual checks below.
+#        if "-1" in (Data.backgroundFile,
+#                    Data.reflectionFile,
+#                    Data.lightingFile):
+#            pass
 
-        self.setRenderer()
+#            #      Could do some more error checking here too.
+##            "%s | Non Template compatible sIBL " \
+##                                          "Set provided: Unpredictable " \
+##                                          "results may occur! Would you " \
+##                                          "like to proceed anyway?" % Constants.applicationName
+#
+        self.scene = context.scene
+        self.setCyclesRenderer()
         self.deleteSession()
         if Options.hideLights:
             self.hideSceneLights()
 
-        images = self.getImages()
+        self.controlsEmpty = self.getControlsEmpty()
+
+        images = self.getEnvironmentImages()
         self.imageBackground = images['background']
         self.imageReflection = images['reflection']
         self.imageLighting = images['lighting']
-        self.controlsEmpty = self.getControlsEmpty()
-        self.sibl_shader = self.getEnvironmentShaders()
+        self.siblShader = self.getEnvironmentShaders()
         self.connectEnvironment()
 
         if Options.createSun and Data.sunU != -1 and Data.sunV != -1:
@@ -251,22 +254,17 @@ class SetupSIBL(bpy.types.Operator):
         if Options.createGround:
             self.ground = self.getGround()
 
-        self.sibl_group = self.getGroup()
-
-        print("%s | %s file import done!" % (Constants.applicationName,
-                                             Constants.title))
+        self.siblGroup = self.getGroup()
 
         return {'FINISHED'}
 
-    def setRenderer(self):
+    def setCyclesRenderer(self):
+        """Set renderer to Cycles."""
         self.scene.render.engine = 'CYCLES'
 
     def deleteSession(self):
         """Delete existing sIBL session."""
-        bpy.ops.object.select_pattern(pattern='%s*' % Constants.prefix,
-                                      case_sensitive=True,
-                                      extend=False)
-        bpy.ops.object.delete()
+
         if self.scene.world.name.startswith(Constants.prefix):
             used_existing = False
             for world in bpy.data.worlds:
@@ -277,11 +275,15 @@ class SetupSIBL(bpy.types.Operator):
             if not used_existing:
                 bpy.ops.world.new()
                 self.scene.world = bpy.data.worlds[-1]
-        for data_collection in (bpy.data.images,
+        for obj in bpy.data.objects:
+            if obj.name.startswith(Constants.prefix) and \
+               obj.name in self.scene.objects.keys():
+                self.scene.objects.unlink(obj)
+        for data_collection in (bpy.data.objects,
+                                bpy.data.images,
                                 bpy.data.lamps,
                                 bpy.data.materials,
                                 bpy.data.meshes,
-                                bpy.data.objects,
                                 bpy.data.worlds,
                                 bpy.data.groups,
                                 bpy.data.node_groups):
@@ -297,36 +299,37 @@ class SetupSIBL(bpy.types.Operator):
                         print('Unable to remove %s, it has %i users.' % (data.name,
                                                                          data.users))
 
-    def getImages(self):
+    def getEnvironmentImages(self):
+        """Return dictionary of environment map images."""
         return {'background': bpy.data.images.load(Data.backgroundFile),
                 'reflection': bpy.data.images.load(Data.reflectionFile),
                 'lighting': bpy.data.images.load(Data.lightingFile)}
 
     def getControlsEmpty(self):
+        """Return controls empty object in scene."""
         name = '%s Controls' % Constants.prefix
-        if name in bpy.data.objects.keys():
-            if bpy.data.objects[name].type != 'EMPTY':
-                bpy.data.objects.remove(name)
+        if name in self.scene.objects.keys():
+            controls =  self.scene.objects[name]
         else:
-            bpy.ops.object.add(type = 'EMPTY',
-                               location = (0, 0, Data.height))
-        controls = bpy.data.objects[bpy.context.active_object.name]
-        controls.name = name
-        controls.empty_draw_type = 'SPHERE'
-        controls.empty_draw_size = self.controlsRadius
-        #TODO calculate north rotation.
-        controls.lock_location = (True, True, True)
-        controls.lock_rotation = (True, True, False)
-        return controls
+            controls = bpy.data.objects.new(name, None)
+            controls.empty_draw_type = 'SPHERE'
+            controls.empty_draw_size = Constants.controlsRadius
+            controls.location = (0, 0, Data.height)
+            #TODO calculate north rotation.
+            controls.lock_location = (True, True, True)
+            controls.lock_rotation = (True, True, False)
+            self.scene.objects.link(controls)
+        return self.scene.objects[controls.name]
 
     def hideSceneLights(self):
+        """Hide all lamps in the current scene."""
         for obj in self.scene.objects:
             if obj.type == 'LAMP':
                 obj.hide = True
                 obj.hide_render = True
 
     def getRGBAdjustmentGroup(self):
-        """Create node group for adjusting the Brightness and contrast of each
+        """Return node group for adjusting the Brightness and contrast of each
         color channel in an RGB image."""
         grp_name = '%s RGB Bright/Contrast' % Constants.prefix
         if grp_name in bpy.data.node_groups.keys():
@@ -371,13 +374,13 @@ class SetupSIBL(bpy.types.Operator):
                 adjust_group.links.new(grp_in.outputs[grp_in_socket],
                                        node.inputs[adj])
                 adjust_group.inputs[grp_in_socket].name = '%s %s' % (node.name.split()[0],
-                                                                adj)
+                                                                     adj)
                 grp_in_socket += 1
 
         return adjust_group
 
     def getEnvironmentShaders(self):
-        """Create sIBL environment shader node group."""
+        """Return sIBL environment shader node group."""
 
         rgb_adjust = self.getRGBAdjustmentGroup()
 
@@ -517,8 +520,8 @@ class SetupSIBL(bpy.types.Operator):
             if key != 'World Output':
                 world.node_tree.nodes.remove(value)
         shader_grp = world.node_tree.nodes.new('ShaderNodeGroup')
-        shader_grp.node_tree = self.sibl_shader
-        setNodeName(shader_grp, self.sibl_shader.name)
+        shader_grp.node_tree = self.siblShader
+        setNodeName(shader_grp, self.siblShader.name)
         distributeNodesHorizontal((shader_grp,
                                    world.node_tree.nodes['World Output']),
                                   Constants.nodeMargin)
@@ -543,19 +546,21 @@ class SetupSIBL(bpy.types.Operator):
 
     def getLight(self, name, light_type, color, multiplier, uCoordinate,
                  vCoordinate, scale, enable_mis):
+        """Create lamp in current scene."""
         theta = (0.5-uCoordinate)*pi*2
         phi = vCoordinate*pi
         x = cos(theta) * sin(phi) * scale
         y = sin(theta) * sin(phi) * scale
         z = cos(phi) * scale
-        bpy.ops.object.add(type = 'LAMP', location = (x, y, z))
-        light = bpy.data.objects[bpy.context.active_object.name]
-        light.name = name
-        light.data.name = light.name
-        light.data.type = Constants.lightTypes[light_type]
+
+        light_data = bpy.data.lamps.new(name,
+                                        type=Constants.lightTypes[light_type])
+        light = bpy.data.objects.new(name, light_data)
+        light.location = (x, y, z)
+
         if enable_mis:
-            light.data.cycles.use_multiple_importance_sampling = True
-        light.data.use_nodes = True
+            light_data.cycles.use_multiple_importance_sampling = True
+        light_data.use_nodes = True
         emission_shader = light.data.node_tree.nodes['Emission']
         emission_shader.inputs['Strength'].default_value =  multiplier
         emission_shader.inputs['Color'].default_value = (color[0],
@@ -576,11 +581,10 @@ class SetupSIBL(bpy.types.Operator):
 #            setAttributes({"%s.coneAngle" % light : 96,
 #                            "%s.penumbraAngle" % light : 16})
 
-        bpy.ops.object.constraint_add(type='CHILD_OF')
+        light.constraints.new(type='CHILD_OF')
         light.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
         light.constraints.active.target = self.controlsEmpty
-
-        bpy.ops.object.constraint_add(type='TRACK_TO')
+        light.constraints.new(type='TRACK_TO')
         light.constraints.active.name = 'Track to %s' % self.controlsEmpty.name
         light.constraints.active.target = self.controlsEmpty
         light.constraints.active.up_axis = 'UP_Y'
@@ -590,30 +594,40 @@ class SetupSIBL(bpy.types.Operator):
         light.lock_rotation = (True, True, True)
         light.lock_scale = (True, True, True)
 
+        self.scene.objects.link(light)
         return light
 
     def getSun(self):
-        return self.getLight("%s Sun" % Constants.prefix,
-                             Options.sunLightType, Data.sunColor,
-                             Data.sunMultiplier, Data.sunU, Data.sunV,
-                             self.controlsRadius * 4, Options.misSun)
+        """Return sun light in current scene."""
+        name = "%s Sun" % Constants.prefix
+        if name in self.scene.objects.keys():
+            sun =  self.scene.objects[name]
+        else:
+            sun = self.getLight(name, Options.sunLightType, Data.sunColor,
+                                 Data.sunMultiplier, Data.sunU, Data.sunV,
+                                 Constants.controlsRadius * 4, Options.misSun)
+        return sun
 
     def getDynamicLights(self):
+        """Return list of dynamic lights in current scene."""
         dynamic_lights = []
         for light in Data.dynamicLights.values():
-            dynamic_lights.append(self.getLight("%s %s" % (Constants.prefix,
-                                                           light.name),
-                                                Options.dynamicLightsType,
-                                                light.color,
-                                                light.multiplier,
-                                                light.uCoordinate,
-                                                light.vCoordinate,
-                                                self.controlsRadius * 2,
-                                                Options.misDynamic))
+            name = "%s %s" % (Constants.prefix, light.name)
+            if name in self.scene.objects.keys():
+                dynamic_lights.append(self.scene.objects[name])
+            else:
+                dynamic_lights.append(self.getLight(name,
+                                                    Options.dynamicLightsType,
+                                                    light.color,
+                                                    light.multiplier,
+                                                    light.uCoordinate,
+                                                    light.vCoordinate,
+                                                    Constants.controlsRadius * 2,
+                                                    Options.misDynamic))
         return dynamic_lights
 
     def getAOCatcher(self):
-        """Create Ambient Occlusion catcher material."""
+        """Return Ambient Occlusion catcher material in current scene."""
         name = '%s AO Catcher' % Constants.prefix
         if name in bpy.data.materials.keys():
             ao_catcher = bpy.data.materials
@@ -647,24 +661,35 @@ class SetupSIBL(bpy.types.Operator):
                                            node_bg.inputs['Vector'])
             ao_catcher.node_tree.links.new(node_geom.outputs['Incoming'],
                                            node_mapping.inputs['Vector'])
-
         return ao_catcher
 
     def getGround(self):
+        """Return ground plane in current scene."""
         name = "%s Ground" % Constants.prefix
-        if name in bpy.data.objects.keys():
-            ground = bpy.data.objects[name]
+        if name in self.scene.objects.keys():
+            ground =  self.scene.objects[name]
         else:
-            bpy.ops.mesh.primitive_plane_add(radius = self.controlsRadius * 2,
-                                             location = (0, 0, -Data.height))
-            ground = bpy.data.objects[bpy.context.active_object.name]
+            m_data = bpy.data.meshes.new(name)
+            bm_data = bmesh.new()
+            bm_data.from_mesh(m_data)
+
+            radius = Constants.controlsRadius * 2
+            bm_data.verts.new((-radius, -radius, -Data.height))
+            bm_data.verts.new((radius, -radius, -Data.height))
+            bm_data.verts.new((radius, radius, -Data.height))
+            bm_data.verts.new((-radius, radius, -Data.height))
+            bm_data.faces.new(bm_data.verts)
+
+            bm_data.to_mesh(m_data)
+            bm_data.free()
+
+            ground = bpy.data.objects.new(name, m_data)
             ground.name = name
-            ground.data.name = ground.name
 
             if Options.aoCatcher:
                 ground.data.materials.append(self.getAOCatcher())
 
-            bpy.ops.object.constraint_add(type='CHILD_OF')
+            ground.constraints.new(type='CHILD_OF')
             ground.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
             ground.constraints.active.target = self.controlsEmpty
 
@@ -672,17 +697,19 @@ class SetupSIBL(bpy.types.Operator):
             ground.lock_rotation = (True, True, True)
             ground.lock_scale = (True, True, True)
 
+            self.scene.objects.link(ground)
         return ground
 
     def getGroup(self):
+        """Return sIBL group in current scene."""
         name = '%s %s' % (Constants.prefix, Data.name)
-        if name in bpy.data.groups.keys():
-            group = bpy.data.groups[name]
+        if name in self.scene.objects.keys():
+            group =  self.scene.objects[name]
         else:
-            bpy.ops.object.select_pattern(pattern='%s*' % Constants.prefix,
-                                          case_sensitive=True,
-                                          extend=False)
-            group = bpy.ops.group.create(name=name)
+            group = bpy.data.groups.new(name)
+            for obj in bpy.data.objects:
+                if obj.name.startswith(Constants.prefix):
+                    group.objects.link(obj)
         return group
 
 if __name__ == '__main__':

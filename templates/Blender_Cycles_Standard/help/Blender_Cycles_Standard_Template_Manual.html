@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta name="generator" content=
+	"HTML Tidy for Linux (vers 25 March 2009), see www.w3.org" />
+	<meta http-equiv="Content-Type" content=
+	"text/html; charset=utf-8" />
+	<meta name="generator" content=
+	"Docutils 0.10: http://docutils.sourceforge.net/" />
+
+	<title></title>
+	<style type="text/css">
+/*<![CDATA[*/
+
+	body {
+		background-color: rgb(32, 32, 32);
+		color: rgb(192, 192, 192);
+		text-align: justify;
+		font-size: 10pt;
+		margin: 10px 10px 10px 10px;
+	}
+
+	A:link {
+		color: rgb(160, 96, 64);
+		text-decoration: none;
+	}
+
+	A:visited {
+		text-decoration: none;
+		color: rgb(160, 96, 64);
+	}
+
+	A:active {
+		text-decoration: none;
+		color: rgb(160, 96, 64);
+	}
+
+	A:hover {
+		text-decoration: underline;
+		color: rgb(160, 96, 64);
+	}
+
+	table {
+		border-color: rgb(96, 96, 96);
+		border-collapse: collapse;
+		border-style: solid;
+		border-width: 2px;
+	}
+
+	pre {
+		background-color: rgb(64, 64, 64);
+		border: 2px solid rgb(160, 96, 64);
+		border-left: none;
+		border-right: none;
+		color: rgb(224, 224, 224);
+		font-size: 12pt;
+		padding: 5px;
+		white-space: pre-wrap;
+	}
+
+	tt {
+		background-color: rgb(64, 64, 64);
+		color: rgb(224, 224, 224);
+		padding: 5px;
+		white-space: pre-wrap;
+		white-space: -moz-pre-wrap !important;
+	}
+
+	::-webkit-scrollbar {
+		height: 12px;
+		width: 12px;
+	}
+
+	::-webkit-scrollbar-track-piece  {
+		background-color: rgb(48, 48, 48);
+	}
+
+	::-webkit-scrollbar-thumb:horizontal, ::-webkit-scrollbar-thumb:vertical {
+		background-color: rgb(96, 96, 96);
+	}
+
+	::-webkit-scrollbar-thumb:horizontal:hover, ::-webkit-scrollbar-thumb:vertical:hover {
+		background-color: rgb(128, 128, 128);
+	}
+
+	::-webkit-scrollbar-thumb:horizontal {
+		width: 50px;
+	}
+
+	::-webkit-scrollbar-thumb:vertical {
+		height: 50px;
+	}
+	/*]]>*/
+	</style>
+</head>
+
+<body>
+	<div class="document">
+		<div class="section" id="blender-cycles-standard-template">
+			<h1>Blender Cycles Standard - Template</h1>
+		</div>
+
+		<div class="section" id="manual-help-file">
+			<h1>Manual - Help File</h1>
+
+			<div class="section" id="table-of-content">
+				<h2>Table Of Content</h2>
+
+				<ul class="simple">
+					<li><a class="reference internal" href=
+					"#introduction">Introduction</a></li>
+
+					<li>
+						<a class="reference internal" href=
+						"#options">Options</a>
+
+						<ul>
+							<li><a class="reference internal" href=
+							"#common-attributes">Common
+							Attributes</a></li>
+
+							<li><a class="reference internal" href=
+							"#additional-attributes">Additional
+							Attributes</a></li>
+						</ul>
+					</li>
+
+					<li><a class="reference internal" href=
+					"#blender-sibl-controls">Blender sIBL
+					Controls</a></li>
+
+					<li><a class="reference internal" href=
+					"#known-issues">Known Issues</a></li>
+
+					<li><a class="reference internal" href=
+					"#changes">Changes</a></li>
+
+					<li><a class="reference internal" href=
+					"#about">About</a></li>
+				</ul>
+			</div>
+
+			<div class="section" id="introduction">
+				<h2>Introduction</h2>
+
+				<p>Blender Cycles Standard is a sIBL_GUI Template
+				for the Cycles renderer in Blender 2.68 and newer.
+				It provides a bridge between Blender and Smart
+				IBL.</p>
+			</div>
+
+			<div class="section" id="options">
+				<h2>Options</h2>
+			</div>
+
+			<div class="section" id="common-attributes">
+				<h2>Common Attributes</h2>
+
+				<ul class="simple">
+					<li><strong>Scene Setup Prefix</strong>:
+					Defines the prefix used by the Scene
+					Setup.</li>
+
+					<li><strong>Create Background</strong>: Enable
+					the Background Environment Shader ( Using the
+					High Resolution LDR file of the current sIBL
+					Set ). Note that disabling this option will
+					still add the Background Shader to the node
+					tree, however, its strength will be set to
+					0.</li>
+
+					<li><strong>Create Reflection</strong>: Enable
+					the Reflection Environment Shader ( Using the
+					Reflection HDR file of the current sIBL Set ).
+					Note that disabling this option will still add
+					the Reflection Shader to the node tree,
+					however, its strength will be set to 0.</li>
+
+					<li><strong>Create Lighting</strong>: Enable
+					the Lighting Environment Shader ( Using the
+					Lighting HDR file of the current sIBL Set ).
+					Note that disabling this option will still add
+					the Lighting Shader to the node tree, however,
+					its strength will be set to 0.</li>
+
+					<li><strong>Create Sun</strong>: Create the
+					light used as the Sun.</li>
+
+					<li><strong>Create Dynamic Lights</strong>:
+					Create the sIBL Dynamic Lights.</li>
+				</ul>
+			</div>
+
+			<div class="section" id="additional-attributes">
+				<h2>Additional Attributes</h2>
+
+				<ul class="simple">
+					<li><strong>Sun Light Type</strong>: Create the
+					Sun as one of these light types: "Sun", "Area",
+					"Spot", "Point".</li>
+
+					<li><strong>Dynamic Lights Type</strong>:
+					Create the Dynamic Lights as one of these light
+					types: "Sun", "Area", "Spot", "Point".</li>
+
+					<li><strong>Importance Sample
+					Environment</strong>: Enable Multiple
+					Importance Sampling for the World Environment
+					Shader.</li>
+
+					<li><strong>Importance Sample Sun</strong>:
+					Enable Multiple Importance Sampling for sun
+					light.</li>
+
+					<li><strong>Importance Sample Dynamic</strong>:
+					Enable Multiple Importance Sampling for dynamic
+					lights.</li>
+
+					<li><strong>Hide Lights</strong>: Hide all
+					existing Scene lights.</li>
+
+					<li><strong>Create Ground</strong>: Add a
+					Ground Plane to the Scene.</li>
+
+					<li><strong>Ground AO Catcher</strong>: Assign
+					an Ambient Occlusion catcher material to the
+					Ground.</li>
+				</ul>
+			</div>
+
+			<div class="section" id="blender-sibl-controls">
+				<h2>Blender sIBL Controls</h2>
+
+				<p>There are several controls available on the
+				World Surface panel.</p>
+
+				<ul class="simple">
+					<li>Strength of the light emitted by the
+					different sIBL environment maps.</li>
+
+					<li>Brightness / Contrast Controls of the
+					different sIBL environment maps.</li>
+				</ul>
+
+				<table border="1" class="docutils">
+					<colgroup>
+						<col width="100%" />
+					</colgroup>
+
+					<tbody valign="top">
+						<tr>
+							<td><img alt=
+							"resources/pictures/sIBL_Controls_Attributes.jpg"
+							class="first last" src=
+							"resources/pictures/sIBL_Controls_Attributes.jpg" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="section" id="known-issues">
+				<h2>Known Issues</h2>
+
+				<ul class="simple">
+					<li>Rotation of the sIBL Controls empty moves
+					the sun and dynamic lights but does not rotate
+					the environment shaders. The inverse of the
+					empty's rotation can be manually use to adjust
+					the Mapping nodes within the sIBL environment
+					and material node groups. Hooking this up
+					properly probably is at the top of the TODO
+					list.</li>
+
+					<li>North values specified in sIBL sets are
+					ignored. This will be implemented after
+					rotation of sIBL Controls is hooked up
+					properly.</li>
+
+					<li>No shadow catcher material for the ground
+					plane. As a temporary workaround I've included
+					the option of applying an Ambient Occlusion
+					catcher material to the ground plane so at
+					least there is a hint of a contact shadow.
+					Until someone writes a shadow catcher shader or
+					we get some more shader math nodes I'm not sure
+					how to resolve this.</li>
+
+					<li>The strength values used for lights may not
+					be physically plausible. Strength values are
+					set to the multiplier value specified in the
+					sIBL file without any attempts at conversion.
+					This seems to work pretty well for environment
+					shaders and sun lamps, whose strength values,
+					the Blender wiki claims, are specified in
+					Watts/m<sup>2</sup>. However, according to the
+					wiki the strength of area, spot, and point
+					lamps is specified in Watts. Therefore,
+					additional considerations are required for
+					these lamps and they will typically require a
+					much larger strength value to have any visible
+					effect for the same visible effect. As long as
+					you stick to Sun Lamps for the Sun and Dynamic
+					lights the current results should be
+					reasonable.</li>
+
+					<li>Plates listed in the sIBL file are
+					ignored.</li>
+				</ul>
+			</div>
+
+			<div class="section" id="changes">
+				<h2>Changes</h2>
+
+				<p><a class="reference external" href=
+				"http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Changes/Changes.html">
+				sIBL_GUI_Templates - Changes</a></p>
+			</div>
+
+			<div class="section" id="about">
+				<h2>About</h2>
+
+				<div class="line-block">
+					<div class="line">
+						<strong>sIBL_GUI</strong> by Thomas
+						Mansencal - 2008 - 2013
+					</div>
+
+					<div class="line">
+						Copyright© 2008 - 2013 - Thomas Mansencal
+						- <a class="reference external" href=
+						"mailto:thomas.mansencal@gmail.com">thomas.mansencal@gmail.com</a>
+					</div>
+
+					<div class="line">
+						This software is released under terms of
+						GNU GPL V3 license: <a class=
+						"reference external" href=
+						"http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>
+					</div>
+
+					<div class="line">
+						<a class="reference external" href=
+						"http://www.thomasmansencal.com/">http://www.thomasmansencal.com/</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

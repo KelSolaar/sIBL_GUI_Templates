@@ -69,8 +69,8 @@ Blender sIBL Controls
 
 There are several controls available on the World Surface panel.
 
--  Strength of the light emitted by the different sIBL Components.
--  Brightness / Contrast Controls of the different sIBL Components.
+-  Strength of the light emitted by the different sIBL environment maps.
+-  Brightness / Contrast Controls of the different sIBL environment maps.
 
 +-----------------------------------------------------------------+
 | ..  image:: resources/pictures/sIBL_Controls_Attributes.jpg     |
@@ -100,7 +100,8 @@ Known Issues
    Therefore, additional considerations are required for these lamps and
    they will typically require a much larger strength value to have any
    visible effect for the same visible effect. As long as you stick to Sun
-   Lamps for the Sun and Dynamic lights the current results should be reasonable.
+   Lamps for the Sun and Dynamic lights the current results should be
+   reasonable.
 -  Plates listed in the sIBL file are ignored.
 
 Changes
