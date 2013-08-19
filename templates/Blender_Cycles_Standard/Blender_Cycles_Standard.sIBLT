@@ -40,11 +40,12 @@ createSun = @createSun | 1 | Boolean | Create Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
+lightStrength = @lightStrength | 3.14 | Float | Total Light Strength
 sunLightType = @sunLightType | Sun;Area;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Sun;Area;Spot;Point | Enum | Dynamic Lights Type
-misEnvironment = @misEnvironment | 1 | Boolean | Multiple Importance Sample Environment
-misSun = @misSun | 0 | Boolean | Multiple Importance Sample Sun
-misDynamic = @misDynamic | 0 | Boolean | Multiple Importance Sample Dynamic Lights
+misEnvironment = @misEnvironment | 1 | Boolean | Importance Sample Environment
+misSun = @misSun | 0 | Boolean | Importance Sample Sun
+misDynamic = @misDynamic | 0 | Boolean | Importance Sample Dynamic Lights
 hideLights = @hideLights | 1 | Boolean | Hide Lights
 createGround = @createGround | 1 | Boolean | Create Ground
 aoCatcher = @aoCatcher | 1 | Boolean | Ground AO Catcher
@@ -70,6 +71,12 @@ from math import cos, sin, pi
 # Blender imports
 import bpy
 import bmesh
+
+def close(a, b, rtol=0.00001, atol=0.00000001):
+    """Return true if two floats are equal within a tolerance.
+
+    Modeled after Numpy's allclose."""
+    return abs(a - b) <= (atol + rtol * abs(b))
 
 def convertInputColors(color):
     """Convert list of colors in range 0-255 to range 0-1."""
@@ -189,6 +196,7 @@ class Options(object):
     createLighting = @createLighting
     createSun = @createSun
     createLights = @createLights
+    lightStrength = @lightStrength
     sunLightType = "@sunLightType"
     dynamicLightsType = "@dynamicLightsType"
     misEnvironment = @misEnvironment
@@ -219,6 +227,11 @@ class SetupSIBL(bpy.types.Operator):
     siblGroup = None
 
     def execute(self, context):
+        for id, data in Data.dynamicLights.items():
+            if id == 'parserWarnings':
+                for msg in data:
+                    self.report({'WARNING'}, msg)
+                continue
         # TODO: Validate sIBL data (should happen in Data class to avoid
         #       individual checks below.
 #        if "-1" in (Data.backgroundFile,
@@ -247,10 +260,14 @@ class SetupSIBL(bpy.types.Operator):
         self.siblShader = self.getEnvironmentShaders()
         self.connectEnvironment()
 
+        if close(Options.lightStrength, 0):
+            slope = 1.0
+        else:
+            slope = Options.lightStrength / self.getLightBrightness()
         if Options.createSun and Data.sunU != -1 and Data.sunV != -1:
-            self.sun = self.getSun()
+            self.sun = self.getSun(slope)
         if Options.createLights and Data.dynamicLights:
-            self.dynamicLights = self.getDynamicLights()
+            self.dynamicLights = self.getDynamicLights(slope)
         if Options.createGround:
             self.ground = self.getGround()
 
@@ -327,6 +344,15 @@ class SetupSIBL(bpy.types.Operator):
             if obj.type == 'LAMP':
                 obj.hide = True
                 obj.hide_render = True
+
+    def getLightBrightness(self):
+        """Return sum of multipliers for the Sun, and all Dynamic lights."""
+        brightness = max(Data.sunMultiplier, 0)
+        for id, data in Data.dynamicLights.items():
+            if id == 'parserWarnings':
+                continue
+            brightness += data.multiplier
+        return brightness
 
     def getRGBAdjustmentGroup(self):
         """Return node group for adjusting the Brightness and contrast of each
@@ -511,7 +537,7 @@ class SetupSIBL(bpy.types.Operator):
                 grp_in_socket += 1
         return shader_grp
 
-    def connectEnvironment(self):
+    def connectEnvironment(self, slope=1.0):
         """Connect Environment shader to world and control empty."""
         name = '%s %s' %  (Constants.prefix, Data.name)
         world = bpy.data.worlds.new(name)
@@ -537,7 +563,7 @@ class SetupSIBL(bpy.types.Operator):
         else:
             shader_grp.inputs[1].default_value = 0
         if Options.createReflection:
-            shader_grp.inputs[2].default_value = Data.lightingMultiplier
+            shader_grp.inputs[2].default_value = Data.lightingMultiplier * slope
         else:
             shader_grp.inputs[2].default_value = 0
         if Options.misEnvironment:
@@ -545,7 +571,7 @@ class SetupSIBL(bpy.types.Operator):
         self.scene.world = world
 
     def getLight(self, name, light_type, color, multiplier, uCoordinate,
-                 vCoordinate, scale, enable_mis):
+                 vCoordinate, scale, enable_mis, slope=1.0):
         """Create lamp in current scene."""
         theta = (0.5-uCoordinate)*pi*2
         phi = vCoordinate*pi
@@ -561,25 +587,32 @@ class SetupSIBL(bpy.types.Operator):
         if enable_mis:
             light_data.cycles.use_multiple_importance_sampling = True
         light_data.use_nodes = True
+
+        # TODO: The following ad-hoc strength adjustments seem to give more or
+        #       less the right answer but I should really dig in to Cycle's
+        #       lighting code to figure out what the actual adjustments
+        #       should be.
+        if light_type == "Sun":
+            # The default size produces shadows that are way to soft.
+            light_data.shadow_soft_size = 0.01
+
+        # Assume size is a diameter not radius.
+        radius = light_data.shadow_soft_size / 2
+        strength = 1 - radius**2
+        if light_type in ("Point", "Spot"):
+            strength *= 4 * pi * scale**2
+        elif light_type == "Area":
+            strength *= 4 * scale**2
+        else:
+            strength = 1
+        strength *= multiplier * slope
+
         emission_shader = light.data.node_tree.nodes['Emission']
-        emission_shader.inputs['Strength'].default_value =  multiplier
+        emission_shader.inputs['Strength'].default_value =  strength
         emission_shader.inputs['Color'].default_value = (color[0],
                                                          color[1],
                                                          color[2],
                                                          1)
-
-        # TODO: Apply physically plausible strength scaling and other
-        #       per lamp polish.
-#        if type == "Area":
-#            cmds.setAttr("%s.areaLight" % light, True)
-#            scale = scale / 2
-#        elif type == "Sun":
-#            pass
-#        elif type == "Point":
-#            pass
-#        elif type == "Spot":
-#            setAttributes({"%s.coneAngle" % light : 96,
-#                            "%s.penumbraAngle" % light : 16})
 
         light.constraints.new(type='CHILD_OF')
         light.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
@@ -597,7 +630,7 @@ class SetupSIBL(bpy.types.Operator):
         self.scene.objects.link(light)
         return light
 
-    def getSun(self):
+    def getSun(self, slope=1.0):
         """Return sun light in current scene."""
         name = "%s Sun" % Constants.prefix
         if name in self.scene.objects.keys():
@@ -605,25 +638,29 @@ class SetupSIBL(bpy.types.Operator):
         else:
             sun = self.getLight(name, Options.sunLightType, Data.sunColor,
                                  Data.sunMultiplier, Data.sunU, Data.sunV,
-                                 Constants.controlsRadius * 4, Options.misSun)
+                                 Constants.controlsRadius * 4, Options.misSun,
+                                 slope)
         return sun
 
-    def getDynamicLights(self):
+    def getDynamicLights(self, slope=1.0):
         """Return list of dynamic lights in current scene."""
         dynamic_lights = []
-        for light in Data.dynamicLights.values():
-            name = "%s %s" % (Constants.prefix, light.name)
+        for id, data in Data.dynamicLights.items():
+            if id == 'parserWarnings':
+                continue
+            name = "%s %s" % (Constants.prefix, data.name)
             if name in self.scene.objects.keys():
                 dynamic_lights.append(self.scene.objects[name])
             else:
                 dynamic_lights.append(self.getLight(name,
                                                     Options.dynamicLightsType,
-                                                    light.color,
-                                                    light.multiplier,
-                                                    light.uCoordinate,
-                                                    light.vCoordinate,
+                                                    data.color,
+                                                    data.multiplier,
+                                                    data.uCoordinate,
+                                                    data.vCoordinate,
                                                     Constants.controlsRadius * 2,
-                                                    Options.misDynamic))
+                                                    Options.misDynamic,
+                                                    slope))
         return dynamic_lights
 
     def getAOCatcher(self):

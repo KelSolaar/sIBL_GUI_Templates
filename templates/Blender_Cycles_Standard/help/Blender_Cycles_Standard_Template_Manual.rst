@@ -49,6 +49,10 @@ Common Attributes
 
 Additional Attributes
 ---------------------
+
+-  **Light Strength**: The strength of all sun and dynamic lights in the
+   scene will sum to this value. Setting it to 0 will use the strength values
+   specified in the sIBL file without scaling.
 -  **Sun Light Type**: Create the Sun as one of these light types: "Sun",
    "Area", "Spot", "Point".
 -  **Dynamic Lights Type**: Create the Dynamic Lights as one of these light
@@ -92,16 +96,18 @@ Known Issues
    someone writes a shadow catcher shader or we get some more shader math nodes
    I'm not sure how to resolve this.
 -  The strength values used for lights may not be physically plausible.
-   Strength values are set to the multiplier value specified in the sIBL file
-   without any attempts at conversion. This seems to work pretty well for
-   environment  shaders and sun lamps, whose strength values, the Blender wiki
-   claims, are specified in Watts/m\ :sup:`2`\ . However, according to the wiki
-   the strength of area, spot, and point lamps is specified in Watts.
-   Therefore, additional considerations are required for these lamps and
-   they will typically require a much larger strength value to have any
-   visible effect for the same visible effect. As long as you stick to Sun
-   Lamps for the Sun and Dynamic lights the current results should be
-   reasonable.
+   For the environment map and sun lamps, strength values are set to the
+   multiplier value specified in the sIBL file. The strength of other lamps
+   are scaled so that the energy received at the control empty is equivalent to
+   the output of a sun lamp. This scheme tends to produce scenes that are
+   underlit. This is due in part to the fact that sun lamps and environment
+   maps of equal strength do not add the same amount of light to the scene.
+   In particular the relationship seems to be a uniform white world with
+   strength equal to 1 adds the same amount of light as a sun lamp with
+   strength equal to pi, although it is not entirely clear to me why this
+   relationship should exist. Adjusting the Light Strength setting changes the
+   total amount of light that lamps add to the scene and can be used to adjust
+   for these differences.
 -  Plates listed in the sIBL file are ignored.
 
 Changes
