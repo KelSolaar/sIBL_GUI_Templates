@@ -67,6 +67,7 @@ DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
 # Standard library imports
 from math import cos, sin, pi
+from os import path
 
 # Blender imports
 import bpy
@@ -137,8 +138,8 @@ def parseDynamicLightsAttribute(data):
                                                                        uCoordinate=float(tokens[i+6]),
                                                                        vCoordinate=float(tokens[i+7]))
     except Exception as error:
-        parserWarnings.append("Exception raised while parsing the Dynamic " \
-                               "Lights attribute: '%s'." % error)
+        parserWarnings.append(('WARNING', "Exception raised while parsing " \
+                               "the Dynamic Lights attribute: '%s'." % error))
 
     if parserWarnings:
         dynamicLights['parserWarnings'] = parserWarnings
@@ -148,6 +149,24 @@ def setNodeName(node, name):
     """Set node 'name' and 'label' to match 'name'."""
     node.name = name
     node.label = name
+
+def validateData():
+    """Validate sIBL file.
+
+    Return list of 2 tuples giving severity and error message."""
+    errors = []
+
+    for id, data in Data.dynamicLights.items():
+        if id == 'parserWarnings':
+            errors.extend(data)
+
+    for name, img_file in (('Background Image', Data.backgroundFile),
+                           ('Reflection Image', Data.reflectionFile),
+                           ('Lighting Image', Data.lightingFile)):
+        print('%s, %s' % (name, img_file))
+        if img_file == "-1" or not path.isfile(img_file):
+            errors.append(('ERROR', "Unable to read '%s' from sIBL." % name))
+    return errors
 
 class Constants(object):
     applicationName = "sIBL_GUI"
@@ -227,24 +246,16 @@ class SetupSIBL(bpy.types.Operator):
     siblGroup = None
 
     def execute(self, context):
-        for id, data in Data.dynamicLights.items():
-            if id == 'parserWarnings':
-                for msg in data:
-                    self.report({'WARNING'}, msg)
-                continue
-        # TODO: Validate sIBL data (should happen in Data class to avoid
-        #       individual checks below.
-#        if "-1" in (Data.backgroundFile,
-#                    Data.reflectionFile,
-#                    Data.lightingFile):
-#            pass
+        msgs = validateData()
+        print('*'*40)
+        print(msgs)
+        for severity, msg in msgs:
+            print(severity)
+            print(msg)
+            self.report({severity}, msg)
+            if severity == 'ERROR':
+                return {'CANCELLED'}
 
-#            #      Could do some more error checking here too.
-##            "%s | Non Template compatible sIBL " \
-##                                          "Set provided: Unpredictable " \
-##                                          "results may occur! Would you " \
-##                                          "like to proceed anyway?" % Constants.applicationName
-#
         self.scene = context.scene
         self.setCyclesRenderer()
         self.deleteSession()
