@@ -163,7 +163,6 @@ def validateData():
     for name, img_file in (('Background Image', Data.backgroundFile),
                            ('Reflection Image', Data.reflectionFile),
                            ('Lighting Image', Data.lightingFile)):
-        print('%s, %s' % (name, img_file))
         if img_file == "-1" or not path.isfile(img_file):
             errors.append(('ERROR', "Unable to read '%s' from sIBL." % name))
     return errors
@@ -573,7 +572,7 @@ class SetupSIBL(bpy.types.Operator):
             shader_grp.inputs[1].default_value = Data.reflectionMultiplier
         else:
             shader_grp.inputs[1].default_value = 0
-        if Options.createReflection:
+        if Options.createLighting:
             shader_grp.inputs[2].default_value = Data.lightingMultiplier * slope
         else:
             shader_grp.inputs[2].default_value = 0
