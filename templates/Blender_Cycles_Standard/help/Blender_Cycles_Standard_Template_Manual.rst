@@ -83,13 +83,12 @@ There are several controls available on the World Surface panel.
 Known Issues
 ------------
 
--  Rotation of the sIBL Controls empty moves the sun and dynamic lights but
-   does not rotate the environment shaders. The inverse of the empty's rotation
-   can be manually use to adjust the Mapping nodes within the sIBL environment
-   and material node groups. Hooking this up properly probably is at the top of
-   the TODO list.
--  North values specified in sIBL sets are ignored. This will be implemented
-   after rotation of sIBL Controls is hooked up properly.
+-  The environment background does not update in real-time while rotating the
+   control empty. Note that rotation will be correct when rendered. The AO
+   catcher material on the ground plane correctly updates in real time so one
+   work around is to create a large sphere disable it for rendering and assign
+   the same materials and constraints as the ground plane. This bug seems to
+   be related to how drivers are assigned to nodes within groups.
 -  No shadow catcher material for the ground plane. As a temporary workaround
    I've included the option of applying an Ambient Occlusion catcher material
    to the ground plane so at least there is a hint of a contact shadow. Until
@@ -105,9 +104,14 @@ Known Issues
    In particular the relationship seems to be a uniform white world with
    strength equal to 1 adds the same amount of light as a sun lamp with
    strength equal to pi, although it is not entirely clear to me why this
-   relationship should exist. Adjusting the Light Strength setting changes the
-   total amount of light that lamps add to the scene and can be used to adjust
-   for these differences.
+   relationship should exist. The Light Strength parameter sets the total
+   amount of light that all sIBL lights add to the scene, therefore it can
+   be used to adjust for this difference. Setting Light Strength to its default
+   (0) uses the values defined in the sIBL set. Note that light strength
+   normalization occurs before the falloff correction applied to all non-sun
+   lamps, therefore, it can also be used as a correction factor if you plan to
+   change the distance of the point, spot, or area lamps from the center of the
+   scene, e.g. by scaling the control empty.
 -  Plates listed in the sIBL file are ignored.
 
 Changes

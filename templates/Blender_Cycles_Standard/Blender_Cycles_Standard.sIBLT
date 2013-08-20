@@ -40,7 +40,7 @@ createSun = @createSun | 1 | Boolean | Create Sun
 createLights = @createLights | 1 | Boolean | Create Dynamic Lights
 
 [Additional Attributes]
-lightStrength = @lightStrength | 3.14 | Float | Total Light Strength
+lightStrength = @lightStrength | 0 | Float | Total Light Strength
 sunLightType = @sunLightType | Sun;Area;Spot;Point | Enum | Sun Light Type
 dynamicLightsType = @dynamicLightsType | Sun;Area;Spot;Point | Enum | Dynamic Lights Type
 misEnvironment = @misEnvironment | 1 | Boolean | Importance Sample Environment
@@ -150,6 +150,8 @@ def setNodeName(node, name):
     node.name = name
     node.label = name
 
+    return node.name
+
 def validateData():
     """Validate sIBL file.
 
@@ -165,6 +167,12 @@ def validateData():
                            ('Lighting Image', Data.lightingFile)):
         if img_file == "-1" or not path.isfile(img_file):
             errors.append(('ERROR', "Unable to read '%s' from sIBL." % name))
+
+    if Data.north == -1:
+        Data.north = 0
+    if Data.height == -1:
+        Data.height = 0
+
     return errors
 
 class Constants(object):
@@ -246,11 +254,7 @@ class SetupSIBL(bpy.types.Operator):
 
     def execute(self, context):
         msgs = validateData()
-        print('*'*40)
-        print(msgs)
         for severity, msg in msgs:
-            print(severity)
-            print(msg)
             self.report({severity}, msg)
             if severity == 'ERROR':
                 return {'CANCELLED'}
@@ -342,7 +346,7 @@ class SetupSIBL(bpy.types.Operator):
             controls.empty_draw_type = 'SPHERE'
             controls.empty_draw_size = Constants.controlsRadius
             controls.location = (0, 0, Data.height)
-            #TODO calculate north rotation.
+            controls.rotation_euler = (0, 0, -Data.north * 2 * pi)
             controls.lock_location = (True, True, True)
             controls.lock_rotation = (True, True, False)
             self.scene.objects.link(controls)
@@ -444,10 +448,13 @@ class SetupSIBL(bpy.types.Operator):
 
         adjust_background = shader_grp.nodes.new('ShaderNodeGroup')
         adjust_background.node_tree = rgb_adjust
+        setNodeName(adjust_background, 'Adjust Background')
         adjust_reflection = shader_grp.nodes.new('ShaderNodeGroup')
         adjust_reflection.node_tree = rgb_adjust
+        setNodeName(adjust_reflection, 'Adjust Reflection')
         adjust_lighting = shader_grp.nodes.new('ShaderNodeGroup')
         adjust_lighting.node_tree = rgb_adjust
+        setNodeName(adjust_lighting, 'Adjust Lighting')
 
         image_background = shader_grp.nodes.new('ShaderNodeTexEnvironment')
         image_background.image = self.imageBackground
@@ -460,7 +467,6 @@ class SetupSIBL(bpy.types.Operator):
         setNodeName(image_lighting, 'Lighting Image')
 
         mapping = shader_grp.nodes.new('ShaderNodeMapping')
-        mapping.rotation = (0, 0, -pi/2)
 
         input_lightpath = shader_grp.nodes.new('ShaderNodeLightPath')
         input_tex_coords = shader_grp.nodes.new('ShaderNodeTexCoord')
@@ -557,7 +563,7 @@ class SetupSIBL(bpy.types.Operator):
                 world.node_tree.nodes.remove(value)
         shader_grp = world.node_tree.nodes.new('ShaderNodeGroup')
         shader_grp.node_tree = self.siblShader
-        setNodeName(shader_grp, self.siblShader.name)
+        name = setNodeName(shader_grp, self.siblShader.name)
         distributeNodesHorizontal((shader_grp,
                                    world.node_tree.nodes['World Output']),
                                   Constants.nodeMargin)
@@ -578,13 +584,33 @@ class SetupSIBL(bpy.types.Operator):
             shader_grp.inputs[2].default_value = 0
         if Options.misEnvironment:
             world.cycles.sample_as_light = True
+
+        mapping_path = world.node_tree.nodes[name].node_tree.nodes['Mapping'].path_from_id('rotation')
+        group_path = world.node_tree.nodes[name].path_from_id()
+
+        # TODO: This is a horrible hack but it is not clear how to add the
+        #       driver to the node group directly.
+        tmp_node = world.node_tree.nodes.new('ShaderNodeMapping')
+        rotation_z = world.node_tree.driver_add(tmp_node.path_from_id('rotation'), 2)
+        world.node_tree.nodes.remove(tmp_node)
+        rotation_z.data_path = '.'.join((group_path, 'node_tree', mapping_path))
+
+        rotation_z.driver.type = 'SUM'
+        rotation_target = rotation_z.driver.variables.new()
+        rotation_target.name = 'rot_z'
+        rotation_target.type = 'TRANSFORMS'
+        rotation_target.targets[0].id = self.controlsEmpty
+        rotation_target.targets[0].transform_type = 'ROT_Z'
+        rotation_z.modifiers[0].coefficients = [pi / 2, 0]
+        rotation_z.modifiers[0].use_additive = True
+
         self.scene.world = world
 
     def getLight(self, name, light_type, color, multiplier, uCoordinate,
                  vCoordinate, scale, enable_mis, slope=1.0):
         """Create lamp in current scene."""
-        theta = (0.5-uCoordinate)*pi*2
-        phi = vCoordinate*pi
+        theta = (0.25 + uCoordinate) * pi * 2
+        phi = vCoordinate * pi
         x = cos(theta) * sin(phi) * scale
         y = sin(theta) * sin(phi) * scale
         z = cos(phi) * scale
@@ -692,7 +718,6 @@ class SetupSIBL(bpy.types.Operator):
             node_bg.image = self.imageBackground
             node_mapping = ao_catcher.node_tree.nodes.new('ShaderNodeMapping')
             node_mapping.scale = (-1, -1, -1)
-            node_mapping.rotation = (0, 0, -pi/2)
             node_geom = ao_catcher.node_tree.nodes.new('ShaderNodeNewGeometry')
 
             # Organize nodes
@@ -708,6 +733,18 @@ class SetupSIBL(bpy.types.Operator):
                                            node_bg.inputs['Vector'])
             ao_catcher.node_tree.links.new(node_geom.outputs['Incoming'],
                                            node_mapping.inputs['Vector'])
+
+            mapping = ao_catcher.node_tree.nodes['Mapping']
+            rotation_z = ao_catcher.node_tree.driver_add(mapping.path_from_id('rotation'),
+                                                     2)
+            rotation_z.driver.type = 'SUM'
+            rotation_target = rotation_z.driver.variables.new()
+            rotation_target.name = 'rot_z'
+            rotation_target.type = 'TRANSFORMS'
+            rotation_target.targets[0].id = self.controlsEmpty
+            rotation_target.targets[0].transform_type = 'ROT_Z'
+            rotation_z.modifiers[0].coefficients = [pi / 2, 0]
+            rotation_z.modifiers[0].use_additive = True
         return ao_catcher
 
     def getGround(self):
@@ -745,6 +782,7 @@ class SetupSIBL(bpy.types.Operator):
             ground.lock_scale = (True, True, True)
 
             self.scene.objects.link(ground)
+
         return ground
 
     def getGroup(self):
