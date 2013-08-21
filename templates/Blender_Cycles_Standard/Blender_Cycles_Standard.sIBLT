@@ -166,7 +166,8 @@ def validateData():
                            ('Reflection Image', Data.reflectionFile),
                            ('Lighting Image', Data.lightingFile)):
         if img_file == "-1" or not path.isfile(img_file):
-            errors.append(('ERROR', "Unable to read '%s' from sIBL." % name))
+            errors.append(('ERROR', "Unable to read '%s' from '%s'." % (name,
+                                                                        Data.name)))
 
     if Data.north == -1:
         Data.north = 0

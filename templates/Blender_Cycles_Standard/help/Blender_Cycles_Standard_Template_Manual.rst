@@ -113,6 +113,7 @@ Known Issues
    change the distance of the point, spot, or area lamps from the center of the
    scene, e.g. by scaling the control empty.
 -  Plates listed in the sIBL file are ignored.
+-  Lightsmith sIBL sets are not supported.
 
 Changes
 ----------
