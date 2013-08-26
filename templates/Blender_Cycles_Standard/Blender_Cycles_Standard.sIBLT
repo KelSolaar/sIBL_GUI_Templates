@@ -496,26 +496,26 @@ class SetupSIBL(bpy.types.Operator):
 
         # Link Nodes
         shader_grp.links.new(mix_bounce_cam.outputs['Shader'],
-                         grp_out.inputs[0])
+                             grp_out.inputs[0])
         shader_grp.outputs[0].name = 'Background'
 
         shader_grp.links.new(input_lightpath.outputs['Is Camera Ray'],
-                         mix_bounce_cam.inputs['Fac'])
+                             mix_bounce_cam.inputs['Fac'])
         shader_grp.links.new(mix_enviro_refl.outputs['Shader'],
-                         mix_bounce_cam.inputs[1])
+                             mix_bounce_cam.inputs[1])
         shader_grp.links.new(shader_background.outputs['Background'],
-                         mix_bounce_cam.inputs[2])
+                             mix_bounce_cam.inputs[2])
 
         shader_grp.links.new(input_lightpath.outputs['Is Glossy Ray'],
-                         mix_enviro_refl.inputs['Fac'])
+                             mix_enviro_refl.inputs['Fac'])
         shader_grp.links.new(shader_lighting.outputs['Background'],
-                         mix_enviro_refl.inputs[1])
+                             mix_enviro_refl.inputs[1])
         shader_grp.links.new(shader_reflection.outputs['Background'],
-                         mix_enviro_refl.inputs[2])
+                             mix_enviro_refl.inputs[2])
 
 
         shader_grp.links.new(input_tex_coords.outputs['Generated'],
-                         mapping.inputs['Vector'])
+                             mapping.inputs['Vector'])
         grp_in_socket = 0
         for shader in (shader_background, shader_reflection, shader_lighting):
             shader_id = shader.name.split()[0]
@@ -591,10 +591,26 @@ class SetupSIBL(bpy.types.Operator):
 
         # TODO: This is a horrible hack but it is not clear how to add the
         #       driver to the node group directly.
-        tmp_node = world.node_tree.nodes.new('ShaderNodeMapping')
-        rotation_z = world.node_tree.driver_add(tmp_node.path_from_id('rotation'), 2)
-        world.node_tree.nodes.remove(tmp_node)
+        bogus_mapping = world.node_tree.nodes.new('ShaderNodeMapping')
+        bogus_mapping.label = 'Bogus Mapping'
+        bogus_mapping.hide = True
+        bogus_mapping.mute = True
+        bogus_mapping.location = (0, -1000)
+        rotation_z = world.node_tree.driver_add(bogus_mapping.path_from_id('rotation'), 2)
         rotation_z.data_path = '.'.join((group_path, 'node_tree', mapping_path))
+
+        #TODO: Connecting a driver to the bogus_mapping node (even though it
+        #      doesn't do anything is required so that the viewport background
+        #      will update in real-time when viewed in 'Rendered' mode.
+        bogus_z  = world.node_tree.driver_add(bogus_mapping.path_from_id('rotation'), 2)
+        bogus_z.driver.type = 'SUM'
+        bogus_target = bogus_z.driver.variables.new()
+        bogus_target.name = 'rot_z'
+        bogus_target.type = 'TRANSFORMS'
+        bogus_target.targets[0].id = self.controlsEmpty
+        bogus_target.targets[0].transform_type = 'ROT_Z'
+        bogus_z.modifiers[0].coefficients = [pi / 2, 0]
+        bogus_z.modifiers[0].use_additive = True
 
         rotation_z.driver.type = 'SUM'
         rotation_target = rotation_z.driver.variables.new()

@@ -83,12 +83,6 @@ There are several controls available on the World Surface panel.
 Known Issues
 ------------
 
--  The environment background does not update in real-time while rotating the
-   control empty. Note that rotation will be correct when rendered. The AO
-   catcher material on the ground plane correctly updates in real time so one
-   work around is to create a large sphere disable it for rendering and assign
-   the same materials and constraints as the ground plane. This bug seems to
-   be related to how drivers are assigned to nodes within groups.
 -  No shadow catcher material for the ground plane. As a temporary workaround
    I've included the option of applying an Ambient Occlusion catcher material
    to the ground plane so at least there is a hint of a contact shadow. Until
@@ -112,7 +106,14 @@ Known Issues
    lamps, therefore, it can also be used as a correction factor if you plan to
    change the distance of the point, spot, or area lamps from the center of the
    scene, e.g. by scaling the control empty.
--  Plates listed in the sIBL file are ignored.
+-  An extra node 'Bogus Mapping' and driver is added to the World node tree.
+   This node has no effect on final renders and is only added as a work around
+   so that the World's background will update in real time when the view port
+   is in 'Rendered' mode. Hopefully this hack can be removed in the future.
+-  Plates listed in the sIBL file are ignored (Ditch River sIBL uses this).
+-  U and V image offsets are ignored (Example of sIBL using this?).
+-  All background images are assumed to be equirectangular (Example of sIBL
+   using this feature?).
 -  Lightsmith sIBL sets are not supported.
 
 Changes
