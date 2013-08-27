@@ -347,7 +347,7 @@ class SetupSIBL(bpy.types.Operator):
             controls.empty_draw_type = 'SPHERE'
             controls.empty_draw_size = Constants.controlsRadius
             controls.location = (0, 0, Data.height)
-            controls.rotation_euler = (0, 0, -Data.north * 2 * pi)
+            controls.rotation_euler = (0, 0, Data.north * 2 * pi)
             controls.lock_location = (True, True, True)
             controls.lock_rotation = (True, True, False)
             self.scene.objects.link(controls)
@@ -609,8 +609,7 @@ class SetupSIBL(bpy.types.Operator):
         bogus_target.type = 'TRANSFORMS'
         bogus_target.targets[0].id = self.controlsEmpty
         bogus_target.targets[0].transform_type = 'ROT_Z'
-        bogus_z.modifiers[0].coefficients = [pi / 2, 0]
-        bogus_z.modifiers[0].use_additive = True
+        bogus_z.modifiers[0].coefficients = [pi / 2, -1]
 
         rotation_z.driver.type = 'SUM'
         rotation_target = rotation_z.driver.variables.new()
@@ -618,15 +617,14 @@ class SetupSIBL(bpy.types.Operator):
         rotation_target.type = 'TRANSFORMS'
         rotation_target.targets[0].id = self.controlsEmpty
         rotation_target.targets[0].transform_type = 'ROT_Z'
-        rotation_z.modifiers[0].coefficients = [pi / 2, 0]
-        rotation_z.modifiers[0].use_additive = True
+        rotation_z.modifiers[0].coefficients = [pi / 2, -1]
 
         self.scene.world = world
 
     def getLight(self, name, light_type, color, multiplier, uCoordinate,
                  vCoordinate, scale, enable_mis, slope=1.0):
         """Create lamp in current scene."""
-        theta = (0.25 + uCoordinate) * pi * 2
+        theta = -(uCoordinate - 0.25) * 2 * pi
         phi = vCoordinate * pi
         x = cos(theta) * sin(phi) * scale
         y = sin(theta) * sin(phi) * scale
@@ -760,8 +758,7 @@ class SetupSIBL(bpy.types.Operator):
             rotation_target.type = 'TRANSFORMS'
             rotation_target.targets[0].id = self.controlsEmpty
             rotation_target.targets[0].transform_type = 'ROT_Z'
-            rotation_z.modifiers[0].coefficients = [pi / 2, 0]
-            rotation_z.modifiers[0].use_additive = True
+            rotation_z.modifiers[0].coefficients = [pi / 2, -1]
         return ao_catcher
 
     def getGround(self):
