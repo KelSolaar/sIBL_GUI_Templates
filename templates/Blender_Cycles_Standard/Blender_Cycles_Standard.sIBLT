@@ -2,7 +2,7 @@
 Name = @Name | Blender Cycles Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Blender_Cycles_Standard_Template_Manual.html | String | Help File
-Release = @Release | 0.1 | String | Template Release
+Release = @Release | 0.2 | String | Template Release
 Date = @Date | 7 August 2013 | String | Date
 Author = @Author | Jed Frechette | String | Author
 Email = @Email | jedfrechette@gmail.com | String | Email
@@ -85,6 +85,25 @@ def convertInputColors(color):
         return color
 
     return [value / 255.0 for value in color]
+
+def deleteData(data_collection, clear=False):
+    """Delete sIBL data objects, optionally clearing users before removal."""
+    for data in data_collection:
+        if data.name.startswith(Constants.prefix):
+            if clear:
+                try:
+                    data.user_clear()
+                    can_continue = True
+                except:
+                    can_continue = False
+            else:
+                can_continue = True
+            if can_continue:
+                try:
+                    data_collection.remove(data)
+                except RuntimeError:
+                    print('Unable to remove %s, it has %i users.' % (data.name,
+                                                                     data.users))
 
 def distributeNodesHorizontal(node_list, margin):
     """Layout nodes in a horizontal line separated by margin.
@@ -297,6 +316,7 @@ class SetupSIBL(bpy.types.Operator):
     def deleteSession(self):
         """Delete existing sIBL session."""
 
+        # Delete worlds
         if self.scene.world.name.startswith(Constants.prefix):
             used_existing = False
             for world in bpy.data.worlds:
@@ -307,35 +327,45 @@ class SetupSIBL(bpy.types.Operator):
             if not used_existing:
                 bpy.ops.world.new()
                 self.scene.world = bpy.data.worlds[-1]
+            deleteData(bpy.data.worlds)
+
+        # Delete Shaders
+        for ng in bpy.data.node_groups:
+            if ng.name.startswith(Constants.prefix) and ng.name.endswith('Shader'):
+                ng.nodes.clear()
+        deleteData(bpy.data.node_groups, True)
+
+        # Delete helper groups
+        for ng in bpy.data.node_groups:
+            if ng.name.startswith(Constants.prefix) and ng.name.endswith('RGB Bright/Contrast'):
+                ng.nodes.clear()
+        deleteData(bpy.data.node_groups, True)
+
+        # Delete objects
         for obj in bpy.data.objects:
             if obj.name.startswith(Constants.prefix) and \
                obj.name in self.scene.objects.keys():
                 self.scene.objects.unlink(obj)
-        for data_collection in (bpy.data.objects,
-                                bpy.data.images,
-                                bpy.data.lamps,
-                                bpy.data.materials,
-                                bpy.data.meshes,
-                                bpy.data.worlds,
-                                bpy.data.groups,
-                                bpy.data.node_groups):
+        deleteData(bpy.data.objects)
 
-            for data in data_collection:
-                if data.name.startswith(Constants.prefix):
-                    try:
-                        data_collection.remove(data)
-                    except RuntimeError:
-                        #TODO: Sort out what is using my node groups so I can
-                        #      properly delete them rather than reusing them
-                        #      like I do now.
-                        print('Unable to remove %s, it has %i users.' % (data.name,
-                                                                         data.users))
+        # Delete everything else.
+        for data_col in (bpy.data.meshes,
+                         bpy.data.materials,
+                         bpy.data.lamps,
+                         bpy.data.groups):
+            deleteData(data_col)
+
+        # Delete images
+        deleteData(bpy.data.images, True)
 
     def getEnvironmentImages(self):
         """Return dictionary of environment map images."""
-        return {'background': bpy.data.images.load(Data.backgroundFile),
+        imgs = {'background': bpy.data.images.load(Data.backgroundFile),
                 'reflection': bpy.data.images.load(Data.reflectionFile),
                 'lighting': bpy.data.images.load(Data.lightingFile)}
+        for img in imgs.values():
+            img.name = ' '.join([Constants.prefix, img.name])
+        return imgs
 
     def getControlsEmpty(self):
         """Return controls empty object in scene."""
@@ -716,7 +746,7 @@ class SetupSIBL(bpy.types.Operator):
 
     def getAOCatcher(self):
         """Return Ambient Occlusion catcher material in current scene."""
-        name = '%s AO Catcher' % Constants.prefix
+        name = '%s %s AO Catcher' % (Constants.prefix, Data.name)
         if name in bpy.data.materials.keys():
             ao_catcher = bpy.data.materials
         else:
