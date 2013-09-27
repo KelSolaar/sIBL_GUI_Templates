@@ -2,7 +2,7 @@
 Name = @Name | Blender Cycles Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Blender_Cycles_Standard_Template_Manual.html | String | Help File
-Release = @Release | 0.2 | String | Template Release
+Release = @Release | 0.3 | String | Template Release
 Date = @Date | 7 August 2013 | String | Date
 Author = @Author | Jed Frechette | String | Author
 Email = @Email | jedfrechette@gmail.com | String | Email
@@ -85,25 +85,6 @@ def convertInputColors(color):
         return color
 
     return [value / 255.0 for value in color]
-
-def deleteData(data_collection, clear=False):
-    """Delete sIBL data objects, optionally clearing users before removal."""
-    for data in data_collection:
-        if data.name.startswith(Constants.prefix):
-            if clear:
-                try:
-                    data.user_clear()
-                    can_continue = True
-                except:
-                    can_continue = False
-            else:
-                can_continue = True
-            if can_continue:
-                try:
-                    data_collection.remove(data)
-                except RuntimeError:
-                    print('Unable to remove %s, it has %i users.' % (data.name,
-                                                                     data.users))
 
 def distributeNodesHorizontal(node_list, margin):
     """Layout nodes in a horizontal line separated by margin.
@@ -262,6 +243,7 @@ class SetupSIBL(bpy.types.Operator):
                      "helper script."
 
     scene = None
+    world = None
     controlsEmpty = None
     imageLighting = None
     imageBackground = None
@@ -280,85 +262,75 @@ class SetupSIBL(bpy.types.Operator):
                 return {'CANCELLED'}
 
         self.scene = context.scene
-        self.setCyclesRenderer()
-        self.deleteSession()
+        self._setCyclesRenderer()
+        self._clearScene()
         if Options.hideLights:
-            self.hideSceneLights()
+            self._hideSceneLights()
 
-        self.controlsEmpty = self.getControlsEmpty()
-
-        images = self.getEnvironmentImages()
+        self.controlsEmpty = self._getControlsEmpty()
+        images = self._getEnvironmentImages()
         self.imageBackground = images['background']
         self.imageReflection = images['reflection']
         self.imageLighting = images['lighting']
-        self.siblShader = self.getEnvironmentShaders()
-        self.connectEnvironment()
+        self.siblShader = self._getEnvironmentShaders()
+        self.world = self._getWorld()
+        self.scene.world = self.world
 
         if close(Options.lightStrength, 0):
             slope = 1.0
         else:
-            slope = Options.lightStrength / self.getLightBrightness()
+            slope = Options.lightStrength / self.__getLightBrightness()
         if Options.createSun and Data.sunU != -1 and Data.sunV != -1:
-            self.sun = self.getSun(slope)
+            self.sun = self._getSun(slope)
         if Options.createLights and Data.dynamicLights:
-            self.dynamicLights = self.getDynamicLights(slope)
+            self.dynamicLights = self._getDynamicLights(slope)
         if Options.createGround:
-            self.ground = self.getGround()
+            self.ground = self._getGround()
 
-        self.siblGroup = self.getGroup()
+        self.siblGroup = self._getGroup()
 
         return {'FINISHED'}
 
-    def setCyclesRenderer(self):
+    def _setCyclesRenderer(self):
         """Set renderer to Cycles."""
         self.scene.render.engine = 'CYCLES'
 
-    def deleteSession(self):
-        """Delete existing sIBL session."""
+    def _clearScene(self):
+        """Remove existing sIBL objects from Scene."""
 
-        # Delete worlds
-        if self.scene.world.name.startswith(Constants.prefix):
-            used_existing = False
-            for world in bpy.data.worlds:
-                if not world.name.startswith(Constants.prefix):
-                    self.scene.world = world
-                    used_existing = True
-                    break
-            if not used_existing:
-                bpy.ops.world.new()
-                self.scene.world = bpy.data.worlds[-1]
-            deleteData(bpy.data.worlds)
-
-        # Delete Shaders
-        for ng in bpy.data.node_groups:
-            if ng.name.startswith(Constants.prefix) and ng.name.endswith('Shader'):
-                ng.nodes.clear()
-        deleteData(bpy.data.node_groups, True)
-
-        # Delete helper groups
-        for ng in bpy.data.node_groups:
-            if ng.name.startswith(Constants.prefix) and ng.name.endswith('RGB Bright/Contrast'):
-                ng.nodes.clear()
-        deleteData(bpy.data.node_groups, True)
-
+        # Delete Scene World
+        if self.scene.world:
+            world = self.scene.world
+            if self.scene.world.name.startswith(Constants.prefix):
+                self.scene.world = None
+                try:
+                    bpy.data.worlds.remove(world)
+                except:
+                    print('Unable to delete %s, it has %i users.' % (data.name,
+                                                                     data.users))
         # Delete objects
-        for obj in bpy.data.objects:
-            if obj.name.startswith(Constants.prefix) and \
-               obj.name in self.scene.objects.keys():
+        for obj in self.scene.objects:
+            if obj.name.startswith(Constants.prefix):
                 self.scene.objects.unlink(obj)
-        deleteData(bpy.data.objects)
+                try:
+                    if obj.type == 'EMPTY':
+                        bpy.data.objects.remove(obj)
+                    else:
+                        data = obj.data
+                        bpy.data.objects.remove(obj)
+                        if type(data) == bpy.types.Mesh:
+                            bpy.data.meshes.remove(data)
+                        elif type(data) == bpy.types.Lamp:
+                            bpy.data.lamps.remove(data)
+                except RuntimeError:
+                    print('Unable to delete %s, it has %i users.' % (data.name,
+                                                                     data.users))
+        # Delete groups
+        for grp in bpy.data.groups:
+            if grp.name.startswith(Constants.prefix) and not grp.objects.keys():
+                bpy.data.groups.remove(grp)
 
-        # Delete everything else.
-        for data_col in (bpy.data.meshes,
-                         bpy.data.materials,
-                         bpy.data.lamps,
-                         bpy.data.groups):
-            deleteData(data_col)
-
-        # Delete images
-        deleteData(bpy.data.images, True)
-
-    def getEnvironmentImages(self):
+    def _getEnvironmentImages(self):
         """Return dictionary of environment map images."""
         imgs = {'background': bpy.data.images.load(Data.backgroundFile),
                 'reflection': bpy.data.images.load(Data.reflectionFile),
@@ -367,30 +339,33 @@ class SetupSIBL(bpy.types.Operator):
             img.name = ' '.join([Constants.prefix, img.name])
         return imgs
 
-    def getControlsEmpty(self):
+    def _getControlsEmpty(self):
         """Return controls empty object in scene."""
-        name = '%s Controls' % Constants.prefix
-        if name in self.scene.objects.keys():
-            controls =  self.scene.objects[name]
-        else:
-            controls = bpy.data.objects.new(name, None)
-            controls.empty_draw_type = 'SPHERE'
-            controls.empty_draw_size = Constants.controlsRadius
-            controls.location = (0, 0, Data.height)
-            controls.rotation_euler = (0, 0, Data.north * 2 * pi)
-            controls.lock_location = (True, True, True)
-            controls.lock_rotation = (True, True, False)
-            self.scene.objects.link(controls)
+        name = '%s Controls %s' % (Constants.prefix, Data.name)
+        if name in self.scene.objects.keys() \
+           and type(self.scene.objects[name]) == bpy.types.Object \
+           and self.scene.objects[name].type == 'EMPTY':
+            return self.scene.objects[name]
+
+        controls = bpy.data.objects.new(name, None)
+        controls.empty_draw_type = 'SPHERE'
+        controls.empty_draw_size = Constants.controlsRadius
+        controls.location = (0, 0, Data.height)
+        controls.rotation_euler = (0, 0, Data.north * 2 * pi)
+        controls.lock_location = (True, True, True)
+        controls.lock_rotation = (True, True, False)
+        self.scene.objects.link(controls)
+
         return self.scene.objects[controls.name]
 
-    def hideSceneLights(self):
+    def _hideSceneLights(self):
         """Hide all lamps in the current scene."""
         for obj in self.scene.objects:
             if obj.type == 'LAMP':
                 obj.hide = True
                 obj.hide_render = True
 
-    def getLightBrightness(self):
+    def __getLightBrightness(self):
         """Return sum of multipliers for the Sun, and all Dynamic lights."""
         brightness = max(Data.sunMultiplier, 0)
         for id, data in Data.dynamicLights.items():
@@ -399,15 +374,14 @@ class SetupSIBL(bpy.types.Operator):
             brightness += data.multiplier
         return brightness
 
-    def getRGBAdjustmentGroup(self):
+    def _getRGBAdjustmentGroup(self):
         """Return node group for adjusting the Brightness and contrast of each
         color channel in an RGB image."""
-        grp_name = '%s RGB Bright/Contrast' % Constants.prefix
-        if grp_name in bpy.data.node_groups.keys():
-            adjust_group = bpy.data.node_groups[grp_name]
-            adjust_group.nodes.clear()
+        name = '%s RGB Bright/Contrast' % Constants.prefix
+        if name in bpy.data.node_groups.keys():
+            return bpy.data.node_groups[name]
         else:
-            adjust_group = bpy.data.node_groups.new(grp_name,
+            adjust_group = bpy.data.node_groups.new(name,
                                                     'ShaderNodeTree')
 
         # Create Nodes
@@ -450,17 +424,21 @@ class SetupSIBL(bpy.types.Operator):
 
         return adjust_group
 
-    def getEnvironmentShaders(self):
-        """Return sIBL environment shader node group."""
+    def _getEnvironmentShaders(self):
+        """Return sIBL environment shader node group used by current Scene
+        World or new group."""
 
-        rgb_adjust = self.getRGBAdjustmentGroup()
+        rgb_adjust = self._getRGBAdjustmentGroup()
 
-        grp_name = '%s %s Shader' % (Constants.prefix, Data.name)
-        if grp_name in bpy.data.node_groups.keys():
-            shader_grp = bpy.data.node_groups[grp_name]
+        name = '%s Shader %s' % (Constants.prefix, Data.name)
+        if self.world and self.world.use_nodes and name in self.world.node_tree.nodes.keys():
+            return self.world.node_tree.nodes[name]
+
+        if name in bpy.data.node_groups.keys():
+            shader_grp = bpy.data.node_groups[name]
             shader_grp.nodes.clear()
         else:
-            shader_grp = bpy.data.node_groups.new(grp_name, 'ShaderNodeTree')
+            shader_grp = bpy.data.node_groups.new(name, 'ShaderNodeTree')
 
         # Create Nodes
         grp_out = shader_grp.nodes.new('NodeGroupOutput')
@@ -584,11 +562,19 @@ class SetupSIBL(bpy.types.Operator):
                 grp_in_socket += 1
         return shader_grp
 
-    def connectEnvironment(self, slope=1.0):
-        """Connect Environment shader to world and control empty."""
+    def _getWorld(self):
+        """Return world in current scene."""
         name = '%s %s' %  (Constants.prefix, Data.name)
+        if self.scene.world and self.scene.world.name == name:
+            return self.scene.world
+
         world = bpy.data.worlds.new(name)
         world.use_nodes = True
+        self._connectEnvironment(world)
+        return world
+
+    def _connectEnvironment(self, world, slope=1.0):
+        """Connect Environment shader to world and control empty."""
         for key, value in world.node_tree.nodes.items():
             if key != 'World Output':
                 world.node_tree.nodes.remove(value)
@@ -637,7 +623,7 @@ class SetupSIBL(bpy.types.Operator):
         bogus_target = bogus_z.driver.variables.new()
         bogus_target.name = 'rot_z'
         bogus_target.type = 'TRANSFORMS'
-        bogus_target.targets[0].id = self.controlsEmpty
+        bogus_target.targets[0].id = self._getControlsEmpty()
         bogus_target.targets[0].transform_type = 'ROT_Z'
         bogus_z.modifiers[0].coefficients = [pi / 2, -1]
 
@@ -645,13 +631,11 @@ class SetupSIBL(bpy.types.Operator):
         rotation_target = rotation_z.driver.variables.new()
         rotation_target.name = 'rot_z'
         rotation_target.type = 'TRANSFORMS'
-        rotation_target.targets[0].id = self.controlsEmpty
+        rotation_target.targets[0].id = self._getControlsEmpty()
         rotation_target.targets[0].transform_type = 'ROT_Z'
         rotation_z.modifiers[0].coefficients = [pi / 2, -1]
 
-        self.scene.world = world
-
-    def getLight(self, name, light_type, color, multiplier, uCoordinate,
+    def _getLight(self, name, light_type, color, multiplier, uCoordinate,
                  vCoordinate, scale, enable_mis, slope=1.0):
         """Create lamp in current scene."""
         theta = -(uCoordinate - 0.25) * 2 * pi
@@ -711,29 +695,31 @@ class SetupSIBL(bpy.types.Operator):
         self.scene.objects.link(light)
         return light
 
-    def getSun(self, slope=1.0):
+    def _getSun(self, slope=1.0):
         """Return sun light in current scene."""
-        name = "%s Sun" % Constants.prefix
-        if name in self.scene.objects.keys():
-            sun =  self.scene.objects[name]
+        name = "%s Sun %s" %  (Constants.prefix, Data.name)
+        if name in self.scene.objects.keys() \
+           and type(self.scene.objects[name]) == bpy.types.Lamp:
+            sun = self.scene.objects[name]
         else:
-            sun = self.getLight(name, Options.sunLightType, Data.sunColor,
-                                 Data.sunMultiplier, Data.sunU, Data.sunV,
-                                 Constants.controlsRadius * 4, Options.misSun,
-                                 slope)
+            sun = self._getLight(name, Options.sunLightType, Data.sunColor,
+                                Data.sunMultiplier, Data.sunU, Data.sunV,
+                                Constants.controlsRadius * 4, Options.misSun,
+                                slope)
         return sun
 
-    def getDynamicLights(self, slope=1.0):
+    def _getDynamicLights(self, slope=1.0):
         """Return list of dynamic lights in current scene."""
         dynamic_lights = []
         for id, data in Data.dynamicLights.items():
             if id == 'parserWarnings':
                 continue
-            name = "%s %s" % (Constants.prefix, data.name)
-            if name in self.scene.objects.keys():
+            name = "%s %s %s" % (Constants.prefix, data.name, Data.name)
+            if name in self.scene.objects.keys() \
+               and type(self.scene.objects[name]) == bpy.types.Lamp:
                 dynamic_lights.append(self.scene.objects[name])
             else:
-                dynamic_lights.append(self.getLight(name,
+                dynamic_lights.append(self._getLight(name,
                                                     Options.dynamicLightsType,
                                                     data.color,
                                                     data.multiplier,
@@ -744,101 +730,100 @@ class SetupSIBL(bpy.types.Operator):
                                                     slope))
         return dynamic_lights
 
-    def getAOCatcher(self):
+    def _getAOCatcher(self):
         """Return Ambient Occlusion catcher material in current scene."""
-        name = '%s %s AO Catcher' % (Constants.prefix, Data.name)
+        name = '%s AO Catcher %s' % (Constants.prefix, Data.name)
+        for obj in self.scene.objects:
+            if name in obj.material_slots.keys():
+                return self.scene.objects.material_slots[name]
+
         if name in bpy.data.materials.keys():
-            ao_catcher = bpy.data.materials
+            ao_catcher = bpy.data.materials[name]
         else:
             ao_catcher = bpy.data.materials.new(name)
-            ao_catcher.use_nodes = True
-            for key, value in ao_catcher.node_tree.nodes.items():
-                if key != 'Material Output':
-                    ao_catcher.node_tree.nodes.remove(value)
+        ao_catcher.use_nodes = True
+        ao_catcher.node_tree.nodes.clear()
 
-            # Create Nodes
-            node_out = ao_catcher.node_tree.nodes['Material Output']
-            node_ao = ao_catcher.node_tree.nodes.new('ShaderNodeAmbientOcclusion')
-            node_bg = ao_catcher.node_tree.nodes.new('ShaderNodeTexEnvironment')
-            node_bg.image = self.imageBackground
-            node_mapping = ao_catcher.node_tree.nodes.new('ShaderNodeMapping')
-            node_mapping.scale = (-1, -1, -1)
-            node_geom = ao_catcher.node_tree.nodes.new('ShaderNodeNewGeometry')
+        # Create Nodes
+        node_out = ao_catcher.node_tree.nodes.new('ShaderNodeOutputMaterial')
+        node_ao = ao_catcher.node_tree.nodes.new('ShaderNodeAmbientOcclusion')
+        node_bg = ao_catcher.node_tree.nodes.new('ShaderNodeTexEnvironment')
+        node_bg.image = self.imageBackground
+        node_mapping = ao_catcher.node_tree.nodes.new('ShaderNodeMapping')
+        node_mapping.scale = (-1, -1, -1)
+        node_geom = ao_catcher.node_tree.nodes.new('ShaderNodeNewGeometry')
 
-            # Organize nodes
-            distributeNodesHorizontal((node_geom, node_mapping, node_bg,
-                                       node_ao, node_out), Constants.nodeMargin)
+        # Organize nodes
+        distributeNodesHorizontal((node_geom, node_mapping, node_bg,
+                                   node_ao, node_out), Constants.nodeMargin)
 
-            # Link Nodes
-            ao_catcher.node_tree.links.new(node_ao.outputs['AO'],
-                                           node_out.inputs['Surface'])
-            ao_catcher.node_tree.links.new(node_bg.outputs['Color'],
-                                           node_ao.inputs['Color'])
-            ao_catcher.node_tree.links.new(node_mapping.outputs['Vector'],
-                                           node_bg.inputs['Vector'])
-            ao_catcher.node_tree.links.new(node_geom.outputs['Incoming'],
-                                           node_mapping.inputs['Vector'])
+        # Link Nodes
+        ao_catcher.node_tree.links.new(node_ao.outputs['AO'],
+                                       node_out.inputs['Surface'])
+        ao_catcher.node_tree.links.new(node_bg.outputs['Color'],
+                                       node_ao.inputs['Color'])
+        ao_catcher.node_tree.links.new(node_mapping.outputs['Vector'],
+                                       node_bg.inputs['Vector'])
+        ao_catcher.node_tree.links.new(node_geom.outputs['Incoming'],
+                                       node_mapping.inputs['Vector'])
 
-            mapping = ao_catcher.node_tree.nodes['Mapping']
-            rotation_z = ao_catcher.node_tree.driver_add(mapping.path_from_id('rotation'),
+        mapping = ao_catcher.node_tree.nodes['Mapping']
+        rotation_z = ao_catcher.node_tree.driver_add(mapping.path_from_id('rotation'),
                                                      2)
-            rotation_z.driver.type = 'SUM'
-            rotation_target = rotation_z.driver.variables.new()
-            rotation_target.name = 'rot_z'
-            rotation_target.type = 'TRANSFORMS'
-            rotation_target.targets[0].id = self.controlsEmpty
-            rotation_target.targets[0].transform_type = 'ROT_Z'
-            rotation_z.modifiers[0].coefficients = [pi / 2, -1]
+        rotation_z.driver.type = 'SUM'
+        rotation_target = rotation_z.driver.variables.new()
+        rotation_target.name = 'rot_z'
+        rotation_target.type = 'TRANSFORMS'
+        rotation_target.targets[0].id = self.controlsEmpty
+        rotation_target.targets[0].transform_type = 'ROT_Z'
+        rotation_z.modifiers[0].coefficients = [pi / 2, -1]
         return ao_catcher
 
-    def getGround(self):
+    def _getGround(self):
         """Return ground plane in current scene."""
-        name = "%s Ground" % Constants.prefix
+        name = "%s Ground %s" % (Constants.prefix, Data.name)
         if name in self.scene.objects.keys():
-            ground =  self.scene.objects[name]
-        else:
-            m_data = bpy.data.meshes.new(name)
-            bm_data = bmesh.new()
-            bm_data.from_mesh(m_data)
+            return self.scene.objects[name]
 
-            radius = Constants.controlsRadius * 2
-            bm_data.verts.new((-radius, -radius, -Data.height))
-            bm_data.verts.new((radius, -radius, -Data.height))
-            bm_data.verts.new((radius, radius, -Data.height))
-            bm_data.verts.new((-radius, radius, -Data.height))
-            bm_data.faces.new(bm_data.verts)
+        m_data = bpy.data.meshes.new(name)
+        bm_data = bmesh.new()
 
-            bm_data.to_mesh(m_data)
-            bm_data.free()
+        radius = Constants.controlsRadius * 2
+        bm_data.verts.new((-radius, -radius, -Data.height))
+        bm_data.verts.new((radius, -radius, -Data.height))
+        bm_data.verts.new((radius, radius, -Data.height))
+        bm_data.verts.new((-radius, radius, -Data.height))
+        bm_data.faces.new(bm_data.verts)
 
-            ground = bpy.data.objects.new(name, m_data)
-            ground.name = name
+        bm_data.to_mesh(m_data)
+        bm_data.free()
 
-            if Options.aoCatcher:
-                ground.data.materials.append(self.getAOCatcher())
+        ground = bpy.data.objects.new(name, m_data)
 
-            ground.constraints.new(type='CHILD_OF')
-            ground.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
-            ground.constraints.active.target = self.controlsEmpty
+        if Options.aoCatcher:
+            ground.data.materials.append(self._getAOCatcher())
 
-            ground.lock_location = (True, True, True)
-            ground.lock_rotation = (True, True, True)
-            ground.lock_scale = (True, True, True)
+        ground.constraints.new(type='CHILD_OF')
+        ground.constraints.active.name = 'Child of %s' % self.controlsEmpty.name
+        ground.constraints.active.target = self.controlsEmpty
 
-            self.scene.objects.link(ground)
+        ground.lock_location = (True, True, True)
+        ground.lock_rotation = (True, True, True)
+        ground.lock_scale = (True, True, True)
 
+        self.scene.objects.link(ground)
         return ground
 
-    def getGroup(self):
+    def _getGroup(self):
         """Return sIBL group in current scene."""
         name = '%s %s' % (Constants.prefix, Data.name)
         if name in self.scene.objects.keys():
-            group =  self.scene.objects[name]
-        else:
-            group = bpy.data.groups.new(name)
-            for obj in bpy.data.objects:
-                if obj.name.startswith(Constants.prefix):
-                    group.objects.link(obj)
+            return  self.scene.objects[name]
+
+        group = bpy.data.groups.new(name)
+        for obj in bpy.data.objects:
+            if obj.name.startswith(Constants.prefix) and Data.name in obj.name:
+                group.objects.link(obj)
         return group
 
 if __name__ == '__main__':
