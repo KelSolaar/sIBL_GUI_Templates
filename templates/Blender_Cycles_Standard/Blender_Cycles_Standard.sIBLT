@@ -2,11 +2,11 @@
 Name = @Name | Blender Cycles Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Blender_Cycles_Standard_Template_Manual.html | String | Help File
-Release = @Release | 0.3 | String | Template Release
-Date = @Date | 7 August 2013 | String | Date
+Release = @Release | 0.4 | String | Template Release
+Date = @Date | 2 October 2013 | String | Date
 Author = @Author | Jed Frechette | String | Author
 Email = @Email | jedfrechette@gmail.com | String | Email
-Url = @Url | | String | Url
+Url = @Url | http://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/Import-Export/sIBL_GUI | String | Url
 Software = @Software | Blender | String | Software
 Version = @Version | 2.68+ | String | Version
 Renderer = @Renderer | Cycles | String | Renderer
@@ -57,13 +57,15 @@ DefaultAddress = @DefaultAddress | 127.0.0.1 | Integer | Default Address
 DefaultPort = @DefaultPort | 2048 | Integer | Default Port
 
 [Script]
-# @OutputScript - @Release for @Software @Version
-# Author: @Author
-# EMail: @Email
-# Homepage: @Url
-# Template path: @Path
-# Template last modified: @Date
-# sIBL_GUI
+"""
+@OutputScript - @Release for @Software @Version
+Author: @Author
+EMail: @Email
+Homepage: @Url
+Template path: @Path
+Template last modified: @Date
+See sIBL variables section for sIBL set specific variables.
+"""
 
 # Standard library imports
 from math import cos, sin, pi
@@ -176,28 +178,18 @@ def validateData():
 
     return errors
 
-class Constants(object):
-    applicationName = "sIBL_GUI"
-    prefix = "@sceneSetupPrefix"
-    package = "@Software".replace(" ", "_")
-    renderer = "@Renderer".replace(" ", "_")
-    packagePrefix = "%s_%s" % (prefix, package)
-    packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
-    title = "sIBL"
-    controlsTitle = "[ %s Controls ]" % title
-    controlsRadius = 5
-    nodeMargin = 50
-    lightTypes = {"Area" : "AREA",
-                  "Point" : "POINT",
-                  "Spot" : "SPOT",
-                  "Sun" : "SUN"}
-
 class Structure(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
 class Light(Structure):
     pass
+
+"""
+###############################################################
+Start sIBL variables.
+###############################################################
+"""
 
 class Data(object):
     name = "@Name"
@@ -232,6 +224,28 @@ class Options(object):
     hideLights = @hideLights
     createGround = @createGround
     aoCatcher = @aoCatcher
+
+class Constants(object):
+    applicationName = "sIBL_GUI"
+    prefix = "@sceneSetupPrefix"
+    package = "@Software".replace(" ", "_")
+    renderer = "@Renderer".replace(" ", "_")
+    packagePrefix = "%s_%s" % (prefix, package)
+    packageRendererPrefix = "%s_%s_%s" % (prefix, package, renderer)
+    title = "sIBL"
+    controlsTitle = "[ %s Controls ]" % title
+    controlsRadius = 5
+    nodeMargin = 50
+    lightTypes = {"Area" : "AREA",
+                  "Point" : "POINT",
+                  "Spot" : "SPOT",
+                  "Sun" : "SUN"}
+
+"""
+###############################################################
+End sIBL variables.
+###############################################################
+"""
 
 class SetupSIBL(bpy.types.Operator):
     """Setup sIBL lighting environment."""
