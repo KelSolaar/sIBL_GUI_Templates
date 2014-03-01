@@ -61,7 +61,7 @@ foundations.verbose.setVerbosityLevel(3)
 #**********************************************************************************************************************
 def listTemplatesReleases():
 	"""
-	This definition lists Templates releases.
+	Lists Templates releases.
 	"""
 
 	for template in sorted(list(foundations.walkers.filesWalker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
