@@ -3,7 +3,7 @@ echo ---------------------------------------------------------------------------
 echo sIBL_GUI_Templates - Files Gathering
 echo -------------------------------------------------------------------------------
 
-export PROJECT=/Users/KelSolaar/Documents/Development/sIBL_GUI_Templates
+export PROJECT=..
 
 export SOURCE=$PROJECT/
 export RELEASES=$PROJECT/releases/
@@ -16,7 +16,7 @@ rm -rf $REPOSITORY
 echo -------------------------------------------------------------------------------
 echo Cleanup - Begin
 echo -------------------------------------------------------------------------------
-python ./utilities/recursiveRemove.py ./templates/ .DS_Store
+python $PROJECT/utilities/recursiveRemove.py ./templates/ .DS_Store
 echo -------------------------------------------------------------------------------
 echo Cleanup - End
 echo -------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ cd $SOURCE/templates/
 zip -r $REPOSITORY/templates/3dsMax_MR_Standard.zip 3dsMax_MR_Standard --exclude "./3dsMax_MR_Standard/help/3dsMax_MR_Standard_Template_Manual.rst"
 zip -r $REPOSITORY/templates/3dsMax_Scanline_Standard.zip 3dsMax_Scanline_Standard --exclude "./3dsMax_Scanline_Standard/help/3dsMax_Scanline_Standard_Template_Manual.rst"
 zip -r $REPOSITORY/templates/3dsMax_VRay_Standard.zip 3dsMax_VRay_Standard --exclude "./3dsMax_VRay_Standard/help/3dsMax_VRay_Standard_Template_Manual.rst"
+zip -r $REPOSITORY/templates/Blender_Cycles_Standard.zip Blender_Cycles_Standard --exclude "./Blender_Cycles_Standard/help/Blender_Cycles_Standard_Template_Manual.rst"
 zip -r $REPOSITORY/templates/Maya_Arnold_Dome_Light.zip Maya_Arnold_Dome_Light --exclude "./Maya_Arnold_Dome_Light/help/Maya_Arnold_Dome_Light_Template_Manual.rst"
 zip -r $REPOSITORY/templates/Maya_Arnold_Standard.zip Maya_Arnold_Standard --exclude "./Maya_Arnold_Standard/help/Maya_Arnold_Standard_Template_Manual.rst"
 zip -r $REPOSITORY/templates/Maya_MR_Lightsmith.zip Maya_MR_Lightsmith --exclude "./Maya_MR_Lightsmith/help/Maya_MR_Lightsmith_Template_Manual.rst"
