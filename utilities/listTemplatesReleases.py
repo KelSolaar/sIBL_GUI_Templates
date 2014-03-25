@@ -40,7 +40,7 @@ from foundations.globals.constants import Constants
 #***	Module attributes.
 #**********************************************************************************************************************
 __author__ = "Thomas Mansencal"
-__copyright__ = "Copyright (C) 2008 - 2013 - Thomas Mansencal"
+__copyright__ = "Copyright (C) 2008 - 2014 - Thomas Mansencal"
 __license__ = "GPL V3.0 - http://www.gnu.org/licenses/"
 __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
@@ -61,12 +61,12 @@ foundations.verbose.setVerbosityLevel(3)
 #**********************************************************************************************************************
 def listTemplatesReleases():
 	"""
-	This definition lists Templates releases.
+	Lists Templates releases.
 	"""
 
 	for template in sorted(list(foundations.walkers.filesWalker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
 		sectionsFileParser = SectionsFileParser(template)
-		sectionsFileParser.read() and sectionsFileParser.parse(rawSections=("Script",))
+		sectionsFileParser.parse(rawSections=("Script",))
 
 		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__,
 												foundations.strings.getSplitextBasename(template),

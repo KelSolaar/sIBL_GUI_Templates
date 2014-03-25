@@ -35,7 +35,7 @@ from foundations.io import File
 #***	Module attributes.
 #**********************************************************************************************************************
 __author__ = "Thomas Mansencal"
-__copyright__ = "Copyright (C) 2008 - 2013 - Thomas Mansencal"
+__copyright__ = "Copyright (C) 2008 - 2014 - Thomas Mansencal"
 __license__ = "GPL V3.0 - http://www.gnu.org/licenses/"
 __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
@@ -83,10 +83,12 @@ def rst2html():
 
 def reStructuredTextToHtml(fileIn, fileOut):
 	"""
-	This definition outputs a reStructuredText file to html.
+	Outputs a reStructuredText file to html.
 
-	:param fileIn: File to convert. ( String )
-	:param fileOut: Output file. ( String )
+	:param fileIn: File to convert.
+	:type fileIn: unicode
+	:param fileOut: Output file.
+	:type fileOut: unicode
 	"""
 
 	LOGGER.info("{0} | Converting '{1}' reStructuredText file to html!".format(reStructuredTextToHtml.__name__, fileIn))
