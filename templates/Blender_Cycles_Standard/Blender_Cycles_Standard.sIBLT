@@ -2,7 +2,7 @@
 Name = @Name | Blender Cycles Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Blender_Cycles_Standard_Template_Manual.html | String | Help File
-Release = @Release | 0.4 | String | Template Release
+Release = @Release | 0.4.0 | String | Template Release
 Date = @Date | 2 October 2013 | String | Date
 Author = @Author | Jed Frechette | String | Author
 Email = @Email | jedfrechette@gmail.com | String | Email

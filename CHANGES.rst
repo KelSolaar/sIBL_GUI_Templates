@@ -1,10 +1,16 @@
-sIBL_GUI_Templates - 2.1.2 - Stable
+sIBL_GUI_Templates - 2.1.3 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.1.3 - Stable
+--------------
+
+-  Add Jed Frechette **Blender_Cycles_Standard** template.
+-  Ensured directional light position is correct in **Maya_Arnold_Standard** and **Maya_Arnold_Dome_Light** templates. 
 
 2.1.2 - Stable
 --------------
