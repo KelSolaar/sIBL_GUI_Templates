@@ -17,16 +17,16 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/3dsMax_VRay_St
 Comment = "3dsMax VRay Template: Drop support for 3dsmax versions prior to 3dsmax 2010."
 
 [Maya_Arnold_Dome_Light]
-Release = 0.9.1
+Release = 0.9.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_Dome_Light/Nightly/Maya_Arnold_Dome_Light.zip"
-Comment = "Maya Arnold DomeLight Template: Drop support for Maya versions prior to Maya 2011."
+Comment = "Maya Arnold DomeLight Template: Fix various issues."
 
 [Maya_Arnold_Standard]
-Release = 0.9.1
+Release = 0.9.2
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_Arnold_Standard/Nightly/Maya_Arnold_Standard.zip"
-Comment = "Maya Arnold Standard Template: Drop support for Maya versions prior to Maya 2011."
+Comment = "Maya Arnold Standard Template: Fix various issues."
 
 [Maya_MR_Lightsmith]
 Release = 1.0.7

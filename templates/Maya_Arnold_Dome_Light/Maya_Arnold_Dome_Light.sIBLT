@@ -2,8 +2,8 @@
 Name = @Name | Maya Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 0.9.1 | String | Template Release
-Date = @Date | 27 November 2012 | String | Date
+Release = @Release | 0.9.2 | String | Template Release
+Date = @Date | 25 March 2014 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -245,9 +245,12 @@ class Setup(object):
 		not cmds.pluginInfo("mtoa", q=True, loaded=True) and cmds.loadPlugin("mtoa")
 		
 		import mtoa.cmds.registerArnoldRenderer
+		import mtoa.core
 		mtoa.cmds.registerArnoldRenderer.registerArnoldRenderer()
 		
 		cmds.setAttr("defaultRenderGlobals.currentRenderer", "arnold", type="string")
+
+		mtoa.core.createOptions()
 
 	def deleteSession(self):
 		if cmds.objExists(Constants.prefix):
@@ -448,8 +451,8 @@ class Setup(object):
 		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
 		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
 		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
-		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 0.5 + (0.5 - vCoordinate),
-						"%s.parameterV" % pointOnSurfaceInfo : 0.5 + (0.5 - uCoordinate)})
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 1.0 - vCoordinate,
+						"%s.parameterV" % pointOnSurfaceInfo : uCoordinate - 0.25})
 
 		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 
