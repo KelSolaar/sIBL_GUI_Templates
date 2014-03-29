@@ -3,7 +3,7 @@ Name = @Name | Maya Arnold Standard | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Standard_Template_Manual.html | String | Help File
 Release = @Release | 0.9.2 | String | Template Release
-Date = @Date | 25 March 2014 | String | Date
+Date = @Date | 29 March 2014 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -374,7 +374,7 @@ class Setup(object):
 	def getDisplayLocator(self, name, radius):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({"%s.rotateY" % locator:-90,
+		setAttributes({"%s.rotateY" % locator:90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
 		cmds.refresh(force=True)
@@ -428,7 +428,7 @@ class Setup(object):
 		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
 		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
 		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 1.0 - vCoordinate,
-						"%s.parameterV" % pointOnSurfaceInfo : uCoordinate - 0.25})
+						"%s.parameterV" % pointOnSurfaceInfo : 1.0 - uCoordinate})
 
 		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 
