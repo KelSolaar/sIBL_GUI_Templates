@@ -167,7 +167,9 @@ class Setup(object):
 		self.feedback = None
 		self.lightsTarget = None
 		self.feedbackRadius = Options.feedbackRadius
-		self.storedSessionAttributes = {"%s_aiSky.rotateY" % Constants.prefix : None,
+		self.storedSessionAttributes = {"%s_aiSky.rotateX" % Constants.prefix : None,
+										"%s_aiSky.rotateY" % Constants.prefix : None,
+										"%s_aiSky.rotateZ" % Constants.prefix : None,
 										"%s_aiSky.scaleX" % Constants.prefix : None,
 										"%s_aiSky.scaleY" % Constants.prefix : None,
 										"%s_aiSky.scaleZ" % Constants.prefix : None,

@@ -170,7 +170,9 @@ class Setup(object):
 		self.feedback = None
 		self.lightsTarget = None
 		self.feedbackRadius = Options.feedbackRadius
-		self.storedSessionAttributes = {"%s_aiSky.rotateY" % Constants.prefix : None,
+		self.storedSessionAttributes = {"%s_aiSky.rotateX" % Constants.prefix : None,
+										"%s_aiSky.rotateY" % Constants.prefix : None,
+										"%s_aiSky.rotateZ" % Constants.prefix : None,
 										"%s_aiSky.scaleX" % Constants.prefix : None,
 										"%s_aiSky.scaleY" % Constants.prefix : None,
 										"%s_aiSky.scaleZ" % Constants.prefix : None,
@@ -409,7 +411,9 @@ class Setup(object):
 		aiSkyDomeLightTransform = getTransform(aiSkyDomeLight)
 		setAttributes({"%s.scaleX" % aiSkyDomeLightTransform : self.feedbackRadius,
 						"%s.scaleY" % aiSkyDomeLightTransform : self.feedbackRadius,
-						"%s.scaleZ" % aiSkyDomeLightTransform : self.feedbackRadius})
+						"%s.scaleZ" % aiSkyDomeLightTransform : self.feedbackRadius,
+						"%s.overrideEnabled" % aiSkyDomeLightTransform : True,
+						"%s.overrideDisplayType" % aiSkyDomeLightTransform : 2})
 		lockHideAttributes(aiSkyDomeLightTransform, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"), lock=False)
 		cmds.connectAttr("%s.instObjGroups" % aiSkyDomeLightTransform, "defaultLightSet.dagSetMembers", nextAvailable=True)
 
