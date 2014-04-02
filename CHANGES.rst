@@ -9,9 +9,9 @@ Changes
 2.1.3 - Stable
 --------------
 
--  Add Jed Frechette **Blender_Cycles_Standard** template.
+-  Added Jed Frechette **Blender_Cycles_Standard** template.
 -  Ensured directional light position is correct in **Maya_Arnold_Standard** and **Maya_Arnold_Dome_Light** templates. 
--  Implement various fixes in **Softimage_Arnold_Standard**, **Softimage_Arnold_Dome_Light** and **Softimage_Arnold_Lightsmith** templates to support latest **SItoA** build. 
+-  Fixed various issues in **Softimage_Arnold_Standard**, **Softimage_Arnold_Dome_Light** and **Softimage_Arnold_Lightsmith** templates to support latest **SItoA** build.
 
 2.1.2 - Stable
 --------------
