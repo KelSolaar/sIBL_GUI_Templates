@@ -2,9 +2,9 @@
 Name = @Name | Softimage Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 2.0.7 | String | Template
-Date = @Date | 17 April 2013 | String | Date
-Author = @Author | Kel Solaar | String | Author
+Release = @Release | 2.0.8 | String | Template
+Date = @Date | 29 March 2014 | String | Date
+Author = @Author | Kel Solaar / Matteo Pastorino | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
 Software = @Software | Softimage | String | Software
@@ -486,14 +486,10 @@ function environmentDeletion()
 	}
 }
 
-function getEnvironmentShaderBranch(container, imageSource, flipHorizontal, flipVertical, inputShader, connectionPorts, name)
+function getEnvironmentShaderBranch(container, imageSource, inputShader, connectionPorts, name)
 {
 	var imageShader = CreateShaderFromProgID("Softimage.txt2d-image-explicit.1.0", container);
 	SIConnectShaderToCnxPoint(imageSource, imageShader + ".tex", false);
-	if(flipHorizontal)
-		imageShader.repeats.x = -1;
-	if(flipVertical)
-		imageShader.repeats.y = -1;
 
 	var colorMathBasicShader = CreateShaderFromProgID("Softimage.sib_color_math_basic.1.0", container);
 	colorMathBasicShader.Parameters("op").value = 2;
@@ -530,12 +526,11 @@ function getEnvironment(passes)
 {
 	var pass = passes[0];
 
-	var skyShader = CreateShaderFromPreset(getShadersPath() + "Shaders/Environment/sky.Preset", pass);
+	var skyShader = CreateShaderFromProgID( "ArnoldCoreShaders.sky" , pass , "sky");
 	skyShader.Parameters("format").value = "latlong";
-	skyShader.Parameters("X").Parameters("x").value = -1;
 	SIConnectShaderToCnxPoint(skyShader, pass + ".EnvironmentShaderStack", false);
 
-	var raySwitchShader = CreateShaderFromPreset(getShadersPath() + "Shaders/Material/ray_switch.Preset", pass);
+	var raySwitchShader = CreateShaderFromProgID("ArnoldCoreShaders.ray_switch", pass , "ray_switch");
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
 		raySwitchShader.Parameters("shadow").Parameters(subComponents[i]).value = 0;
@@ -553,7 +548,7 @@ function getEnvironment(passes)
 		var backgroundSource = Application.CreateImageClip2(Data.backgroundFilePath, Constants.prefix + "_Background_Clip");
 		backgroundSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		ports = ["camera"];
-		getEnvironmentShaderBranch(pass, backgroundSource, false, false, raySwitchShader, ports, Constants.prefix + "_Background");
+		getEnvironmentShaderBranch(pass, backgroundSource, raySwitchShader, ports, Constants.prefix + "_Background");
 	}
 
 	if(Options.createLighting)
@@ -566,9 +561,9 @@ function getEnvironment(passes)
 		var lightingSource = Application.CreateImageClip2(sourceImage, Constants.prefix + "_Lighting_Clip");
 		lightingSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		if(Options.useDualSkyDomeSetup)
-			getSkyDomeLight(lightingSource, Constants.prefix + "_Diffuse_Skydome", true, false );
+			getSkyDomeLight(lightingSource, Constants.prefix + "_Diffuse_Skydome", 1, 0);
 		else
-			getSkyDomeLight(lightingSource, Constants.prefix + "_Skydome", true, true );
+			getSkyDomeLight(lightingSource, Constants.prefix + "_Skydome", 1, 1);
 	}
 
 	if(Options.createReflection)
@@ -576,10 +571,10 @@ function getEnvironment(passes)
 		var reflectionSource = Application.CreateImageClip2(Data.reflectionFilePath, Constants.prefix + "_Reflection_Clip");
 		reflectionSource(0).Parameters("RenderColorProfile").value = "Automatic";
 		if(Options.useDualSkyDomeSetup)
-			getSkyDomeLight(reflectionSource, Constants.prefix + "_Specular_Skydome", false, true );
+			getSkyDomeLight(reflectionSource, Constants.prefix + "_Specular_Skydome", 0, 1);
 
 		ports = ["reflection", "refraction"];
-		getEnvironmentShaderBranch(pass, reflectionSource, false, false, raySwitchShader, ports, Constants.prefix + "_Reflection");
+		getEnvironmentShaderBranch(pass, reflectionSource, raySwitchShader, ports, Constants.prefix + "_Reflection");
 	}
 
 	// Connecting The Raytype Shader To Others Passes.
@@ -719,23 +714,26 @@ function getFeedback()
 	return feedback
 }
 
-function getSkyDomeLight(imageSource, name, affectDiffuse, affectSpecular)
+function getSkyDomeLight(imageSource, name, diffuse, specular)
 {
 	var controlsGroup = getControlsGroup();
 
 	var light = ActiveSceneRoot.AddPrimitive("LightSun.Preset", name);
-	var lightShader = CreateShaderFromPreset(getShadersPath() + "Shaders/Light/arnold_skydome_light.Preset", light);
+	var lightShader = CreateShaderFromProgID("ArnoldLightShaders.arnold_skydome_light", light , name);
 	SIConnectShaderToCnxPoint(lightShader, light + ".LightShader", false);
 
-	var inputShader = getEnvironmentShaderBranch(lightShader, imageSource, true, false, "", "", name);
+	var inputShader = getEnvironmentShaderBranch(lightShader, imageSource, "", "", name);
 	SIConnectShaderToCnxPoint(inputShader, lightShader + ".color", false);
 
-	//TODO: Remove Following Line When SItoA Gets Updated.
-	lightShader.intensity.value = 0.318309;
 	lightShader.resolution.value = GetValue(imageSource + ".Source.XRes");
 	lightShader.format.value = 2;
-	lightShader.affect_diffuse.value = affectDiffuse;
-	lightShader.affect_specular.value = affectSpecular;
+	lightShader.diffuse.value = diffuse;
+	lightShader.specular.value = specular;
+	if(diffuse == 0)
+	{
+		lightShader.sss.value = 0;
+		lightShader.indirect.value = 0;	
+	}
 
 	controlsGroup.AddChild(light);
 
@@ -770,7 +768,7 @@ function getLight(parent, constraintParent, type, name, scale, intensity, color,
 	}
 
 	var light = ActiveSceneRoot.AddPrimitive(primitiveType + ".Preset", name);
-	var lightShader = CreateShaderFromPreset(getShadersPath() + "Shaders/Light/" + shaderType, light);
+	var lightShader = CreateShaderFromProgID("ArnoldLightShaders." + shaderType, light , shaderType);
 	SIConnectShaderToCnxPoint(lightShader, light + ".LightShader", false);
 
 	light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("intensity").value = intensity;
@@ -883,9 +881,9 @@ function connectFeedbackToDependencies(feedback, passes)
 
 	if(Options.createBackground || Options.createLighting || Options.createReflection)
 	{
-		AddExpr(pass + "." + Constants.prefix + "_Sky.X_angle", "-" + feedback + ".kine.global.rotx", true);
-		AddExpr(pass + "." + Constants.prefix + "_Sky.Y_angle", feedback + ".kine.global.roty", true);
-		AddExpr(pass + "." + Constants.prefix + "_Sky.Z_angle", "-" + feedback + ".kine.global.rotz", true);
+		AddExpr(pass + "." + Constants.prefix + "_Sky.X_angle", "cond(-fmod(" + feedback + ".kine.global.rotx, 360) >= 0, -fmod(" + feedback + ".kine.global.rotx, 360), 360 - fmod(" + feedback + ".kine.global.rotx, 360))", true);
+		AddExpr(pass + "." + Constants.prefix + "_Sky.Y_angle", "cond(fmod(" + feedback + ".kine.global.roty, 360) >= 0, fmod(" + feedback + ".kine.global.roty, 360), 360 + fmod(" + feedback + ".kine.global.roty, 360))", true);
+		AddExpr(pass + "." + Constants.prefix + "_Sky.Z_angle", "cond(-fmod(" + feedback + ".kine.global.rotz, 360) >= 0, -fmod(" + feedback + ".kine.global.rotz, 360), 360 - fmod(" + feedback + ".kine.global.rotz, 360))", true);
 	}
 
 	if(Options.createBackground)
@@ -915,16 +913,16 @@ function connectFeedbackToDependencies(feedback, passes)
 				switch(skyDomes[i])
 				{
 					case Constants.prefix + "_Skydome" :
-						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_diffuse", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);
-						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_specular", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);
+						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.diffuse", Constants.prefix + "." + Constants.controlsTitle + ".Lighting_Toggle", true);
+						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.specular", Constants.prefix + "." + Constants.controlsTitle + ".Reflection_Toggle", true);
 						break;
 					case Constants.prefix + "_Diffuse_Skydome" :
-						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_diffuse", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);
-						Lock(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_specular", siLockLevelManipulation);
+						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.diffuse", Constants.prefix + "." + Constants.controlsTitle + ".Lighting_Toggle", true);
+						Lock(skyDomes[i] + ".visibility.rendvis", siLockLevelManipulation);
 						break;
 					case Constants.prefix + "_Specular_Skydome" :
-						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_specular", Constants.prefix + "." + Constants.controlsTitle + "." + slots[i] + "_Toggle", true);
-						Lock(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.affect_diffuse", siLockLevelManipulation);
+						AddExpr(skyDomes[i] + ".light." + Constants.prefix + "_Arnold_Skydome_Light.specular", Constants.prefix + "." + Constants.controlsTitle + ".Reflection_Toggle", true);
+						Lock(skyDomes[i] + ".visibility.rendvis", siLockLevelManipulation);
 						break;
 				}
 				var components = ["red", "green", "blue"];
@@ -1011,7 +1009,7 @@ function getGround()
 	if(Options.shadowCatcher)
 	{
 		var groundMaterial = getMaterial(Constants.prefix + "_Ground_Material");
-		var utilityShader =  CreateShaderFromProgID("Softimage.utility.1", groundMaterial);
+		var utilityShader =  CreateShaderFromProgID("ArnoldCoreShaders.utility", groundMaterial);
 		var subComponents = ["red", "green", "blue"];
 		for(var i = 0; i < subComponents.length; i++)
 			utilityShader.Parameters("color").Parameters(subComponents[i]).value = 0.25;
@@ -1050,13 +1048,14 @@ function getGround()
 
 function getPluginPath()
 {
-	var plugin = Application.plugins("Arnold Shaders");
-	return plugin.OriginPath.replace(/\\/g, "/");
+	var plugin = Application.plugins("Arnold Render");
+	var arnoldPath = plugin.OriginPath;
+	return arnoldPath.replace(/\\/g, "/");
 }
 
 function getShadersPath()
 {
-	return getPluginPath() + "../../Data/DSPresets/";
+	return getPluginPath() + "../../../../Data/DSPresets/";
 }
 
 function objectExists(object)
