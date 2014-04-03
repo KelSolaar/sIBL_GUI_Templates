@@ -1,10 +1,17 @@
-sIBL_GUI_Templates - 2.1.2 - Stable
+sIBL_GUI_Templates - 2.1.3 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.1.3 - Stable
+--------------
+
+-  Added Jed Frechette **Blender_Cycles_Standard** template.
+-  Ensured directional light position is correct in **Maya_Arnold_Standard** and **Maya_Arnold_Dome_Light** templates. 
+-  Fixed various issues in **Softimage_Arnold_Standard**, **Softimage_Arnold_Dome_Light** and **Softimage_Arnold_Lightsmith** templates to support latest **SItoA** build.
 
 2.1.2 - Stable
 --------------
@@ -125,8 +132,8 @@ Changes
 About
 -----
 
-| **sIBL_GUI_Templates** by Thomas Mansencal – 2008 - 2013
-| **sIBL_GUI** by Thomas Mansencal – 2008 - 2013
-| Copyright© 2008 - 2013 – Thomas Mansencal – `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
+| **sIBL_GUI_Templates** by Thomas Mansencal – 2008 - 2014
+| **sIBL_GUI** by Thomas Mansencal – 2008 - 2014
+| Copyright © 2008 - 2014 – Thomas Mansencal – `thomas.mansencal@gmail.com <mailto:thomas.mansencal@gmail.com>`_
 | This software is released under terms of GNU GPL V3 license: http://www.gnu.org/licenses/
 | `http://www.thomasmansencal.com/ <http://www.thomasmansencal.com/>`_

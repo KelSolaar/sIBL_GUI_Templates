@@ -2,8 +2,8 @@
 Name = @Name | Maya Arnold Dome Light | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Maya_Arnold_Dome_Light_Template_Manual.html | String | Help File
-Release = @Release | 0.9.1 | String | Template Release
-Date = @Date | 27 November 2012 | String | Date
+Release = @Release | 0.9.2 | String | Template Release
+Date = @Date | 29 March 2014 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://thomasmansencal.com/ | String | Url
@@ -170,7 +170,9 @@ class Setup(object):
 		self.feedback = None
 		self.lightsTarget = None
 		self.feedbackRadius = Options.feedbackRadius
-		self.storedSessionAttributes = {"%s_aiSky.rotateY" % Constants.prefix : None,
+		self.storedSessionAttributes = {"%s_aiSky.rotateX" % Constants.prefix : None,
+										"%s_aiSky.rotateY" % Constants.prefix : None,
+										"%s_aiSky.rotateZ" % Constants.prefix : None,
 										"%s_aiSky.scaleX" % Constants.prefix : None,
 										"%s_aiSky.scaleY" % Constants.prefix : None,
 										"%s_aiSky.scaleZ" % Constants.prefix : None,
@@ -245,9 +247,12 @@ class Setup(object):
 		not cmds.pluginInfo("mtoa", q=True, loaded=True) and cmds.loadPlugin("mtoa")
 		
 		import mtoa.cmds.registerArnoldRenderer
+		import mtoa.core
 		mtoa.cmds.registerArnoldRenderer.registerArnoldRenderer()
 		
 		cmds.setAttr("defaultRenderGlobals.currentRenderer", "arnold", type="string")
+
+		mtoa.core.createOptions()
 
 	def deleteSession(self):
 		if cmds.objExists(Constants.prefix):
@@ -374,7 +379,7 @@ class Setup(object):
 	def getDisplayLocator(self, name, radius):
 		locator = cmds.sphere(name=name, axis=(0, 1, 0), ch=False)[0]
 		cmds.rebuildSurface(locator, su=4, sv=8, kr=0, ch=False)
-		setAttributes({"%s.rotateY" % locator:-90,
+		setAttributes({"%s.rotateY" % locator:90,
 						"%s.scaleZ" % locator:-1})
 		# Force UI Refresh.
 		cmds.refresh(force=True)
@@ -406,7 +411,9 @@ class Setup(object):
 		aiSkyDomeLightTransform = getTransform(aiSkyDomeLight)
 		setAttributes({"%s.scaleX" % aiSkyDomeLightTransform : self.feedbackRadius,
 						"%s.scaleY" % aiSkyDomeLightTransform : self.feedbackRadius,
-						"%s.scaleZ" % aiSkyDomeLightTransform : self.feedbackRadius})
+						"%s.scaleZ" % aiSkyDomeLightTransform : self.feedbackRadius,
+						"%s.overrideEnabled" % aiSkyDomeLightTransform : True,
+						"%s.overrideDisplayType" % aiSkyDomeLightTransform : 2})
 		lockHideAttributes(aiSkyDomeLightTransform, ("translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ", "scaleX", "scaleY", "scaleZ", "visibility"), lock=False)
 		cmds.connectAttr("%s.instObjGroups" % aiSkyDomeLightTransform, "defaultLightSet.dagSetMembers", nextAvailable=True)
 
@@ -448,8 +455,8 @@ class Setup(object):
 		pointOnSurfaceInfo = cmds.createNode("pointOnSurfaceInfo")
 		cmds.connectAttr("%s.worldSpace[0]" % self.feedback, "%s.inputSurface" % pointOnSurfaceInfo, f=True)
 		cmds.connectAttr("%s.position" % pointOnSurfaceInfo, "%s.translate" % light, f=True)
-		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 0.5 + (0.5 - vCoordinate),
-						"%s.parameterV" % pointOnSurfaceInfo : 0.5 + (0.5 - uCoordinate)})
+		setAttributes({"%s.parameterU" % pointOnSurfaceInfo : 1.0 - vCoordinate,
+						"%s.parameterV" % pointOnSurfaceInfo : 1.0 - uCoordinate})
 
 		aimConstraint = cmds.aimConstraint(self.lightsTarget, light, offset=(0, 0, 0), weight=1, aimVector=(0, 0, -1), upVector=(0, 1, 0), worldUpType="vector", worldUpVector=(0, 1, 0))[0]
 

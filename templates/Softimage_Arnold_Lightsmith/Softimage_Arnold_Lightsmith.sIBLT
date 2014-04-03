@@ -2,8 +2,8 @@
 Name = @Name | Softimage Arnold Lightsmith | String | Template Name
 Path = @Path | | String | Template Path
 HelpFile = @HelpFile | help/Softimage_Arnold_Lightsmith_Template_Manual.html | String | Help File
-Release = @Release | 1.0.7 | String | Template
-Date = @Date | 22 May 2013 | String | Date
+Release = @Release | 1.0.8 | String | Template
+Date = @Date | 29 March 2014 | String | Date
 Author = @Author | Kel Solaar | String | Author
 Email = @Email | thomas.mansencal@gmail.com | String | Email
 Url = @Url | http://www.thomasmansencal.com/ | String | Url
@@ -370,36 +370,6 @@ function hideDefautLight()
 	}
 }
 
-function getArnoldParametersProperty(object)
-{
-	var customProperty = object.AddProperty("arnold_parameters", false, "Arnold Parameters");
-
-	customProperty.AddParameter2("opaque", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("invert_normals", siBool, 0, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("self_shadows", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("receive_shadows", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("ray_bias", siFloat, 0.000001, 0.000001, 10, 0.000001, 1, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("sss_use_gi", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("sss_sample_spacing", siFloat, 0.1, 0, 10, 0, 1, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("sss_max_samples", siUInt4, 1000000, 0, 999999999, 0, 999999999, 0, siPersistable|siAnimatable);
-
-	return customProperty
-}
-
-function getArnoldVisibilityProperty(object)
-{
-	var customProperty = object.AddProperty("arnold_visibility", false, "Arnold Visibility");
-
-	customProperty.AddParameter2("camera", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("shadows", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("reflected", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("refracted", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("diffuse", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-	customProperty.AddParameter2("glossy", siBool, 1, 0, 1, 0, 5, 0, siPersistable|siAnimatable);
-
-	return customProperty
-}
-
 function getLightControls(object)
 {
 	var lightControlsProperty = object.AddCustomProperty(Constants.controlsTitle, false);
@@ -438,7 +408,7 @@ function getLight(clip, name, shape, scaleX, scaleY)
 	for(var i = 0; i < subComponents.length; i++)
 		light.Primitives("light").Parameters("LightAreaXform" + subComponents[i]).value = 1;
 
-	var lightShader = CreateShaderFromPreset(getShadersPath() + "Shaders/Light/arnold_quad_light", light);
+	var lightShader = CreateShaderFromProgID("ArnoldLightShaders.arnold_quad_light", light , "arnold_quad_light");
 	SIConnectShaderToCnxPoint(lightShader, light + ".LightShader", false);
 
 	var colorMathBasicIntensityShader = getLightShaderBranch(lightShader, clip, name);
@@ -584,15 +554,17 @@ function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHei
 	var lightSupport = ObjImport(lightObject, 1, 0, false, true, false, true);
 	lightSupport = lightSupport(0);
 	lightSupport.Kinematics.Local.Parameters("posz").value = depthOffset;
-	var lightSupportParametersProperty = getArnoldParametersProperty(lightSupport);
+	SITOA_AddParametersProperties(lightSupport);
+	var lightSupportParametersProperty = lightSupport.Properties("Arnold_Parameters")
 	if(lightMaskClip != null)
 		lightSupportParametersProperty.Parameters("opaque").value = 0;
-	var lightSupportVisibilityProperty = getArnoldVisibilityProperty(lightSupport);
+	SITOA_AddVisibilityProperties(lightSupport);
+	var lightSupportVisibilityProperty = lightSupport.Properties("Arnold_Visibility")
 	var lightFrame = ObjImport(lightObjectFrame, 1, 0, false, true, false, true);
 	lightFrame = lightFrame(0);
 	lightFrame.Kinematics.Local.Parameters("posz").value = depthOffset;
-	getArnoldParametersProperty(lightFrame);
-	getArnoldVisibilityProperty(lightFrame);
+	SITOA_AddParametersProperties(lightFrame);
+	SITOA_AddVisibilityProperties(lightFrame);
 	lightGeometries.addChild(lightSupport)
 	lightGeometries.addChild(lightFrame)
 
@@ -622,11 +594,14 @@ function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHei
 		lightSupportMaterial.Shaders(0).Parameters("inverttrans").value = 1;
 	}
 
-	var lightFrameMaterial = SICreateMaterial(getShadersPath() + "Shaders/Material/standard.Preset", name + "_Frame_Material", "", lightFrame);
+	var lightFrameMaterial = SICreateMaterial("$XSI_DSPRESETS/Shaders/Material/Constant.Preset", name + "_Frame_Material", "", lightFrame);
+	var lightFrameShader = CreateShaderFromProgID("ArnoldCoreShaders.standard", lightFrameMaterial, "standard");
+	SIConnectShaderToCnxPoint(lightFrameShader, lightFrameMaterial + ".surface", false);
 	var subComponents = ["red", "green", "blue"];
 	for(var i = 0; i < subComponents.length; i++)
-		lightFrameMaterial.shaders(0).Parameters("Kd_color").Parameters(subComponents[i]).value = lightObjectFrameColor[i];
-	lightFrameMaterial.Shaders(0).Parameters("Kd").value = 1;
+		lightFrameShader.Parameters("Kd_color").Parameters(subComponents[i]).value = lightObjectFrameColor[i];
+	lightFrameShader.Parameters("Kd").value = 1;
+
 
 	var lightControlsProperty = getLightControls(lightHook);
 	connectDriverToMaterialShaders(lightControlsProperty, lightSupportMaterial)
@@ -658,7 +633,7 @@ function getLightsmithLight(name, lightClip, lightMaskClip, lightWidth, lightHei
 				lightControlsProperty.Parameters(subComponents[i] + "Color").value = lightColor[i];
 				lightSupportMaterial.GetAllShaders().Filter("", "", "*_Modulation_Color_Math_Basic")(0).Parameters("input2").Parameters(subComponents[i]).value = (1 / lightNormalizationFactor) * (1 / lightColor[i]);
 			}
-			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("affect_specular").value = 0;
+			light.Primitives("light").Parameters("LightShader").NestedObjects(0).Parameters("specular").value = 0;
 		}
 		connectDriverToLightShaders(lightControlsProperty, light);
 	}
@@ -747,7 +722,7 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 				for(var j = 0; j < subComponents.length; j++)
 					colorMathBasicIntensityShader.shaders(0).Parameters("input2").Parameters(subComponents[j]).value = lightColor[j];
 
-				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, lightWidth, lightHeight, lightObjectPath, lightObjectFrame, lightObjectFrameColor, 1, "", false)
+				var light = getLightsmithLight(sIBLLight.FullName, lightClip, lightMaskClip, lightWidth, lightHeight, lightColor, lightObjectPath, lightObjectFrame, lightObjectFrameColor, 1, "", false)
 				var lightRoot = light.FindChild("*_Root");
 				sIBLLight.addChild(lightRoot);
 
@@ -766,15 +741,7 @@ function connectToLights(lightClip, lightMaskClip, lightWidth, lightHeight, ligh
 				ResetTransform(lightRoot, siObj, siTrn, siXYZ);
 
 				var lightSupport = lightRoot.FindChild("*_Support*");
-				var lightHookProperties = lightRoot.FindChild("*_Hook").Properties;
-				var lightHookProperty = null;
-				for(var j = 0; j < lightHookProperties.count; j++)
-					if(lightHookProperties.item(j).Name == "Controls")
-					{
-						lightHookProperty = lightHookProperties.item(j);
-						break;
-					}
-
+				var lightHookProperty = lightRoot.FindChild("*_Hook").Properties("Lightsmith_Controls");
 				connectDriverToLightShaders(lightHookProperty, sIBLLight);
 				var colorAverage = (lightColor[0] + lightColor[1] + lightColor[2]) / 3;
 				var shader = lightSupport.Material.Shaders(0).Shaders.Filter("", "", "*_User_Color_Math_Basic")(0).shaders(0);
@@ -804,7 +771,7 @@ function deleteLightShaders(light)
 	for(; !e.atEnd(); e.moveNext())
 	{
 		var shader = e.item();
-		if(shader.FullName  != light.Primitives("light").Parameters("lightShader").Source)
+		if(shader.FullName + ".out" != light.Primitives("light").Parameters("lightShader").Source.FullName)
 			DisconnectAndDeleteOrUnnestShaders(shader, light.Primitives("light"));
 	}
 	var clips = light.AllImageClips;
@@ -895,13 +862,14 @@ function activateSceneColorManagement(passes)
 
 function getPluginPath()
 {
-	var plugin = Application.plugins("Arnold Shaders");
-	return plugin.OriginPath.replace(/\\/g, "/");
+	var plugin = Application.plugins("Arnold Render");
+	var arnoldPath = plugin.OriginPath;
+	return arnoldPath.replace(/\\/g, "/");
 }
 
 function getShadersPath()
 {
-	return getPluginPath() + "../../Data/DSPresets/";
+	return getPluginPath() + "../../../../Data/DSPresets/";
 }
 
 function objectExists(object)
