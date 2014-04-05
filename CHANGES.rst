@@ -1,10 +1,15 @@
-sIBL_GUI_Templates - 2.1.3 - Stable
+sIBL_GUI_Templates - 2.1.4 - Stable
 ===================================
 
 .. .changes
 
 Changes
 =======
+
+2.1.4 - Stable
+--------------
+
+-  Ensured ground plane shader **matteForSecondaryRays** attribute in **Maya_VRay_Standard** and **Maya_VRay_Dome_Light** templates is set. 
 
 2.1.3 - Stable
 --------------
