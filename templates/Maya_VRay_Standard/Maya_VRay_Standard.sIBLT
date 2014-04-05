@@ -515,6 +515,7 @@ class Setup(object):
 			cmds.connectAttr("%s.instObjGroups[0]" % ground, "%s.dnSetMembers[0]" % vrayObjectProperties, f=True)
 			setAttributes({"%s.giVisibility" % vrayObjectProperties : False,
 							"%s.matteSurface" % vrayObjectProperties : True,
+							"%s.matteForSecondaryRays" % vrayObjectProperties : True,
 							"%s.shadows" % vrayObjectProperties : True,
 							"%s.affectAlpha" % vrayObjectProperties : True,
 							"%s.alphaContribution" % vrayObjectProperties:-1,
