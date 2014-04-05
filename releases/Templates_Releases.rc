@@ -53,10 +53,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_RfM_Stand
 Comment = "Drop support for Maya versions prior to Maya 2011."
 
 [Maya_VRay_Dome_Light]
-Release = 2.0.6
+Release = 2.0.7
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Dome_Light/Nightly/Maya_VRay_Dome_Light.zip"
-Comment = "Drop support for Maya versions prior to Maya 2011."
+Comment = "Fix ground plane matte for secondary rays issue."
 
 [Maya_VRay_Lightsmith]
 Release = 1.0.7
@@ -65,10 +65,10 @@ Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Ligh
 Comment = "Drop support for Maya versions prior to Maya 2011."
 
 [Maya_VRay_Standard]
-Release = 2.0.5
+Release = 2.0.6
 Type = "Nightly"
 Url = "http://kelsolaar.hdrlabs.com/sIBL_GUI/Repository/Templates/Maya_VRay_Standard/Nightly/Maya_VRay_Standard.zip"
-Comment = "Drop support for Maya versions prior to Maya 2011."
+Comment = "Fix ground plane matte for secondary rays issue."
 
 [Softimage_Arnold_Dome_Light]
 Release = 2.0.8
