@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-**listTemplatesReleases.py**
+**list_templates_releases.py**
 
 **Platform:**
 	Windows, Linux, Mac Os X.
@@ -48,20 +48,20 @@ __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
-__all__ = ["LOGGER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION", "listTemplatesReleases", "getCommandLineArguments", "main"]
+__all__ = ["LOGGER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION", "list_templates_releases", "get_command_line_arguments", "main"]
 
-LOGGER = foundations.verbose.installLogger()
+LOGGER = foundations.verbose.install_logger()
 
 TEMPLATES_PATH = "../templates"
 TEMPLATES_EXTENSION = "sIBLT"
 
-foundations.verbose.getLoggingConsoleHandler()
-foundations.verbose.setVerbosityLevel(3)
+foundations.verbose.get_logging_console_handler()
+foundations.verbose.set_verbosity_level(3)
 
 #**********************************************************************************************************************
 #***	Main python code.
 #**********************************************************************************************************************
-def listTemplatesReleases():
+def list_templates_releases():
 	"""
 	Lists Templates releases.
 
@@ -69,18 +69,18 @@ def listTemplatesReleases():
 	:rtype: bool
 	"""
 
-	for template in sorted(list(foundations.walkers.filesWalker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
-		sectionsFileParser = SectionsFileParser(template)
-		sectionsFileParser.parse(rawSections=("Script",))
+	for template in sorted(list(foundations.walkers.files_walker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
+		sections_file_parser = SectionsFileParser(template)
+		sections_file_parser.parse(raw_sections=("Script",))
 
-		LOGGER.info("{0} | '{1}': '{2}'.".format(listTemplatesReleases.__name__,
-												foundations.strings.getSplitextBasename(template),
-												foundations.parsers.getAttributeCompound("Release",
-												sectionsFileParser.getValue("Release", "Template")).value))
+		LOGGER.info("{0} | '{1}': '{2}'.".format(list_templates_releases.__name__,
+												foundations.strings.get_splitext_basename(template),
+												foundations.parsers.get_attribute_compound("Release",
+												sections_file_parser.get_value("Release", "Template")).value))
 
 	return True
 
-def getCommandLineArguments():
+def get_command_line_arguments():
 	"""
 	Retrieves command line arguments.
 
@@ -101,7 +101,7 @@ def getCommandLineArguments():
 
 	return parser.parse_args()
 
-@foundations.decorators.systemExit
+@foundations.decorators.system_exit
 def main():
 	"""
 	Starts the Application.
@@ -110,7 +110,7 @@ def main():
 	:rtype: bool
 	"""
 
-	listTemplatesReleases()
+	list_templates_releases()
 
 if __name__ == "__main__":
 	main()
