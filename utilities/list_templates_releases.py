@@ -5,10 +5,10 @@
 **list_templates_releases.py**
 
 **Platform:**
-	Windows, Linux, Mac Os X.
+    Windows, Linux, Mac Os X.
 
 **Description:**
-	Lists Templates releases.
+    Lists Templates releases.
 
 **Others:**
 
@@ -47,56 +47,55 @@ foundations.verbose.get_logging_console_handler()
 foundations.verbose.set_verbosity_level(3)
 
 def list_templates_releases():
-	"""
-	Lists Templates releases.
+    """
+    Lists Templates releases.
 
-	:return: Definition success.
-	:rtype: bool
-	"""
+    :return: Definition success.
+    :rtype: bool
+    """
 
-	for template in sorted(list(foundations.walkers.files_walker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
-		sections_file_parser = SectionsFileParser(template)
-		sections_file_parser.parse(raw_sections=("Script",))
+    for template in sorted(list(foundations.walkers.files_walker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
+        sections_file_parser = SectionsFileParser(template)
+        sections_file_parser.parse(raw_sections=("Script",))
 
-		LOGGER.info("{0} | '{1}': '{2}'.".format(list_templates_releases.__name__,
-												foundations.strings.get_splitext_basename(template),
-												foundations.parsers.get_attribute_compound("Release",
-												sections_file_parser.get_value("Release", "Template")).value))
+        LOGGER.info("{0} | '{1}': '{2}'.".format(list_templates_releases.__name__,
+                                                foundations.strings.get_splitext_basename(template),
+                                                foundations.parsers.get_attribute_compound("Release",
+                                                sections_file_parser.get_value("Release", "Template")).value))
 
-	return True
+    return True
 
 def get_command_line_arguments():
-	"""
-	Retrieves command line arguments.
+    """
+    Retrieves command line arguments.
 
-	:return: Namespace.
-	:rtype: Namespace
-	"""
+    :return: Namespace.
+    :rtype: Namespace
+    """
 
-	parser = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser(add_help=False)
 
-	parser.add_argument("-h",
-						"--help",
-						action="help",
-						help="'Displays this help message and exit.'")
+    parser.add_argument("-h",
+                        "--help",
+                        action="help",
+                        help="'Displays this help message and exit.'")
 
-	if len(sys.argv) == 1:
-		parser.print_help()
-		sys.exit(1)
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
 
-	return parser.parse_args()
+    return parser.parse_args()
 
 @foundations.decorators.system_exit
 def main():
-	"""
-	Starts the Application.
+    """
+    Starts the Application.
 
-	:return: Definition success.
-	:rtype: bool
-	"""
+    :return: Definition success.
+    :rtype: bool
+    """
 
-	list_templates_releases()
+    list_templates_releases()
 
 if __name__ == "__main__":
-	main()
-
+    main()
