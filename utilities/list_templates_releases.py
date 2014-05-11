@@ -36,7 +36,8 @@ __maintainer__ = "Thomas Mansencal"
 __email__ = "thomas.mansencal@gmail.com"
 __status__ = "Production"
 
-__all__ = ["LOGGER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION", "list_templates_releases", "get_command_line_arguments", "main"]
+__all__ = ["LOGGER", "TEMPLATES_PATH", "TEMPLATES_EXTENSION",
+           "list_templates_releases", "get_command_line_arguments", "main"]
 
 LOGGER = foundations.verbose.install_logger()
 
@@ -46,6 +47,7 @@ TEMPLATES_EXTENSION = "sIBLT"
 foundations.verbose.get_logging_console_handler()
 foundations.verbose.set_verbosity_level(3)
 
+
 def list_templates_releases():
     """
     Lists Templates releases.
@@ -54,16 +56,20 @@ def list_templates_releases():
     :rtype: bool
     """
 
-    for template in sorted(list(foundations.walkers.files_walker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
+    for template in sorted(
+            list(foundations.walkers.files_walker(os.path.normpath(TEMPLATES_PATH), (TEMPLATES_EXTENSION,), ("\._",)))):
         sections_file_parser = SectionsFileParser(template)
         sections_file_parser.parse(raw_sections=("Script",))
 
         LOGGER.info("{0} | '{1}': '{2}'.".format(list_templates_releases.__name__,
-                                                foundations.strings.get_splitext_basename(template),
-                                                foundations.parsers.get_attribute_compound("Release",
-                                                sections_file_parser.get_value("Release", "Template")).value))
+                                                 foundations.strings.get_splitext_basename(template),
+                                                 foundations.parsers.get_attribute_compound("Release",
+                                                                                            sections_file_parser.get_value(
+                                                                                                "Release",
+                                                                                                "Template")).value))
 
     return True
+
 
 def get_command_line_arguments():
     """
@@ -86,6 +92,7 @@ def get_command_line_arguments():
 
     return parser.parse_args()
 
+
 @foundations.decorators.system_exit
 def main():
     """
@@ -96,6 +103,7 @@ def main():
     """
 
     list_templates_releases()
+
 
 if __name__ == "__main__":
     main()
